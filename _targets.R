@@ -10,6 +10,7 @@ tar_config_get("script") |>
   purrr::walk(source)
 
 list(
+  tar_target(pipeline_version, "0.1.0"),
   tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1L)),
 
   # assay data (counts):
