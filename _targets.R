@@ -11,7 +11,10 @@ tar_config_get("script") |>
 
 list(
   tar_target(pipeline_version, "0.1.0"),
+
+  # config:
   tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1L)),
+  tar_target(plots_dir_name, fs::dir_create("plots")),
 
   # assay data (counts):
   tar_target(counts_file_name, fs::path(results_dir_name, "DADA2_counts.tsv")),
@@ -43,5 +46,5 @@ list(
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
   tar_target(ordination_plot, plot_ordination(ps_ordination, "Sequencing_date")),
-  tar_target(save_ordination_plot, save_plot(ordination_plot, "plot"))
+  tar_target(save_ordination_plot, save_plot(ordination_plot, fs::path(plots_dir_name, "ordination")))
 )

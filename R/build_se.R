@@ -25,7 +25,9 @@ make_assay_data <- function(counts) {
 }
 
 se <- function(counts, col_data, row_data) {
-  samples_column <- col_data |> names() |> head(1L)
+  samples_column <- col_data |>
+    names() |>
+    head(1L)
   col_data <-
     col_data |>
     dplyr::filter(.data[[samples_column]] %in% colnames(counts))
