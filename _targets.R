@@ -10,14 +10,14 @@ tar_config_get("script") |>
   purrr::walk(source)
 
 list(
-  tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1)),
+  tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1L)),
 
   # Count assay data:
   tar_target(counts_file_name, fs::path(results_dir_name, "DADA2_counts.tsv")),
   tar_target(counts_file, counts_file_name, format = "file"),
   tar_target(counts, readr::read_tsv(counts_file)),
   tar_target(assay_data, make_assay_data(counts)),
-  tar_target(debug_assay_data, print(assay_data)),
+  tar_target(debug_assay_data, str(assay_data)),
 
   # Column data:
   tar_target(libraries_file_name, fs::path("Metadata", "Libraries.tsv")),
