@@ -37,11 +37,11 @@ list(
   tar_target(row_data, make_row_data(taxonomy)),
   tar_target(debug_row_data, print(row_data)),
 
-  # SE raw:
+  # SummarizedExperiment, raw:
   tar_target(se_raw, se(assay_data, libraries_col_data, row_data)),
   tar_target(debug_se_raw, print(se_raw)),
 
-  # Ordination:
+  # ordination:
   tar_target(ps, as_phyloseq(se_raw)),
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
