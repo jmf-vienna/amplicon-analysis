@@ -47,5 +47,5 @@ list(
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
   tar_target(ordination_plot, plot_ordination(ps_ordination, "Sequencing_date", theme = theme)),
-  tar_target(save_ordination_plot, save_plot(ordination_plot, fs::path(plots_dir_name, "ordination")))
+  tar_target(ordination_plot_file, save_plot(ordination_plot, fs::path(plots_dir_name, "ordination")), format = "file")
 )

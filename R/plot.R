@@ -12,10 +12,14 @@ save_plot <- function(plot, file_name) {
     fs::path_dir() |>
     fs::dir_create()
 
+  file <- fs::path(file_name, ext = "svg")
+
   svglite::svglite(
-    fs::path(file_name, ext = "svg"),
+    file,
     web_fonts = list("https://fonts.googleapis.com/css?family=Noto%20Sans")
   )
   print(plot)
   dev.off()
+
+  invisible(file)
 }
