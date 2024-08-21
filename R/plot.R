@@ -8,6 +8,10 @@ ggplot_theme <- function() {
 }
 
 save_plot <- function(plot, file_name) {
+  file_name |>
+    fs::path_dir() |>
+    fs::dir_create()
+
   svglite::svglite(
     fs::path(file_name, ext = "svg"),
     web_fonts = list("https://fonts.googleapis.com/css?family=Noto%20Sans")

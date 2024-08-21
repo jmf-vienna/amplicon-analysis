@@ -15,7 +15,7 @@ list(
 
   # config:
   tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1L)),
-  tar_target(plots_dir_name, fs::dir_create("plots")),
+  tar_target(plots_dir_name, "plots"),
 
   # assay data (counts):
   tar_target(counts_file_name, fs::path(results_dir_name, "DADA2_counts.tsv")),
