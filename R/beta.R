@@ -8,10 +8,12 @@ calulcate_ordination <- function(ps) {
     microViz::ord_calc()
 }
 
-plot_ordination <- function(ps, group) {
+plot_ordination <- function(ps, group, theme) {
   ps |>
     microViz::ord_plot(
       colour = group,
       fill = group
-    ) + ggplot2::theme_get()
+    ) + ggplot2::labs(
+      title = "Ordination",
+    ) + theme
 }

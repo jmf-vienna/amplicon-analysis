@@ -11,6 +11,7 @@ tar_config_get("script") |>
 
 list(
   tar_target(pipeline_version, "0.1.0"),
+  tar_target(theme, ggplot_theme()),
 
   # config:
   tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1L)),
@@ -45,6 +46,6 @@ list(
   tar_target(ps, as_phyloseq(se_raw)),
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
-  tar_target(ordination_plot, plot_ordination(ps_ordination, "Sequencing_date")),
+  tar_target(ordination_plot, plot_ordination(ps_ordination, "Sequencing_date", theme = theme)),
   tar_target(save_ordination_plot, save_plot(ordination_plot, fs::path(plots_dir_name, "ordination")))
 )
