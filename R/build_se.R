@@ -24,7 +24,7 @@ make_assay_data <- function(counts) {
     as.matrix()
 }
 
-se <- function(counts, col_data, row_data) {
+se <- function(counts, col_data, row_data, provenance) {
   samples_column <- col_data |>
     names() |>
     head(1L)
@@ -35,6 +35,9 @@ se <- function(counts, col_data, row_data) {
   SingleCellExperiment::SingleCellExperiment(
     assays = list(counts = counts),
     colData = col_data,
-    rowData = row_data
+    rowData = row_data,
+    metadata = list(
+      provenance = provenance
+    )
   )
 }
