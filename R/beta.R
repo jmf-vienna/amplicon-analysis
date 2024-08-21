@@ -14,6 +14,6 @@ plot_ordination <- function(ps, group, theme) {
       colour = group,
       fill = group
     ) + ggplot2::labs(
-      title = "Ordination",
+      title = "Ordination"
     ) + theme
 }
