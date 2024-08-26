@@ -15,7 +15,7 @@ calulcate_ordination <- function(ps) {
     ))
 }
 
-plot_ordination <- function(ps, group, theme) {
+plot_ordination <- function(ps, group, point_label, theme) {
   v <- ps |>
     phyloseq::sample_data() |>
     dplyr::pull({{ group }})
@@ -37,6 +37,16 @@ plot_ordination <- function(ps, group, theme) {
       alpha = 0.1
     )
   }
+
+  plot <- plot +
+    ggrepel::geom_text_repel(
+      mapping = ggplot2::aes(
+        label = .data[[point_label]]
+      ),
+      max.overlaps = 100,
+      size = 2.5,
+      family = "Noto Sans"
+    )
 
   plot |>
     plot_titles(ps) |>
