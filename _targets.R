@@ -6,8 +6,14 @@ tar_option_set(format = "qs")
 tar_config_get("script") |>
   fs::path_dir() |>
   fs::path("R") |>
-  fs::dir_ls() |>
+  fs::dir_ls(glob = "*.R") |>
   purrr::walk(source)
+
+if (fs::dir_exists("R")) {
+  fs::path("R") |>
+    fs::dir_ls(glob = "*.R") |>
+    purrr::walk(source)
+}
 
 list(
   tar_target(pipeline_version, "0.1.0"),
