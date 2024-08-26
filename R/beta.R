@@ -1,13 +1,18 @@
-calulcate_distance <- function(ps) {
+calulcate_distance <- function(ps, distance = "aitchison") {
   ps |>
-    microViz::dist_calc("aitchison") |>
-    update_provenance(ps)
+    microViz::dist_calc(distance) |>
+    update_provenance(ps, list(distance = distance))
 }
 
 calulcate_ordination <- function(ps) {
-  ps |>
-    microViz::ord_calc() |>
-    update_provenance(ps)
+  ps_new <-
+    ps |>
+    microViz::ord_calc()
+
+  ps_new |>
+    update_provenance(ps, list(
+      ordination = microViz::info_get(ps_new)[["ord_info"]][["method"]]
+    ))
 }
 
 plot_ordination <- function(ps, group, theme) {
@@ -21,7 +26,6 @@ plot_ordination <- function(ps, group, theme) {
     ) + theme
 
   plot |> update_provenance(ps, list(
-    plot = "ordination",
     aesthetics = list(color_by = group)
   ))
 }
