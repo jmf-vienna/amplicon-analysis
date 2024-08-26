@@ -14,12 +14,15 @@ list(
   tar_target(theme, ggplot_theme()),
 
   # config:
-  tar_target(results_dir_name, fs::dir_ls("Results", type = "dir") |> head(1L)),
-  tar_target(project_name, results_dir_name |> stringr::str_extract(jmf::jmf_project_id_regex())),
-  tar_target(plots_dir_name, "plots"),
+  tar_target(config_file, "config.yaml", format = "file"),
+  tar_target(config, config::get(file = config_file)),
+  tar_target(debug_config, str(config)),
+  tar_target(data_dir_name, config[["path"]][["data"]]),
+  tar_target(plots_dir_name, config[["path"]][["plots"]]),
+  tar_target(project_name, config[["project"]][["name"]]),
 
   # assay data (counts):
-  tar_target(counts_file_name, fs::path(results_dir_name, "DADA2_counts.tsv")),
+  tar_target(counts_file_name, fs::path(data_dir_name, "DADA2_counts.tsv")),
   tar_target(counts_file, counts_file_name, format = "file"),
   tar_target(counts, readr::read_tsv(counts_file)),
   tar_target(assay_data, make_assay_data(counts)),
@@ -33,7 +36,7 @@ list(
   tar_target(debug_col_data, print(libraries_col_data)),
 
   # row data (taxonomy):
-  tar_target(taxonomy_file_name, fs::path(results_dir_name, "DADA2_ASVs.rRNA_SSU.SILVA_reference.DADA2_classified.tsv")),
+  tar_target(taxonomy_file_name, fs::path(data_dir_name, "DADA2_ASVs.rRNA_SSU.SILVA_reference.DADA2_classified.tsv")),
   tar_target(taxonomy_file, taxonomy_file_name, format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
   tar_target(row_data, make_row_data(taxonomy)),
