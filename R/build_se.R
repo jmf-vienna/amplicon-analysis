@@ -1,5 +1,5 @@
-make_col_data <- function(libraries) {
-  libraries
+make_col_data <- function(x) {
+  purrr::reduce(x, dplyr::inner_join)
 }
 
 make_row_data <- function(taxonomy) {

@@ -22,35 +22,42 @@ list(
   # config:
   tar_target(config_file, "config.yaml", format = "file"),
   tar_target(config, config::get(file = config_file)),
-  tar_target(debug_config, str(config)),
+  tar_target(debug.config, str(config)),
   tar_target(data_dir_name, config[["path"]][["data"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
   tar_target(project_name, config[["project"]][["name"]]),
 
-  # column data (libraries, samples):
+  # column data > samples:
+  tar_target(samples_file_name, fs::path("Metadata", "Samples.tsv")),
+  tar_target(samples_file, samples_file_name, format = "file"),
+  tar_target(samples, readr::read_tsv(samples_file)),
+  tar_target(samples_col_data, make_col_data(list(samples))),
+  tar_target(debug.samples_col_data, print(samples_col_data)),
+
+  # column data > libraries:
   tar_target(libraries_file_name, fs::path("Metadata", "Libraries.tsv")),
   tar_target(libraries_file, libraries_file_name, format = "file"),
   tar_target(libraries, readr::read_tsv(libraries_file)),
-  tar_target(libraries_col_data, make_col_data(libraries)),
-  tar_target(debug_col_data, print(libraries_col_data)),
+  tar_target(libraries_col_data, make_col_data(list(libraries, samples))),
+  tar_target(debug.libraries_col_data, print(libraries_col_data)),
 
   # assay data (counts):
   tar_target(counts_file_name, fs::path(data_dir_name, "DADA2_counts.tsv")),
   tar_target(counts_file, counts_file_name, format = "file"),
   tar_target(counts, readr::read_tsv(counts_file)),
   tar_target(assay_data, make_assay_data(counts)),
-  tar_target(debug_assay_data, str(assay_data)),
+  tar_target(debug.assay_data, str(assay_data)),
 
   # row data (taxonomy):
   tar_target(taxonomy_file_name, fs::path(data_dir_name, "DADA2_ASVs.rRNA_SSU.SILVA_reference.DADA2_classified.tsv")),
   tar_target(taxonomy_file, taxonomy_file_name, format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
   tar_target(row_data, make_row_data(taxonomy)),
-  tar_target(debug_row_data, print(row_data)),
+  tar_target(debug.row_data, print(row_data)),
 
   # SummarizedExperiment, raw:
   tar_target(se_raw, se(assay_data, libraries_col_data, row_data, list(project = project_name, state = "raw"))),
-  tar_target(debug_se_raw, print(se_raw)),
+  tar_target(debug.se_raw, print(se_raw)),
 
   # ordination:
   tar_target(ps, as_phyloseq(se_raw)),
