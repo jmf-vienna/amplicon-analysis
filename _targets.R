@@ -52,7 +52,9 @@ list(
   tar_target(debug.row_data, print(row_data)),
 
   # SummarizedExperiment, libraries, raw:
-  tar_target(se_libs_raw, se(assay_data, libraries_col_data, row_data, list(project = config[["project"]][["name"]], state = "raw"))),
+  tar_target(base_provenance, list(project = config[["project"]][["name"]], gene = config[["gene"]][["name"]])),
+  tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(state = "raw"))),
+  tar_target(se_libs_raw, se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
   tar_target(debug.se_libs_raw, print(se_libs_raw)),
 
   # ordination:
