@@ -61,6 +61,6 @@ list(
   tar_target(ps, as_phyloseq(se_libs_raw)),
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
-  tar_target(ordination_plot, plot_ordination(ps_ordination, categories |> head(1), theme = theme)),
+  tar_target(ordination_plot, plot_ordination(ps_ordination, categories |> head(1L), theme = theme)),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file")
 )
