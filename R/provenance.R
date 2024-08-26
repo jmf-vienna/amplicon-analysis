@@ -1,19 +1,27 @@
-set_provenance <- function(dest, src, new = list()) {
-  provenance <- c(
-    xfun::attr(src, "provenance"),
-    new
-  )
-
-  attr(dest, "provenance") <- provenance
-  dest
-}
-
 get_provenance <- function(x) {
-  attr(x, "provenance")
+  xfun::attr(x, "provenance") |> as.list()
 }
 
-collapse_provenance <- function(x, sep = "_") {
+set_provenance <- function(x, provenance) {
+  attr(x, "provenance") <- provenance
+  invisible(x)
+}
+
+update_provenance <- function(x, source, new = list()) {
+  get_provenance(x) |>
+    modifyList(get_provenance(source)) |>
+    modifyList(new) |>
+    set_provenance(x, provenance = _)
+}
+
+as_title <- function(x) {
+  provenance <- x |> get_provenance()
+  stringr::str_c(names(provenance), provenance, sep = ": ", collapse = " | ") |>
+    stringr::str_remove("^[a-z]+: ")
+}
+
+as_file_name <- function(x) {
   x |>
     get_provenance() |>
-    stringr::str_c(collapse = sep)
+    stringr::str_c(collapse = "_")
 }

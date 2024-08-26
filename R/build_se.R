@@ -35,9 +35,7 @@ se <- function(counts, col_data, row_data, provenance) {
   SingleCellExperiment::SingleCellExperiment(
     assays = list(counts = counts),
     colData = col_data,
-    rowData = row_data,
-    metadata = list(
-      provenance = provenance
-    )
-  )
+    rowData = row_data
+  ) |>
+    set_provenance(provenance)
 }
