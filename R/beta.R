@@ -14,7 +14,7 @@ plot_ordination <- function(ps, group, theme) {
   plot <-
     ps |>
     microViz::ord_plot(
-      colour = group,
+      color = group,
       fill = group
     ) + ggplot2::labs(
       title = ps |> as_title()

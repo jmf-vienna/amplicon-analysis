@@ -25,6 +25,7 @@ list(
   tar_target(debug.config, str(config)),
   tar_target(data_dir_name, config[["path"]][["data"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
+  tar_target(categories, config[["analyse"]][["categories"]]),
 
   # column data > samples:
   tar_target(samples_file, "Samples.tsv", format = "file"),
@@ -58,6 +59,6 @@ list(
   tar_target(ps, as_phyloseq(se_libs_raw)),
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
-  tar_target(ordination_plot, plot_ordination(ps_ordination, "Sequencing_date", theme = theme)),
+  tar_target(ordination_plot, plot_ordination(ps_ordination, categories |> head(1), theme = theme)),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file")
 )
