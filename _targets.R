@@ -28,29 +28,25 @@ list(
   tar_target(project_name, config[["project"]][["name"]]),
 
   # column data > samples:
-  tar_target(samples_file_name, fs::path("Metadata", "Samples.tsv")),
-  tar_target(samples_file, samples_file_name, format = "file"),
+  tar_target(samples_file, "Samples.tsv", format = "file"),
   tar_target(samples, readr::read_tsv(samples_file)),
   tar_target(samples_col_data, make_col_data(list(samples))),
   tar_target(debug.samples_col_data, print(samples_col_data)),
 
   # column data > libraries:
-  tar_target(libraries_file_name, fs::path("Metadata", "Libraries.tsv")),
-  tar_target(libraries_file, libraries_file_name, format = "file"),
+  tar_target(libraries_file, "Libraries.tsv", format = "file"),
   tar_target(libraries, readr::read_tsv(libraries_file)),
   tar_target(libraries_col_data, make_col_data(list(libraries, samples))),
   tar_target(debug.libraries_col_data, print(libraries_col_data)),
 
   # assay data (counts):
-  tar_target(counts_file_name, fs::path(data_dir_name, "DADA2_counts.tsv")),
-  tar_target(counts_file, counts_file_name, format = "file"),
+  tar_target(counts_file, fs::path(data_dir_name, "DADA2_counts.tsv"), format = "file"),
   tar_target(counts, readr::read_tsv(counts_file)),
   tar_target(assay_data, make_assay_data(counts)),
   tar_target(debug.assay_data, str(assay_data)),
 
   # row data (taxonomy):
-  tar_target(taxonomy_file_name, fs::path(data_dir_name, "DADA2_ASVs.rRNA_SSU.SILVA_reference.DADA2_classified.tsv")),
-  tar_target(taxonomy_file, taxonomy_file_name, format = "file"),
+  tar_target(taxonomy_file, fs::path(data_dir_name, "DADA2_ASVs.rRNA_SSU.SILVA_reference.DADA2_classified.tsv"), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
   tar_target(row_data, make_row_data(taxonomy)),
   tar_target(debug.row_data, print(row_data)),
