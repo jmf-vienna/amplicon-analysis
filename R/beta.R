@@ -26,6 +26,6 @@ plot_ordination <- function(ps, group, theme) {
   plot |>
     plot_titles(ps) |>
     update_provenance(ps, list(
-      aesthetics = list(color_by = group)
+      aesthetics = list(color = group)
     ))
 }
