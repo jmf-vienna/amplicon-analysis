@@ -1,7 +1,7 @@
 library(targets)
 
 jmf::quiet()
-options(warn = 2)
+options(warn = 2L)
 tar_option_set(format = "qs")
 
 tar_config_get("script") |>
@@ -16,7 +16,7 @@ if (fs::dir_exists("R")) {
     purrr::walk(source)
 }
 
-list(
+main_targets <- list(
   tar_target(pipeline_version, "0.1.0"),
   tar_target(theme, ggplot_theme()),
 
@@ -66,7 +66,20 @@ list(
   # ordination:
   tar_target(ps, as_phyloseq(se_libs_raw)),
   tar_target(ps_distance, calulcate_distance(ps)),
-  tar_target(ps_ordination, calulcate_ordination(ps_distance)),
-  tar_target(ordination_plot, plot_ordination(ps_ordination, categories |> head(1L), sample_label, theme)),
+  tar_target(ps_ordination, calulcate_ordination(ps_distance))
+)
+
+ordination_plot_values <- list(
+  category = config::get(file = "config.yaml")[["analyse"]][["categories"]]
+)
+
+ordination_plot_targets <- tarchetypes::tar_map(
+  ordination_plot_values,
+  tar_target(ordination_plot, plot_ordination(ps_ordination, category, sample_label, theme)),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file")
+)
+
+list(
+  main_targets,
+  ordination_plot_targets
 )

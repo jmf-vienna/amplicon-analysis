@@ -43,7 +43,8 @@ plot_ordination <- function(ps, group, point_label, theme) {
       mapping = ggplot2::aes(
         label = .data[[point_label]]
       ),
-      max.overlaps = 100,
+      max.overlaps = 100L,
+      seed = 0L,
       size = 2.5,
       family = "Noto Sans"
     )
