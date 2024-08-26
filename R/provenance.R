@@ -23,5 +23,8 @@ as_title <- function(x) {
 as_file_name <- function(x) {
   x |>
     get_provenance() |>
+    purrr::map(\(x) {
+      stringr::str_c(names(x), x, sep = "_", collapse = "_")
+    }) |>
     stringr::str_c(collapse = "_")
 }

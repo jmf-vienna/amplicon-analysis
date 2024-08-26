@@ -19,5 +19,9 @@ plot_ordination <- function(ps, group, theme) {
     ) + ggplot2::labs(
       title = ps |> as_title()
     ) + theme
-  plot |> update_provenance(ps, list(plot = "ordination"))
+
+  plot |> update_provenance(ps, list(
+    plot = "ordination",
+    aesthetics = list(color_by = group)
+  ))
 }
