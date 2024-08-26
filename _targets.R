@@ -25,7 +25,6 @@ list(
   tar_target(debug.config, str(config)),
   tar_target(data_dir_name, config[["path"]][["data"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
-  tar_target(project_name, config[["project"]][["name"]]),
 
   # column data > samples:
   tar_target(samples_file, "Samples.tsv", format = "file"),
@@ -51,12 +50,12 @@ list(
   tar_target(row_data, make_row_data(taxonomy)),
   tar_target(debug.row_data, print(row_data)),
 
-  # SummarizedExperiment, raw:
-  tar_target(se_raw, se(assay_data, libraries_col_data, row_data, list(project = project_name, state = "raw"))),
-  tar_target(debug.se_raw, print(se_raw)),
+  # SummarizedExperiment, libraries, raw:
+  tar_target(se_libs_raw, se(assay_data, libraries_col_data, row_data, list(project = config[["project"]][["name"]], state = "raw"))),
+  tar_target(debug.se_libs_raw, print(se_libs_raw)),
 
   # ordination:
-  tar_target(ps, as_phyloseq(se_raw)),
+  tar_target(ps, as_phyloseq(se_libs_raw)),
   tar_target(ps_distance, calulcate_distance(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance)),
   tar_target(ordination_plot, plot_ordination(ps_ordination, "Sequencing_date", theme = theme)),
