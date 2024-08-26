@@ -21,11 +21,11 @@ plot_ordination <- function(ps, group, theme) {
     microViz::ord_plot(
       color = group,
       fill = group
-    ) + ggplot2::labs(
-      title = ps |> as_title()
     ) + theme
 
-  plot |> update_provenance(ps, list(
-    aesthetics = list(color_by = group)
-  ))
+  plot |>
+    plot_titles(ps) |>
+    update_provenance(ps, list(
+      aesthetics = list(color_by = group)
+    ))
 }
