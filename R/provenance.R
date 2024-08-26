@@ -28,7 +28,7 @@ as_title <- function(x) {
   stringr::str_c(names(x), x, sep = ": ", collapse = " | ")
 }
 
-plot_titles <- function(plot, data, n = 3) {
+plot_titles <- function(plot, data, n = 4) {
   plot + ggplot2::labs(
     title = data |> get_provenance() |> head(n) |> as_title() |> stringr::str_remove("^[a-z]+: "),
     subtitle = data |> get_provenance() |> tail(-n) |> as_title()
