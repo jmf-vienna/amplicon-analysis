@@ -16,14 +16,27 @@ calulcate_ordination <- function(ps) {
 }
 
 plot_ordination <- function(ps, group, theme) {
+  v <- ps |>
+    phyloseq::sample_data() |>
+    dplyr::pull({{ group }})
+  vi <- variable_info(v)
+
   plot <-
     ps |>
     microViz::ord_plot(
-      color = group,
+      # NOTE: color and colour behave differently in microViz
+      colour = group,
       fill = group
     ) + theme + ggplot2::theme(
-      aspect.ratio = 1
+      aspect.ratio = 1.0
     )
+
+  if (vi[["gte3"]][["unique"]] > 1L) {
+    plot <- plot + microViz::stat_chull(
+      mapping = ggplot2::aes(colour = .data[[group]], fill = .data[[group]]),
+      alpha = 0.1
+    )
+  }
 
   plot |>
     plot_titles(ps) |>
