@@ -21,7 +21,9 @@ plot_ordination <- function(ps, group, theme) {
     microViz::ord_plot(
       color = group,
       fill = group
-    ) + theme
+    ) + theme + ggplot2::theme(
+      aspect.ratio = 1
+    )
 
   plot |>
     plot_titles(ps) |>
