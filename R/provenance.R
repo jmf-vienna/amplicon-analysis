@@ -7,7 +7,7 @@ set_provenance <- function(x, provenance) {
   invisible(x)
 }
 
-update_provenance <- function(x, source, new = list()) {
+update_provenance <- function(x, source = NULL, new = list()) {
   get_provenance(x) |>
     modifyList(get_provenance(source)) |>
     modifyList(new) |>
