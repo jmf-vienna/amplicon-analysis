@@ -27,6 +27,7 @@ main_targets <- list(
 
   # config > paths:
   tar_target(data_dir_name, config[["path"]][["data"]]),
+  tar_target(results_dir_name, config[["path"]][["results"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
 
   # config > column names:
@@ -61,7 +62,7 @@ main_targets <- list(
   tar_target(base_provenance, list(project = config[["project"]][["name"]], gene = config[["gene"]][["name"]])),
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
   tar_target(se_libs_raw, se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
-  tar_target(debug.se_libs_raw, print(se_libs_raw)),
+  tar_target(se_libs_raw_flat_file, export_flattened(se_libs_raw, results_dir_name), format = "file"),
 
   # ordination:
   tar_target(ps, as_phyloseq(se_libs_raw)),

@@ -9,7 +9,6 @@ ggplot_theme <- function() {
 
 save_plot <- function(plot, dir_name) {
   file <- fs::path(dir_name, plot |> as_file_name(), ext = "svg")
-
   prepare_export(file)
 
   svglite::svglite(
