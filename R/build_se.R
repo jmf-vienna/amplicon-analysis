@@ -39,3 +39,11 @@ se <- function(counts, col_data, row_data, provenance) {
   ) |>
     set_provenance(provenance)
 }
+
+merge_cols <- function(se, by, keep_names, provenance = list()) {
+  se <-
+    mia::mergeCols(se, se[[by]]) |>
+    update_provenance(se, provenance)
+  SummarizedExperiment::colData(se) <- SummarizedExperiment::colData(se)[keep_names]
+  se
+}

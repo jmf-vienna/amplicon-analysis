@@ -58,11 +58,17 @@ main_targets <- list(
   tar_target(row_data, make_row_data(taxonomy)),
   tar_target(debug.row_data, print(row_data)),
 
-  # SummarizedExperiment, libraries, raw:
+  # SummarizedExperiment:
   tar_target(base_provenance, list(project = config[["project"]][["name"]], gene = config[["gene"]][["name"]])),
+
+  # SummarizedExperiment > libraries > raw:
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
   tar_target(se_libs_raw, se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
   tar_target(se_libs_raw_flat_file, export_flattened(se_libs_raw, results_dir_name), format = "file"),
+
+  # SummarizedExperiment > samples > raw:
+  tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(stage = "samples"))),
+  tar_target(se_raw_flat_file, export_flattened(se_raw, results_dir_name), format = "file"),
 
   # ordination:
   tar_target(ps, as_phyloseq(se_libs_raw)),
