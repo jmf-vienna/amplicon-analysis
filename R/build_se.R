@@ -24,7 +24,7 @@ make_assay_data <- function(counts) {
     as.matrix()
 }
 
-se <- function(counts, col_data, row_data, provenance) {
+make_se <- function(counts, col_data, row_data, provenance) {
   samples_column <- col_data |>
     names() |>
     head(1L)

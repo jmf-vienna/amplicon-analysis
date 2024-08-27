@@ -31,8 +31,8 @@ list(
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
 
   # config > column names:
-  tar_target(sample_label, config[["analyse"]][["sample"]][["label"]]),
-  tar_target(categories, config[["analyse"]][["categories"]]),
+  tar_target(sample_label_from, config[["analyse"]][["sample"]][["label"]]),
+  tar_target(variable_of_interest, config[["analyse"]][["categories"]]),
 
   # column data > samples:
   tar_target(samples_file, "Samples.tsv", format = "file"),
@@ -63,18 +63,20 @@ list(
 
   # SummarizedExperiment > libraries > raw:
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
-  tar_target(se_libs_raw, se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
+  tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
   tar_target(se_libs_raw_flat_file, export_flattened(se_libs_raw, results_dir_name), format = "file"),
 
   # SummarizedExperiment > samples > raw:
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(stage = "samples"))),
   tar_target(se_raw_flat_file, export_flattened(se_raw, results_dir_name), format = "file"),
 
+  # SummarizedExperiment > all:
+  tar_target(se, list(se_libs_raw, se_raw), iteration = "list"),
+  tar_target(ps, as_phyloseq(se), pattern = map(se)),
+
   # ordination:
-  tar_target(ps, as_phyloseq(se_libs_raw)),
-  tar_target(ps_distance, calulcate_distance(ps)),
-  tar_target(ps_ordination, calulcate_ordination(ps_distance)),
-  tar_target(ordination_plot_category, config[["analyse"]][["categories"]]),
-  tar_target(ordination_plot, plot_ordination(ps_ordination, ordination_plot_category, sample_label, theme), pattern = map(ordination_plot_category)),
+  tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
+  tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
+  tar_target(ordination_plot, plot_ordination(ps_ordination, variable_of_interest, sample_label_from, theme), pattern = cross(ps_ordination, variable_of_interest)),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot))
 )
