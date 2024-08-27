@@ -30,7 +30,11 @@ list(
   tar_target(results_dir_name, config[["path"]][["results"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
 
-  # config > column names:
+  # config > refinement:
+  tar_target(desirables, config[["desirables"]]),
+  tar_target(undesirables, config[["undesirables"]]),
+
+  # config > sample data column names:
   tar_target(sample_label_from, config[["analyse"]][["sample"]][["label"]]),
   tar_target(variable_of_interest, config[["analyse"]][["categories"]]),
 
@@ -68,14 +72,27 @@ list(
   # SummarizedExperiment > samples > raw:
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(stage = "samples"))),
 
+  # SummarizedExperiment > samples > refined:
+  tar_target(
+    se_refined,
+    se_raw |>
+      keep_desirables(desirables) |>
+      filter_undesirables(undesirables) |>
+      update_provenance(se_raw, list(state = "refined"))
+  ),
+
   # SummarizedExperiment > all:
-  tar_target(se, list(se_libs_raw, se_raw), iteration = "list"),
+  tar_target(se, list(se_libs_raw, se_raw, se_refined), iteration = "list"),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
 
   # ordination:
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
-  tar_target(ordination_plot, plot_ordination(ps_ordination, variable_of_interest, sample_label_from, theme), pattern = cross(ps_ordination, variable_of_interest)),
+  tar_target(
+    ordination_plot,
+    plot_ordination(ps_ordination, variable_of_interest, sample_label_from, theme),
+    pattern = cross(ps_ordination, variable_of_interest)
+  ),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot))
 )
