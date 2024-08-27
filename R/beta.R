@@ -27,6 +27,8 @@ plot_ordination <- function(ps, group, point_label, theme) {
       # NOTE: color and colour behave differently in microViz
       colour = group,
       fill = group
+    ) + ggplot2::labs(
+      caption = NULL
     ) + theme + ggplot2::theme(
       aspect.ratio = 1.0
     )
