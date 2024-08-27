@@ -64,14 +64,13 @@ list(
   # SummarizedExperiment > libraries > raw:
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
   tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
-  tar_target(se_libs_raw_flat_file, export_flattened(se_libs_raw, results_dir_name), format = "file"),
 
   # SummarizedExperiment > samples > raw:
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(stage = "samples"))),
-  tar_target(se_raw_flat_file, export_flattened(se_raw, results_dir_name), format = "file"),
 
   # SummarizedExperiment > all:
   tar_target(se, list(se_libs_raw, se_raw), iteration = "list"),
+  tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
 
   # ordination:
