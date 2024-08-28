@@ -52,7 +52,10 @@ plot_ordination <- function(ps, group, point_label, theme) {
     )
 
   plot |>
-    plot_titles(ps) |>
+    plot_titles(
+      ps,
+      title = "beta diversity"
+    ) |>
     update_provenance(ps, list(
       aesthetics = list(color = group)
     ))
