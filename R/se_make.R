@@ -4,8 +4,14 @@ make_col_data <- function(x) {
   )
 }
 
+# override for custom user logic
+tidy_taxonomy <- function(x) {
+  x
+}
+
 make_row_data <- function(taxonomy) {
-  taxonomy
+  taxonomy |>
+    tidy_taxonomy()
 }
 
 make_assay_data <- function(counts) {

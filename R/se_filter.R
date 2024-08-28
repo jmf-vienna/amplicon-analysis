@@ -10,7 +10,7 @@ filter_undesirable_features <- function(se, config) {
     SummarizedExperiment::subset(!(
       Order %in% config[["Order"]] |
         Family %in% config[["Family"]] |
-        Sequence_ID %in% config[["Sequence_ID"]]
+        ASV %in% config[["ASV"]]
     ))
 }
 
