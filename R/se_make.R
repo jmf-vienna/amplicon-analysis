@@ -33,12 +33,30 @@ make_assay_data <- function(counts) {
 }
 
 make_se <- function(counts, col_data, row_data, provenance) {
-  samples_column <- col_data |>
+  sample_id_var <-
+    col_data |>
     names() |>
     head(1L)
+
+  feature_id_var <-
+    row_data |>
+    names() |>
+    tail(1L)
+
   col_data <-
     col_data |>
-    dplyr::filter(.data[[samples_column]] %in% colnames(counts))
+    dplyr::filter(.data[[sample_id_var]] %in% colnames(counts))
+
+  stopifnot(
+    identical(
+      col_data |> dplyr::pull(sample_id_var),
+      counts |> colnames()
+    ),
+    identical(
+      row_data |> dplyr::pull(feature_id_var),
+      counts |> rownames()
+    )
+  )
 
   SingleCellExperiment::SingleCellExperiment(
     assays = list(counts = counts),
