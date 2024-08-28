@@ -15,18 +15,20 @@ calulcate_ordination <- function(ps) {
     ))
 }
 
-plot_ordination <- function(ps, group, point_label, theme) {
-  v <- ps |>
-    phyloseq::sample_data() |>
-    dplyr::pull({{ group }})
-  vi <- variable_info(v)
+plot_ordination <- function(ps, variable, point_label, theme) {
+  vi <- ps |> ps_variable_info(variable)
+
+  if (!vi[["multiple"]]) {
+    cli::cli_alert_warning("{.field {variable}} must have multiple values")
+    return(invisible())
+  }
 
   plot <-
     ps |>
     microViz::ord_plot(
       # NOTE: color and colour behave differently in microViz
-      colour = group,
-      fill = group
+      colour = variable,
+      fill = variable
     ) + ggplot2::labs(
       caption = NULL
     ) + theme + ggplot2::theme(
@@ -35,7 +37,7 @@ plot_ordination <- function(ps, group, point_label, theme) {
 
   if (vi[["gte3"]][["unique"]] > 1L) {
     plot <- plot + microViz::stat_chull(
-      mapping = ggplot2::aes(colour = .data[[group]], fill = .data[[group]]),
+      mapping = ggplot2::aes(colour = .data[[variable]], fill = .data[[variable]]),
       alpha = 0.1
     )
   }
@@ -57,6 +59,6 @@ plot_ordination <- function(ps, group, point_label, theme) {
       title = "beta diversity analysis"
     ) |>
     update_provenance(ps, list(
-      aesthetics = list(color = group)
+      aesthetics = list(color = variable)
     ))
 }

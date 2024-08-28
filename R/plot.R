@@ -8,6 +8,11 @@ ggplot_theme <- function() {
 }
 
 save_plot <- function(plot, dir_name) {
+  if (is.null(plot)) {
+    cli::cli_alert_warning("skipped because plot is NULL")
+    return(invisible())
+  }
+
   file <- fs::path(dir_name, plot |> as_file_name(), ext = "svg")
   prepare_export(file)
 

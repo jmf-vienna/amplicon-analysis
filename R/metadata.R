@@ -13,6 +13,7 @@ variable_info <- function(x) {
     dplyr::pull(count)
 
   list(
+    multiple = length(x) > 1L,
     unique = all |> length(),
     gte2 = list(
       unique = gte2 |> length()
@@ -21,4 +22,16 @@ variable_info <- function(x) {
       unique = gte3 |> length()
     )
   )
+}
+
+ps_variable_info <- function(ps, variable_name) {
+  data <- ps |> phyloseq::sample_data()
+
+  if (data |> rlang::has_name(variable_name)) {
+    data |>
+      dplyr::pull({{ variable_name }}) |>
+      variable_info()
+  } else {
+    variable_info(list())
+  }
 }
