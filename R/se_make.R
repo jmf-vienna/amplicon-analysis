@@ -43,6 +43,8 @@ make_se <- function(counts, col_data, row_data, provenance) {
     names() |>
     tail(1L)
 
+  cli::cli_alert("ID variable names: sample = {.field {sample_id_var}} and feature = {.field {feature_id_var}}")
+
   col_data <-
     col_data |>
     dplyr::filter(.data[[sample_id_var]] %in% colnames(counts))
