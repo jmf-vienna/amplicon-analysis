@@ -40,17 +40,13 @@ write_flattened <- function(se, file, assay_name = "counts") {
 
   assay_data <-
     assay_matrix |>
-    as.data.frame() |>
-    tibble::rownames_to_column("FeatureID") |>
-    tibble::as_tibble() |>
+    as_tibble("FeatureID") |>
     dplyr::mutate(across(where(is.numeric), as.character))
 
   row_data <-
     se |>
     SummarizedExperiment::rowData() |>
-    as.data.frame() |>
-    tibble::rownames_to_column("FeatureID") |>
-    tibble::as_tibble()
+    as_tibble("FeatureID")
 
   col_data <-
     se |>
@@ -61,9 +57,7 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as.data.frame(row.names = rownames(col_data)) |>
     as.matrix() |>
     t() |>
-    as.data.frame() |>
-    tibble::rownames_to_column("FeatureID") |>
-    tibble::as_tibble()
+    as_tibble("FeatureID")
 
   stopifnot(identical(
     assay_data |> dplyr::select(FeatureID),

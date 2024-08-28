@@ -18,9 +18,7 @@ filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   keep <-
     se |>
     scuttle::perCellQCMetrics(use_altexps = FALSE) |>
-    as.data.frame() |>
-    tibble::rownames_to_column() |>
-    tibble::as_tibble() |>
+    as_tibble() |>
     dplyr::filter(sum >= min, sum <= max) |>
     dplyr::pull(1L)
 
