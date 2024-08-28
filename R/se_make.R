@@ -47,6 +47,10 @@ make_se <- function(counts, col_data, row_data, provenance) {
     col_data |>
     dplyr::filter(.data[[sample_id_var]] %in% colnames(counts))
 
+  row_data <-
+    row_data |>
+    dplyr::filter(.data[[feature_id_var]] %in% rownames(counts))
+
   stopifnot(
     identical(
       col_data |> dplyr::pull(sample_id_var),
