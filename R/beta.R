@@ -35,7 +35,7 @@ plot_ordination <- function(ps, variable, point_label, theme) {
       aspect.ratio = 1.0
     )
 
-  if (vi[["gte3"]][["unique"]] > 1L) {
+  if (vi[["testable"]]) {
     plot <- plot + microViz::stat_chull(
       mapping = ggplot2::aes(colour = .data[[variable]], fill = .data[[variable]]),
       alpha = 0.1

@@ -1,26 +1,15 @@
 variable_info <- function(x) {
-  counts <-
-    vctrs::vec_count(x, sort = "none") |>
-    dplyr::filter(jmf::a(key))
-
-  all <- counts |>
-    dplyr::pull(count)
-  gte2 <- counts |>
-    dplyr::filter(count >= 2L) |>
-    dplyr::pull(count)
-  gte3 <- counts |>
-    dplyr::filter(count >= 3L) |>
-    dplyr::pull(count)
+  counts <- vctrs::vec_count(x, sort = "none")
 
   list(
+    # more than one
     multiple = length(x) > 1L,
-    unique = all |> length(),
-    gte2 = list(
-      unique = gte2 |> length()
-    ),
-    gte3 = list(
-      unique = gte3 |> length()
-    )
+    # at least two groups with at least two replicates each
+    testable =
+      counts |>
+        dplyr::filter(count >= 2L) |>
+        nrow()
+      >= 2L
   )
 }
 
