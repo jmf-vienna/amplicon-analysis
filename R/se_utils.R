@@ -40,13 +40,13 @@ write_flattened <- function(se, file, assay_name = "counts") {
 
   assay_data <-
     assay_matrix |>
-    as_tibble("FeatureID") |>
+    as_tibble("ID") |>
     dplyr::mutate(across(where(is.numeric), as.character))
 
   row_data <-
     se |>
     SummarizedExperiment::rowData() |>
-    as_tibble("FeatureID")
+    as_tibble("ID")
 
   col_data <-
     se |>
@@ -57,21 +57,19 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as.data.frame(row.names = rownames(col_data)) |>
     as.matrix() |>
     t() |>
-    as_tibble("FeatureID")
+    as_tibble("ID")
 
   stopifnot(identical(
-    assay_data |> dplyr::select(FeatureID),
-    row_data |> dplyr::select(FeatureID)
+    assay_data |> dplyr::select(ID),
+    row_data |> dplyr::select(ID)
   ))
-  res <- dplyr::inner_join(assay_data, row_data, by = "FeatureID")
+  res <- dplyr::inner_join(assay_data, row_data, by = "ID")
 
   stopifnot(identical(
     assay_data |> names(),
     col_data |> names()
   ))
   res <- dplyr::bind_rows(col_data, res)
-
-  res <- res |> dplyr::rename(ID = FeatureID)
 
   cat(stringr::str_c("# ", se |> get_provenance() |> as_title(), "\n"), file = file)
   readr::write_tsv(res, file, na = "", append = TRUE, col_names = TRUE)
