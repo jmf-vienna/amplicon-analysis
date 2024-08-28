@@ -74,13 +74,14 @@ list(
     se_raw |>
       keep_desirable_features(desirables) |>
       filter_undesirable_features(undesirables) |>
-      update_provenance(se_raw, list(state = "refined"))
+      update_provenance(se_raw, list(state = "refined")) |>
+      tidy()
   ),
   tar_target(
     se_deep,
     se_refined |>
       filter_samples_by_sum(sample_filter_min) |>
-      trim_empty()
+      tidy()
   ),
 
   # SummarizedExperiment > all:

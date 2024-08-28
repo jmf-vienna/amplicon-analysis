@@ -1,3 +1,7 @@
+tidy <- function(se) {
+  se |> trim_empty()
+}
+
 trim_empty <- function(x, verbose = TRUE) {
   rs <- rowSums(SummarizedExperiment::assay(x))
   cs <- colSums(SummarizedExperiment::assay(x))
@@ -7,7 +11,7 @@ trim_empty <- function(x, verbose = TRUE) {
     x <- x[!rownames(x) %in% remove]
 
     if (verbose) {
-      cli::cli_alert("trim_empty: Trimmed {length(remove)} empty row(s).")
+      cli::cli_alert("trimmed {length(remove)} empty feature(s)")
     }
   }
 
@@ -16,7 +20,7 @@ trim_empty <- function(x, verbose = TRUE) {
     x <- x[, !colnames(x) %in% remove]
 
     if (verbose) {
-      cli::cli_alert("trim_empty: Trimmed {length(remove)} empty column(s).")
+      cli::cli_alert("trimmed {length(remove)} empty sample(s)")
     }
   }
 
