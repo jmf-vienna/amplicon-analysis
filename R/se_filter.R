@@ -1,17 +1,13 @@
 keep_desirable_features <- function(se, config) {
-  se |>
-    SummarizedExperiment::subset(
-      Domain %in% config[["Domain"]]
-    )
+  purrr::reduce2(names(config), config, \(se, rank, values) {
+    se[SummarizedExperiment::rowData(se)[[rank]] %in% values]
+  }, .init = se)
 }
 
 filter_undesirable_features <- function(se, config) {
-  se |>
-    SummarizedExperiment::subset(!(
-      Order %in% config[["Order"]] |
-        Family %in% config[["Family"]] |
-        ASV %in% config[["ASV"]]
-    ))
+  purrr::reduce2(names(config), config, \(se, rank, values) {
+    se[!SummarizedExperiment::rowData(se)[[rank]] %in% values]
+  }, .init = se)
 }
 
 filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
