@@ -1,5 +1,7 @@
 make_col_data <- function(x) {
-  purrr::reduce(x, dplyr::inner_join)
+  suppressMessages(
+    purrr::reduce(x, dplyr::inner_join)
+  )
 }
 
 make_row_data <- function(taxonomy) {
