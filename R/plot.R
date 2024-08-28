@@ -18,5 +18,6 @@ save_plot <- function(plot, dir_name) {
   print(plot)
   dev.off()
 
+  cli::cli_alert("plot saved to {.file {file}}")
   invisible(file)
 }

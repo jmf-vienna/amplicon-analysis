@@ -89,5 +89,6 @@ export_flattened <- function(se, dir_name, assay_name = "counts") {
   file <- fs::path(dir_name, se |> update_provenance(new = list(export = "flattened")) |> as_file_name(), ext = "tsv")
   prepare_export(file)
 
+  cli::cli_alert("flattened data saved to {.file {file}}")
   write_flattened(se, file, assay_name)
 }
