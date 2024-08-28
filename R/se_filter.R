@@ -1,15 +1,38 @@
-keep_desirables <- function(se, config) {
+keep_desirable_features <- function(se, config) {
   se |>
     SummarizedExperiment::subset(
       Domain %in% config[["Domain"]]
     )
 }
 
-filter_undesirables <- function(se, config) {
+filter_undesirable_features <- function(se, config) {
   se |>
     SummarizedExperiment::subset(!(
       Order %in% config[["Order"]] |
         Family %in% config[["Family"]] |
         Sequence_ID %in% config[["Sequence_ID"]]
     ))
+}
+
+filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
+  keep <-
+    se |>
+    scuttle::perCellQCMetrics(use_altexps = FALSE) |>
+    as.data.frame() |>
+    tibble::rownames_to_column() |>
+    tibble::as_tibble() |>
+    dplyr::filter(sum >= min, sum <= max) |>
+    dplyr::pull(1L)
+
+  res <- se[, keep]
+
+  if (min > 0L) {
+    res <- res |> update_provenance(new = list("sample filter" = list("≥" = min)))
+  }
+
+  if (max < Inf) {
+    res <- res |> update_provenance(new = list("sample filter" = list("≤" = min)))
+  }
+
+  res
 }

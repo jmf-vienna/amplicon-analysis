@@ -21,11 +21,18 @@ as_file_name <- function(x) {
       stringr::str_c(names(x), x, sep = "_", collapse = "_")
     }) |>
     stringr::str_c(collapse = "_") |>
+    stringr::str_replace_all(stringr::fixed("≤"), "lte") |>
+    stringr::str_replace_all(stringr::fixed("≥"), "gte") |>
     stringr::str_replace_all(stringr::fixed(" "), "_")
 }
 
 as_title <- function(x) {
-  stringr::str_c(names(x), x, sep = ": ", collapse = " | ")
+  x <- x |> unlist()
+  n <- x |>
+    names() |>
+    stringr::str_replace_all(stringr::fixed("."), ": ")
+  stringr::str_c(n, x, sep = ": ", collapse = " | ") |>
+    stringr::str_replace_all("(≤|≥): ", "\\1")
 }
 
 plot_titles <- function(plot, data, n = 4L, title = NULL, subtitle = NULL) {

@@ -32,6 +32,7 @@ list(
   # config > refinement:
   tar_target(desirables, config[["desirables"]]),
   tar_target(undesirables, config[["undesirables"]]),
+  tar_target(sample_filter_min, config[["analyse"]][["filter"]][["yield"]][["min"]]),
 
   # config > sample data column names:
   tar_target(sample_label_from, config[["analyse"]][["sample"]][["label"]]),
@@ -71,13 +72,19 @@ list(
   tar_target(
     se_refined,
     se_raw |>
-      keep_desirables(desirables) |>
-      filter_undesirables(undesirables) |>
+      keep_desirable_features(desirables) |>
+      filter_undesirable_features(undesirables) |>
       update_provenance(se_raw, list(state = "refined"))
+  ),
+  tar_target(
+    se_deep,
+    se_refined |>
+      filter_samples_by_sum(sample_filter_min) |>
+      trim_empty()
   ),
 
   # SummarizedExperiment > all:
-  tar_target(se, list(se_libs_raw, se_raw, se_refined), iteration = "list"),
+  tar_target(se, list(se_libs_raw, se_raw, se_refined, se_deep), iteration = "list"),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
 
