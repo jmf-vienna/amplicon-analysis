@@ -21,8 +21,8 @@ list(
   tar_target(theme, ggplot_theme()),
 
   # config:
-  tar_target(config_file, "config.yaml", format = "file"),
-  tar_target(config, config::get(file = config_file)),
+  tar_target(config_file, Sys.getenv("R_CONFIG_FILE", "config.yaml"), format = "file"),
+  tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
 
   # config > paths:
   tar_target(data_dir_name, config[["path"]][["data"]]),
