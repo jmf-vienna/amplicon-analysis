@@ -30,13 +30,13 @@ list(
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
 
   # config > refinement:
-  tar_target(desirables, config[["desirables"]]),
-  tar_target(undesirables, config[["undesirables"]]),
-  tar_target(sample_filter_min, config[["analyse"]][["filter"]][["yield"]][["min"]]),
+  tar_target(desirables, config[["filter"]][["desirable"]]),
+  tar_target(undesirables, config[["filter"]][["undesirable"]]),
+  tar_target(yield_min, config[["filter"]][["yield"]][["min"]]),
 
   # config > sample data column names:
-  tar_target(sample_label_from, config[["analyse"]][["sample"]][["label"]]),
-  tar_target(variable_of_interest, config[["analyse"]][["categories"]]),
+  tar_target(sample_label_from, config[["annotation"]][["sample"]]),
+  tar_target(variable_of_interest, config[["analyse"]][["category"]]),
 
   # column data > samples:
   tar_target(samples_file, "Samples.tsv", format = "file"),
@@ -80,7 +80,7 @@ list(
   tar_target(
     se_deep,
     se_refined |>
-      filter_samples_by_sum(sample_filter_min) |>
+      filter_samples_by_sum(yield_min) |>
       tidy()
   ),
 
