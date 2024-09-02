@@ -18,12 +18,16 @@ as_file_name <- function(x) {
   x |>
     get_provenance() |>
     purrr::map(\(x) {
-      stringr::str_c(names(x), x, sep = "_", collapse = "_")
+      stringr::str_c(
+        names(x),
+        x |> stringr::str_remove(" \\(.+\\)$"), # nolint: nonportable_path_linter.
+        sep = "_", collapse = "_"
+      )
     }) |>
     stringr::str_c(collapse = "_") |>
     stringr::str_replace_all(stringr::fixed("≤"), "lte") |>
     stringr::str_replace_all(stringr::fixed("≥"), "gte") |>
-    stringr::str_replace_all(stringr::fixed(" "), "_")
+    stringr::str_replace_all("[^A-Za-z0-9-]", "_")
 }
 
 as_title <- function(x) {
