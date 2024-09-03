@@ -19,7 +19,17 @@ plot_ordination <- function(ps, variable, point_label, theme) {
   vi <- ps |> ps_variable_info(variable)
 
   if (!vi[["multiple"]]) {
-    cli::cli_alert_warning("{.field {variable}} must have multiple values")
+    cli::cli_alert_warning("{.var {variable}} must have multiple values")
+    return(invisible())
+  }
+
+  if (!vi[["duplicates"]]) {
+    cli::cli_alert_warning("{.var {variable}} must have duplicated values")
+    return(invisible())
+  }
+
+  if (!vi[["multiple_levels"]]) {
+    cli::cli_alert_warning("{.var {variable}} must have multiple levels")
     return(invisible())
   }
 
