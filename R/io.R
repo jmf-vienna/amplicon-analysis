@@ -13,7 +13,7 @@ find_taxonomy_file <- function(path, config) {
 prepare_export <- function(file) {
   file |>
     fs::path_dir() |>
-    fs::dir_create()
+    fs::dir_create(mode = Sys.getenv("DIR_CREATE_MODE", "u=rwx,go=rx"))
 }
 
 write_tsv <- function(x, file) {
