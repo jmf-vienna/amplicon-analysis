@@ -23,6 +23,7 @@ list(
   # config:
   tar_target(config_file, Sys.getenv("R_CONFIG_FILE", "config.yaml"), format = "file"),
   tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
+  tar_target(project_name, config[["project"]][["name"]]),
 
   # config > paths:
   tar_target(data_dir_name, config[["path"]][["data"]]),
@@ -65,7 +66,7 @@ list(
   tar_target(row_data, make_row_data(taxonomy)),
 
   # SummarizedExperiment:
-  tar_target(base_provenance, list(project = config[["project"]][["name"]], gene = config[["gene"]][["name"]])),
+  tar_target(base_provenance, list(project = project_name, gene = config[["gene"]][["name"]])),
 
   # SummarizedExperiment > libraries > raw:
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
@@ -98,7 +99,11 @@ list(
   # SummarizedExperiment > all > summary:
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(se_summary, se_summary_rows |> dplyr::relocate(sample:median_sample_counts, .after = last_col())),
-  tar_target(se_summary_file, write_tsv(se_summary, fs::path(results_dir_name, "se_summary.tsv")), format = "file"),
+  tar_target(
+    se_summary_file,
+    write_tsv(se_summary, fs::path(results_dir_name, stringr::str_c(project_name, "_summary"), ext = "tsv")),
+    format = "file"
+  ),
 
   # ordination:
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
