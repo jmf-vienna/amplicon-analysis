@@ -25,10 +25,11 @@ list(
   tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
   tar_target(project_name, config[["project"]][["name"]]),
 
-  # config > paths:
+  # config > io:
   tar_target(data_dir_name, config[["path"]][["data"]]),
   tar_target(results_dir_name, config[["path"]][["results"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
+  tar_target(file_prefix, project_name |> force_valid_file_name()),
 
   # config > refinement:
   tar_target(desirables, config[["filter"]][["desirable"]]),
@@ -101,7 +102,7 @@ list(
   tar_target(se_summary, se_summary_rows |> dplyr::relocate(sample:median_sample_counts, .after = last_col())),
   tar_target(
     se_summary_file,
-    write_tsv(se_summary, fs::path(results_dir_name, stringr::str_c(project_name, "_summary"), ext = "tsv")),
+    write_tsv(se_summary, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
     format = "file"
   ),
 

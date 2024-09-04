@@ -10,6 +10,10 @@ find_taxonomy_file <- function(path, config) {
   file
 }
 
+force_valid_file_name <- function(x) {
+  x |> stringr::str_replace_all("[^a-zA-Z0-9-]", "_")
+}
+
 prepare_export <- function(file) {
   file |>
     fs::path_dir() |>

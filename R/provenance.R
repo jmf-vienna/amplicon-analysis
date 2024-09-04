@@ -34,7 +34,7 @@ as_file_name <- function(x) {
     stringr::str_c(collapse = "_") |>
     stringr::str_replace_all(stringr::fixed("≤"), "lte") |>
     stringr::str_replace_all(stringr::fixed("≥"), "gte") |>
-    stringr::str_replace_all("[^A-Za-z0-9-]", "_")
+    force_valid_file_name()
 }
 
 as_title <- function(x) {
