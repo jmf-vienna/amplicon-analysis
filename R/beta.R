@@ -15,7 +15,7 @@ calulcate_ordination <- function(ps) {
     ))
 }
 
-plot_ordination <- function(ps, variable, point_label, theme) {
+plot_ordination <- function(ps, variable, point_label, limits, theme) {
   vi <- ps |> ps_variable_info(variable)
 
   if (!vi[["duplicates"]]) {
@@ -25,6 +25,11 @@ plot_ordination <- function(ps, variable, point_label, theme) {
 
   if (!vi[["multiple_levels"]]) {
     cli::cli_alert_warning("{.var {variable}} must have multiple levels")
+    return(invisible())
+  }
+
+  if (vi[[".length_levels"]] > limits[["variable_of_interest"]]) {
+    cli::cli_alert_warning("{.var {variable}} must have more than {.val {limits$variable_of_interest}} levels (has {.val {vi$.length_levels}})")
     return(invisible())
   }
 
@@ -47,16 +52,18 @@ plot_ordination <- function(ps, variable, point_label, theme) {
     )
   }
 
-  plot <- plot +
-    ggrepel::geom_text_repel(
-      mapping = ggplot2::aes(
-        label = .data[[point_label]]
-      ),
-      max.overlaps = 100L,
-      seed = 0L,
-      size = 2.5,
-      family = "Noto Sans"
-    )
+  if (vi[[".length"]] <= limits[["sample"]]) {
+    plot <- plot +
+      ggrepel::geom_text_repel(
+        mapping = ggplot2::aes(
+          label = .data[[point_label]]
+        ),
+        max.overlaps = 100L,
+        seed = 0L,
+        size = 2.5,
+        family = "Noto Sans"
+      )
+  }
 
   plot |>
     plot_titles(

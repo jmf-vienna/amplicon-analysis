@@ -35,8 +35,14 @@ list(
   tar_target(yield_min, config[["filter"]][["yield"]][["min"]]),
 
   # config > sample data column names:
-  tar_target(sample_label_from, config[["annotation"]][["sample"]]),
+  tar_target(sample_label_from, config[["annotation"]][["sample"]][["variable name"]]),
   tar_target(variable_of_interest, config[["analyse"]][["category"]]),
+
+  # config > sample data column names:
+  tar_target(limits, list(
+    sample = config[["annotation"]][["sample"]][["limit"]],
+    variable_of_interest = config[["annotation"]][["category"]][["limit"]]
+  )),
 
   # column data > samples:
   tar_target(samples_file, "Samples.tsv", format = "file"),
@@ -99,7 +105,7 @@ list(
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
   tar_target(
     ordination_plot,
-    plot_ordination(ps_ordination, variable_of_interest, sample_label_from, theme),
+    plot_ordination(ps_ordination, variable_of_interest, sample_label_from, limits, theme),
     pattern = cross(ps_ordination, variable_of_interest)
   ),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot))
