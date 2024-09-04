@@ -27,11 +27,27 @@ trim_empty <- function(x, verbose = TRUE) {
   x
 }
 
+sample_id_var_name <- function(se) {
+  se |>
+    SummarizedExperiment::colData() |>
+    names() |>
+    head(1L)
+}
+
+feature_id_var_name <- function(se) {
+  se |>
+    SummarizedExperiment::rowData() |>
+    names() |>
+    tail(1L)
+}
+
 summary_as_row <- function(se) {
   summary <- se |> mia::summary()
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
+      sample = se |> sample_id_var_name(),
+      feature = se |> feature_id_var_name(),
       samples = se |> SummarizedExperiment::colData() |> nrow(),
       features = summary[["features"]] |> dplyr::pull(total),
       total_counts = summary[["samples"]] |> dplyr::pull(total_counts),

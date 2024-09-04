@@ -91,7 +91,7 @@ list(
 
   # SummarizedExperiment > all > summary:
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
-  tar_target(se_summary, se_summary_rows |> dplyr::relocate(samples:median_sample_counts, .after = last_col())),
+  tar_target(se_summary, se_summary_rows |> dplyr::relocate(sample:median_sample_counts, .after = last_col())),
   tar_target(se_summary_file, write_tsv(se_summary, fs::path(results_dir_name, "se_summary.tsv")), format = "file"),
 
   # ordination:

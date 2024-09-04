@@ -17,7 +17,7 @@ update_provenance <- function(x, source = NULL, new = list()) {
 provenance_as_tibble <- function(x) {
   x |>
     get_provenance() |>
-    purrr::list_flatten() |>
+    purrr::list_flatten(name_spec = "{outer} {inner}") |>
     tibble::as_tibble()
 }
 
