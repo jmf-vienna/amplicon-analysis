@@ -89,6 +89,11 @@ list(
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
 
+  # SummarizedExperiment > all > summary:
+  tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
+  tar_target(se_summary, se_summary_rows |> dplyr::relocate(samples:median_sample_counts, .after = last_col())),
+  tar_target(se_summary_file, write_tsv(se_summary, fs::path(results_dir_name, "se_summary.tsv")), format = "file"),
+
   # ordination:
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),

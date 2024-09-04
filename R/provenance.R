@@ -14,6 +14,13 @@ update_provenance <- function(x, source = NULL, new = list()) {
     set_provenance(x, provenance = _)
 }
 
+provenance_as_tibble <- function(x) {
+  x |>
+    get_provenance() |>
+    purrr::list_flatten() |>
+    tibble::as_tibble()
+}
+
 as_file_name <- function(x) {
   x |>
     get_provenance() |>

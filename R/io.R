@@ -15,3 +15,9 @@ prepare_export <- function(file) {
     fs::path_dir() |>
     fs::dir_create()
 }
+
+write_tsv <- function(x, file) {
+  prepare_export(file)
+  readr::write_tsv(x, file, na = "")
+  file
+}

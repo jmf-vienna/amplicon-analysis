@@ -27,6 +27,20 @@ trim_empty <- function(x, verbose = TRUE) {
   x
 }
 
+summary_as_row <- function(se) {
+  summary <- se |> mia::summary()
+  se |>
+    provenance_as_tibble() |>
+    tibble::add_column(
+      samples = se |> SummarizedExperiment::colData() |> nrow(),
+      features = summary[["features"]] |> dplyr::pull(total),
+      total_counts = summary[["samples"]] |> dplyr::pull(total_counts),
+      min_sample_counts = summary[["samples"]] |> dplyr::pull(min_counts),
+      max_sample_counts = summary[["samples"]] |> dplyr::pull(max_counts),
+      median_sample_counts = summary[["samples"]] |> dplyr::pull(median_counts)
+    )
+}
+
 write_flattened <- function(se, file, assay_name = "counts") {
   assay_matrix <-
     se |>
