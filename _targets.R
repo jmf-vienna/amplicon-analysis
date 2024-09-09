@@ -83,6 +83,12 @@ list(
       update_provenance(se_raw, list(state = "refined")) |>
       tidy()
   ),
+  tar_target(se_refined_filtered_features_table, filtered_features_table(se_refined)),
+  tar_target(
+    se_refined_filtered_features_file,
+    write_tsv(se_refined_filtered_features_table, fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_features", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
   tar_target(
     se_deep,
     se_refined |>
