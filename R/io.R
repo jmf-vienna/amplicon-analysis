@@ -25,3 +25,9 @@ write_tsv <- function(x, file) {
   readr::write_tsv(x, file, na = "")
   file
 }
+
+write_text <- function(x, file) {
+  prepare_export(file)
+  cat(x, file = file)
+  file
+}
