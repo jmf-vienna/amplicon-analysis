@@ -4,7 +4,10 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
     unlist() |>
     stringr::str_flatten(" ")
 
+  r_version <- stringr::str_c(R.Version()[["major"]], ".", R.Version()[["minor"]])
+
   packages <- c(
+    "base",
     "targets", "tidyverse",
     "SummarizedExperiment", "SingleCellExperiment", "mia",
     "vegan", "scuttle",
@@ -24,6 +27,7 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
     "* JMF downstream [amplicon analysis](https://github.com/jmf-vienna/amplicon-analysis) pipeline v{pipeline_version}",
     "* [`mia`](https://microbiome.github.io/mia/) v{packageVersion('mia')}",
     "* [`microViz`](https://david-barnett.github.io/microViz/) v{packageVersion('microViz')}",
+    "* R v{r_version}",
     "",
     "## Citations",
     "",
@@ -36,8 +40,8 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
 
 citation_text <- function(x) {
   withr::with_options(
-    list(width = 10000),
+    list(width = 10000L),
     capture.output(print(citation(x), style = "text"))
   ) |>
-    stringr::str_replace("\\*([0-9]+)\\*", "__\\1__")
+    stringr::str_replace("\\*([0-9]+)\\*", "__\\1__") # nolint: nonportable_path_linter.
 }
