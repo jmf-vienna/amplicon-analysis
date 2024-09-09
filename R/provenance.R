@@ -21,9 +21,14 @@ provenance_as_tibble <- function(x) {
     tibble::as_tibble()
 }
 
-as_file_name <- function(x) {
+provenance_as_file_name <- function(x) {
   x |>
     get_provenance() |>
+    as_file_name()
+}
+
+as_file_name <- function(x) {
+  x |>
     purrr::map(\(x) {
       stringr::str_c(
         names(x),

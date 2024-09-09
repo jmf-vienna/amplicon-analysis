@@ -13,7 +13,7 @@ save_plot <- function(plot, dir_name) {
     return(invisible())
   }
 
-  file <- fs::path(dir_name, plot |> as_file_name(), ext = "svg")
+  file <- fs::path(dir_name, plot |> provenance_as_file_name(), ext = "svg")
   prepare_export(file)
 
   svglite::svglite(
