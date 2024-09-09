@@ -4,15 +4,17 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
     unlist() |>
     stringr::str_flatten(" ")
 
+  packages <- c(
+    "targets", "tidyverse",
+    "SummarizedExperiment", "SingleCellExperiment", "mia",
+    "vegan", "scuttle",
+    "phyloseq", "microViz"
+  )
+
   citations <-
-    c(
-      "targets", "tidyverse",
-      "SummarizedExperiment", "SingleCellExperiment", "mia",
-      "vegan", "scuttle",
-      "phyloseq", "microViz"
-    ) |>
+    packages |>
     purrr::map(citation_text) |>
-    stringr::str_c("* ", text = _, collapse = "\n")
+    stringr::str_c("* `", packages, "`: ", text = _, collapse = "\n")
 
   glue::glue(
     "# {title} summary",
