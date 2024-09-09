@@ -115,7 +115,18 @@ list(
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot)),
 
   # summary report
-  tar_target(summary_report, make_summary_report(base_provenance, pipeline_version, se_summary)),
+  tar_target(
+    summary_report,
+    make_summary_report(
+      base_provenance, pipeline_version,
+      list(
+        desirables = desirables,
+        undesirables = undesirables,
+        yield_min = yield_min
+      ),
+      se_summary
+    )
+  ),
   tar_target(
     summary_report_file,
     write_text(summary_report, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "md")),

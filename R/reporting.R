@@ -1,4 +1,4 @@
-make_summary_report <- function(provenance, pipeline_version, stats) {
+make_summary_report <- function(provenance, pipeline_version, config, stats) {
   title <-
     provenance |>
     unlist() |>
@@ -21,6 +21,20 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
 
   glue::glue(
     "# {title} summary",
+    "",
+    "## Filter settings",
+    "",
+    "__Desirable__ taxa, i.e., keep only these:",
+    "",
+    "```yaml",
+    "{yaml::as.yaml(config$desirables)}```",
+    "",
+    "__Undesirable__ taxa, i.e., remove these:",
+    "",
+    "```yaml",
+    "{yaml::as.yaml(config$undesirables)}```",
+    "",
+    "All samples with __less than {config$yield_min} counts__ were removed.",
     "",
     "## Software versions",
     "",
