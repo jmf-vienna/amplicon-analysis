@@ -39,7 +39,7 @@ list(
 
   # config > sample data column names:
   tar_target(sample_label_from, config[["annotation"]][["sample"]][["variable name"]]),
-  tar_target(variable_of_interest, config[["analyse"]][["category"]]),
+  tar_target(variable_of_interest, config[["analyze"]][["category"]]),
 
   # config > sample data column names:
   tar_target(limits, list(
