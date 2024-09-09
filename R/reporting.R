@@ -27,6 +27,7 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
     "* JMF downstream [amplicon analysis](https://github.com/jmf-vienna/amplicon-analysis) pipeline v{pipeline_version}",
     "* [`mia`](https://microbiome.github.io/mia/) v{packageVersion('mia')}",
     "* [`microViz`](https://david-barnett.github.io/microViz/) v{packageVersion('microViz')}",
+    "* [Bioconductor](https://www.bioconductor.org/) v{packageVersion('BiocVersion')}",
     "* R v{r_version}",
     "",
     "## Citations",
