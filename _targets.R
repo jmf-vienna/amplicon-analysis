@@ -124,6 +124,7 @@ list(
         undesirables = undesirables,
         yield_min = yield_min
       ),
+      config,
       se_summary
     )
   ),

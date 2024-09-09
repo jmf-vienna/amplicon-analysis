@@ -1,4 +1,4 @@
-make_summary_report <- function(provenance, pipeline_version, config, stats) {
+make_summary_report <- function(provenance, pipeline_version, settings, config, stats) {
   title <-
     provenance |>
     unlist() |>
@@ -27,14 +27,14 @@ make_summary_report <- function(provenance, pipeline_version, config, stats) {
     "__Desirable__ taxa, i.e., keep only these:",
     "",
     "```yaml",
-    "{yaml::as.yaml(config$desirables)}```",
+    "{yaml::as.yaml(settings$desirables)}```",
     "",
     "__Undesirable__ taxa, i.e., remove these:",
     "",
     "```yaml",
-    "{yaml::as.yaml(config$undesirables)}```",
+    "{yaml::as.yaml(settings$undesirables)}```",
     "",
-    "All samples with __less than {config$yield_min} counts__ were removed.",
+    "All samples with __less than {settings$yield_min} counts__ were removed.",
     "",
     "## Software versions",
     "",
@@ -47,6 +47,11 @@ make_summary_report <- function(provenance, pipeline_version, config, stats) {
     "## Citations",
     "",
     "{citations}",
+    "",
+    "## Complete config",
+    "",
+    "```yaml",
+    "{yaml::as.yaml(config)}```",
     "",
     .sep = "\n",
     .trim = FALSE
