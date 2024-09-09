@@ -17,7 +17,7 @@ if (fs::dir_exists("R")) {
 }
 
 list(
-  tar_target(pipeline_version, "0.1.0"),
+  tar_target(pipeline_version, get_pipeline_version()),
   tar_target(theme, ggplot_theme()),
 
   # config:
