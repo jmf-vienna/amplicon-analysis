@@ -21,7 +21,7 @@ make_summary_report <- function(provenance, pipeline_version, stats) {
     "",
     "## Software versions",
     "",
-    "* JMF downstream [amplicon analysis](https://github.com/jmf-vienna/amplicon-analysis) pipeline (beta) v{pipeline_version}",
+    "* JMF downstream [amplicon analysis](https://github.com/jmf-vienna/amplicon-analysis) pipeline v{pipeline_version}",
     "* [`mia`](https://microbiome.github.io/mia/) v{packageVersion('mia')}",
     "* [`microViz`](https://david-barnett.github.io/microViz/) v{packageVersion('microViz')}",
     "",
