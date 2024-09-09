@@ -24,12 +24,13 @@ list(
   tar_target(config_file, Sys.getenv("R_CONFIG_FILE", "config.yaml"), format = "file"),
   tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
   tar_target(project_name, config[["project"]][["name"]]),
+  tar_target(base_provenance, list(project = project_name, gene = config[["gene"]][["name"]])),
 
   # config > io:
   tar_target(data_dir_name, config[["path"]][["data"]]),
   tar_target(results_dir_name, config[["path"]][["results"]]),
   tar_target(plots_dir_name, config[["path"]][["plots"]]),
-  tar_target(file_prefix, project_name |> force_valid_file_name()),
+  tar_target(file_prefix, base_provenance |> as_file_name()),
 
   # config > refinement:
   tar_target(desirables, config[["filter"]][["desirable"]]),
@@ -65,9 +66,6 @@ list(
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config[["taxonomy"]]), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
   tar_target(row_data, make_row_data(taxonomy)),
-
-  # SummarizedExperiment:
-  tar_target(base_provenance, list(project = project_name, gene = config[["gene"]][["name"]])),
 
   # SummarizedExperiment > libraries > raw:
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
