@@ -1,4 +1,6 @@
 keep_desirable_features <- function(se, config) {
+  loadNamespace(class(se))
+
   purrr::reduce2(names(config), config, \(se, rank, values) {
     se_new <- se[SummarizedExperiment::rowData(se)[[rank]] %in% values]
     se_new <- filtered_features_helper(se, se_new, rank)
@@ -7,6 +9,8 @@ keep_desirable_features <- function(se, config) {
 }
 
 filter_undesirable_features <- function(se, config) {
+  loadNamespace(class(se))
+
   se <- purrr::reduce2(names(config), config, \(se, rank, values) {
     se_new <- se[!SummarizedExperiment::rowData(se)[[rank]] %in% values]
     se_new <- filtered_features_helper(se, se_new, rank)
@@ -45,6 +49,8 @@ filtered_features_helper <- function(before, after, rank) {
 }
 
 filtered_features_table <- function(se) {
+  loadNamespace(class(se))
+
   se |>
     S4Vectors::metadata() |>
     purrr::pluck("filtered_features", .default = list()) |>
