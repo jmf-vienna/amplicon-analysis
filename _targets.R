@@ -38,6 +38,7 @@ list(
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
+  tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
 
   # config > sample data column names:
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
@@ -94,7 +95,7 @@ list(
   tar_target(
     se_deep,
     se_refined |>
-      filter_samples_by_sum(yield_min) |>
+      filter_samples_by_sum(yield_min, yield_max) |>
       tidy()
   ),
 
