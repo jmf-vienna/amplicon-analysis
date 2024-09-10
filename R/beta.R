@@ -17,6 +17,7 @@ calulcate_ordination <- function(ps) {
 
 plot_ordination <- function(ps, variable, point_label, limits, theme) {
   vi <- ps |> ps_variable_info(variable)
+  vi_label <- ps |> ps_variable_info(point_label)
 
   if (!vi[["duplicates"]]) {
     cli::cli_alert_warning("{.var {variable}} must have duplicated values")
@@ -52,7 +53,7 @@ plot_ordination <- function(ps, variable, point_label, limits, theme) {
     )
   }
 
-  if (vi[[".length"]] <= limits[["sample"]]) {
+  if (vi_label[["multiple_levels"]] && vi[[".length"]] <= limits[["sample"]]) {
     plot <- plot +
       ggrepel::geom_text_repel(
         mapping = ggplot2::aes(

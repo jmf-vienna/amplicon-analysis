@@ -26,7 +26,7 @@ variable_info <- function(x) {
 ps_variable_info <- function(ps, variable_name) {
   data <- ps |> phyloseq::sample_data()
 
-  if (data |> rlang::has_name(variable_name)) {
+  if (!is.null(variable_name) && data |> rlang::has_name(variable_name)) {
     data |>
       dplyr::pull({{ variable_name }}) |>
       variable_info()

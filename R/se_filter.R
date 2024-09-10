@@ -45,9 +45,11 @@ filtered_features_helper <- function(before, after, rank) {
 }
 
 filtered_features_table <- function(se) {
-  S4Vectors::metadata(se)[["filtered_features"]] |>
+  se |>
+    S4Vectors::metadata() |>
+    purrr::pluck("filtered_features", .default = list()) |>
     purrr::list_transpose() |>
-    purrr::chuck("features") |>
+    purrr::pluck("features", .default = tibble::tibble(feature = character(), n = integer())) |>
     dplyr::bind_rows(.id = "rank")
 }
 

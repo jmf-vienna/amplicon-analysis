@@ -42,7 +42,7 @@ list(
 
   # config > sample data column names:
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
-  tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = character())),
+  tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
 
   # config > sample data column names:
   tar_target(limits, list(
