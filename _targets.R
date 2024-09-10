@@ -1,11 +1,11 @@
-library(targets)
+library(targets, include.only = "tar_target")
 library(purrr, include.only = "pluck")
 
 jmf::quiet()
 options(warn = 2L)
-tar_option_set(format = "qs")
+targets::tar_option_set(format = "qs")
 
-tar_config_get("script") |>
+targets::tar_config_get("script") |>
   fs::path_dir() |>
   fs::path("R") |>
   fs::dir_ls(glob = "*.R") |>
@@ -18,7 +18,7 @@ if (fs::dir_exists("R")) {
 }
 
 list(
-  tar_target(pipeline_version, get_pipeline_version(), cue = tar_cue(mode = "always")),
+  tar_target(pipeline_version, get_pipeline_version(), cue = targets::tar_cue(mode = "always")),
   tar_target(theme, ggplot_theme()),
 
   # config:
