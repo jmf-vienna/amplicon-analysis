@@ -1,4 +1,5 @@
 library(targets)
+library(purrr, include.only = "pluck")
 
 jmf::quiet()
 options(warn = 2L)
@@ -23,28 +24,29 @@ list(
   # config:
   tar_target(config_file, Sys.getenv("R_CONFIG_FILE", "config.yaml"), format = "file"),
   tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
-  tar_target(project_name, config[["project"]][["name"]]),
-  tar_target(base_provenance, list(project = project_name, gene = config[["gene"]][["name"]])),
+  tar_target(project_name, config |> pluck("project", "name", .default = "SOME PROJECT")),
+  tar_target(gene_name, config |> pluck("gene", "name", .default = "SOME GENE")),
+  tar_target(base_provenance, list(project = project_name, gene = gene_name)),
 
   # config > io:
-  tar_target(data_dir_name, config[["path"]][["data"]]),
-  tar_target(results_dir_name, config[["path"]][["results"]]),
-  tar_target(plots_dir_name, config[["path"]][["plots"]]),
+  tar_target(data_dir_name, config |> pluck("path", "data", .default = "data")),
+  tar_target(results_dir_name, config |> pluck("path", "results", .default = "results")),
+  tar_target(plots_dir_name, config |> pluck("path", "plots", .default = "plots")),
   tar_target(file_prefix, base_provenance |> as_file_name()),
 
   # config > refinement:
-  tar_target(desirables, config[["filter"]][["desirable"]]),
-  tar_target(undesirables, config[["filter"]][["undesirable"]]),
-  tar_target(yield_min, config[["filter"]][["yield"]][["min"]]),
+  tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
+  tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
+  tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
 
   # config > sample data column names:
-  tar_target(sample_label_from, config[["annotation"]][["sample"]][["variable name"]]),
-  tar_target(variable_of_interest, config[["analyze"]][["category"]]),
+  tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
+  tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = character())),
 
   # config > sample data column names:
   tar_target(limits, list(
-    sample = config[["annotation"]][["sample"]][["limit"]],
-    variable_of_interest = config[["annotation"]][["category"]][["limit"]]
+    sample = config |> pluck("annotation", "sample", "limit", .default = 10L),
+    variable_of_interest = config |> pluck("annotation", "category", "limit", .default = 10L)
   )),
 
   # column data > samples:
@@ -63,7 +65,7 @@ list(
   tar_target(assay_data, make_assay_data(counts)),
 
   # row data (taxonomy):
-  tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config[["taxonomy"]]), format = "file"),
+  tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
   tar_target(row_data, make_row_data(taxonomy)),
 

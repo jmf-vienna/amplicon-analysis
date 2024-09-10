@@ -4,8 +4,10 @@ find_counts_file <- function(path) {
   file
 }
 
-find_taxonomy_file <- function(path, config) {
-  file <- fs::dir_ls(path, glob = glue::glue_data(config, "*.{reference}_reference.{classifier}_classified.tsv"))
+find_taxonomy_file <- function(path, params) {
+  reference <- params |> purrr::pluck("reference", .default = "*")
+  classifier <- params |> purrr::pluck("classifier", .default = "*")
+  file <- fs::dir_ls(path, glob = glue::glue("*.{reference}_reference.{classifier}_classified.tsv")) |> head(1L)
   cli::cli_alert("found taxonomy table at {.file {file}}")
   file
 }
