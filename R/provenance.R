@@ -44,23 +44,26 @@ as_file_name <- function(x) {
 
 as_title <- function(x) {
   x <- x |> unlist()
-  n <- x |>
+
+  n <-
+    x |>
     names() |>
     stringr::str_replace_all(stringr::fixed("."), ": ")
+
   stringr::str_c(n, x, sep = ": ", collapse = " | ") |>
     stringr::str_replace_all("(≤|≥): ", "\\1")
 }
 
 plot_titles <- function(plot, data, n = 4L, title = NULL, subtitle = NULL) {
+  provenance <- data |> get_provenance()
+
   plot + ggplot2::labs(
-    title = data |>
-      get_provenance() |>
+    title = provenance |>
       head(n) |>
       as_title() |>
       stringr::str_remove("^[a-z]+: ") |>
       stringr::str_c(title, sep = " | ", collapse = " | "),
-    subtitle = data |>
-      get_provenance() |>
+    subtitle = provenance |>
       tail(-n) |>
       as_title() |>
       stringr::str_c(subtitle, sep = " | ", collapse = " | ")
