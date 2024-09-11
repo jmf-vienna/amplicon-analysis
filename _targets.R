@@ -127,7 +127,14 @@ list(
   tar_target(
     summary_report,
     make_summary_report(
-      base_provenance, pipeline_version,
+      base_provenance,
+      pipeline_version,
+      list(
+        samples = samples_file,
+        libraries = libraries_file,
+        counts = counts_file,
+        taxonomy = taxonomy_file
+      ),
       list(
         desirables = desirables,
         undesirables = undesirables,

@@ -1,4 +1,4 @@
-make_summary_report <- function(provenance, pipeline_version, settings, config, stats) {
+make_summary_report <- function(provenance, pipeline_version, input_files, settings, config, stats) {
   title <-
     provenance |>
     unlist() |>
@@ -18,6 +18,8 @@ make_summary_report <- function(provenance, pipeline_version, settings, config, 
     packages |>
     purrr::map(citation_text) |>
     stringr::str_c("* `", packages, "`: ", text = _, collapse = "\n")
+
+  input_files_md <- stringr::str_c("* ", names(input_files), ": `", input_files, "`", collapse = "\n")
 
   glue::glue(
     "# {title} summary",
@@ -47,6 +49,10 @@ make_summary_report <- function(provenance, pipeline_version, settings, config, 
     "## Citations",
     "",
     "{citations}",
+    "",
+    "## Input files",
+    "",
+    "{input_files_md}",
     "",
     "## Complete config",
     "",
