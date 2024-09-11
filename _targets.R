@@ -68,6 +68,7 @@ list(
   # summary data from previous steps:
   tar_target(libraries_summary_file, find_libraries_summary_file(data_dir_name), format = "file"),
   tar_target(libraries_summary, readr::read_tsv(libraries_summary_file) |> tidy_libraries_summary()),
+  tar_target(libraries_summary_rows, make_prev_steps_summary_rows(libraries_summary, base_provenance)),
 
   # row data (taxonomy):
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
@@ -110,7 +111,15 @@ list(
 
   # SummarizedExperiment > all > summary:
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
-  tar_target(se_summary, se_summary_rows |> dplyr::relocate(sample:median_sample_counts, .after = last_col())),
+  tar_target(
+    se_summary,
+    se_summary_rows |>
+      dplyr::bind_rows(libraries_summary_rows, se_part = _) |>
+      dplyr::relocate(
+        sample, feature, samples, features, total_counts, min_sample_counts, max_sample_counts, median_sample_counts,
+        .after = last_col()
+      )
+  ),
   tar_target(
     se_summary_file,
     write_tsv(se_summary, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
