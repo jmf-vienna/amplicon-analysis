@@ -25,11 +25,13 @@ prepare_export <- function(file) {
 write_tsv <- function(x, file) {
   prepare_export(file)
   readr::write_tsv(x, file, na = "")
+  cli::cli_alert("table saved to {.file {file}}")
   file
 }
 
 write_text <- function(x, file) {
   prepare_export(file)
   cat(x, file = file)
+  cli::cli_alert("text saved to {.file {file}}")
   file
 }
