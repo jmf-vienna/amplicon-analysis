@@ -11,7 +11,7 @@ trim_empty <- function(x, verbose = TRUE) {
     x <- x[!rownames(x) %in% remove]
 
     if (verbose) {
-      cli::cli_alert("trimmed {length(remove)} empty feature(s)")
+      cli::cli_alert("trimmed {length(remove)} empty feature{?s} ({remove})")
     }
   }
 
@@ -20,7 +20,7 @@ trim_empty <- function(x, verbose = TRUE) {
     x <- x[, !colnames(x) %in% remove]
 
     if (verbose) {
-      cli::cli_alert("trimmed {length(remove)} empty sample(s)")
+      cli::cli_alert("trimmed {length(remove)} empty sample{?s} ({remove})")
     }
   }
 
