@@ -65,6 +65,10 @@ list(
   tar_target(counts, readr::read_tsv(counts_file)),
   tar_target(assay_data, make_assay_data(counts)),
 
+  # summary data from previous steps:
+  tar_target(libraries_summary_file, find_libraries_summary_file(data_dir_name), format = "file"),
+  tar_target(libraries_summary, readr::read_tsv(libraries_summary_file) |> tidy_libraries_summary()),
+
   # row data (taxonomy):
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
@@ -133,6 +137,7 @@ list(
         samples = samples_file,
         libraries = libraries_file,
         counts = counts_file,
+        `libraries summary` = libraries_summary_file,
         taxonomy = taxonomy_file
       ),
       list(

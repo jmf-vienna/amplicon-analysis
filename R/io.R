@@ -4,6 +4,12 @@ find_counts_file <- function(path) {
   file
 }
 
+find_libraries_summary_file <- function(path) {
+  file <- fs::dir_ls(path, glob = "*libraries.tsv")
+  cli::cli_alert("found libraries summary table at {.file {file}}")
+  file
+}
+
 find_taxonomy_file <- function(path, params) {
   reference <- params |> purrr::pluck("reference", .default = "*")
   classifier <- params |> purrr::pluck("classifier", .default = "*")

@@ -4,17 +4,12 @@ make_col_data <- function(x) {
   )
 }
 
-# override for custom user logic
-tidy_taxonomy <- function(x) {
-  x
-}
-
 make_row_data <- function(taxonomy) {
-  taxonomy |>
-    tidy_taxonomy()
+  taxonomy |> tidy_taxonomy()
 }
 
 make_assay_data <- function(counts) {
+  counts <- counts |> tidy_counts()
   names <- counts |> names()
   feature_column <- names[[1L]]
   samples_column <- names[[2L]]
@@ -78,4 +73,19 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
     update_provenance(se, provenance)
   SummarizedExperiment::colData(se) <- SummarizedExperiment::colData(se)[keep_names]
   se
+}
+
+#### Overrides ####
+# override these functions for project-specific logic
+
+tidy_counts <- function(x) {
+  x
+}
+
+tidy_libraries_summary <- function(x) {
+  x
+}
+
+tidy_taxonomy <- function(x) {
+  x
 }
