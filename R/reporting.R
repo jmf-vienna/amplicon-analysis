@@ -79,7 +79,7 @@ make_previous_summary_rows <- function(x, file_name, provenance) {
     head(1L)
 
   x |>
-    dplyr::mutate(phase = phase |> forcats::fct_inorder()) |>
+    dplyr::mutate(phase = forcats::fct_inorder(phase)) |>
     dplyr::group_by(phase) |>
     dplyr::summarise(
       samples = dplyr::n_distinct(.data[[sample_id_var_name]]),
@@ -94,10 +94,7 @@ make_previous_summary_rows <- function(x, file_name, provenance) {
       tool = file_name |> fs::path_file() |> stringr::str_remove("_.+"),
       resolution = "libraries",
       state = "crude",
-      .before = "phase"
-    ) |>
-    tibble::add_column(
       sample = sample_id_var_name,
-      .before = "samples"
+      .before = 1L
     )
 }
