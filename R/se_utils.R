@@ -46,6 +46,7 @@ summary_as_row <- function(se) {
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
+      tool = "JADA4",
       sample = se |> sample_id_var_name(),
       feature = se |> feature_id_var_name(),
       samples = se |> SummarizedExperiment::colData() |> nrow(),

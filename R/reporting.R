@@ -72,13 +72,14 @@ citation_text <- function(x) {
     stringr::str_replace("\\*([0-9]+)\\*", "__\\1__") # nolint: nonportable_path_linter.
 }
 
-make_previous_summary_rows <- function(x, provenance) {
+make_previous_summary_rows <- function(x, file_name, provenance) {
   sample_id_var_name <-
     x |>
     names() |>
     head(1L)
 
   x |>
+    dplyr::mutate(phase = phase |> forcats::fct_inorder()) |>
     dplyr::group_by(phase) |>
     dplyr::summarise(
       samples = dplyr::n_distinct(.data[[sample_id_var_name]]),
@@ -90,6 +91,7 @@ make_previous_summary_rows <- function(x, provenance) {
     tibble::add_column(
       project = provenance |> purrr::chuck("project"),
       gene = provenance |> purrr::chuck("gene"),
+      tool = file_name |> fs::path_file() |> stringr::str_remove("_.+"),
       resolution = "libraries",
       state = "crude",
       .before = "phase"
