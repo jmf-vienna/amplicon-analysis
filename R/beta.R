@@ -116,7 +116,7 @@ plot_ordination <- function(ps, variable, point_label, limits, theme) {
         max.overlaps = 100L,
         seed = 0L,
         size = 2.5,
-        family = "Noto Sans"
+        family = font_family()
       )
   }
 
