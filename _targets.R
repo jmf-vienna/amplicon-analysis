@@ -126,11 +126,19 @@ list(
     format = "file"
   ),
 
-  # ordination:
+  #### ordination ####
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
+  tar_target(permanova,
+    test_distance(ps_distance, variable_of_interest, limits),
+    pattern = cross(ps_distance, variable_of_interest), iteration = "list"
+  ),
+  tar_target(permanovas, permanova |> bind_rows()),
+  tar_target(permanovas_file,
+    write_tsv(permanovas, fs::path(results_dir_name, stringr::str_c(file_prefix, "PERMANOVAs", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
-  tar_target(
-    ordination_plot,
+  tar_target(ordination_plot,
     plot_ordination(ps_ordination, variable_of_interest, sample_label_from, limits, theme),
     pattern = cross(ps_ordination, variable_of_interest)
   ),
