@@ -21,68 +21,68 @@ list(
   tar_target(pipeline_version, get_pipeline_version(), cue = targets::tar_cue(mode = "always")),
   tar_target(theme, ggplot_theme()),
 
-  # config:
+  # config ----
   tar_target(config_file, Sys.getenv("R_CONFIG_FILE", "config.yaml"), format = "file"),
   tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
   tar_target(project_name, config |> pluck("project", "name", .default = "SOME PROJECT")),
   tar_target(gene_name, config |> pluck("gene", "name", .default = "SOME GENE")),
   tar_target(base_provenance, list(project = project_name, gene = gene_name)),
 
-  # config > io:
+  ## config > io ----
   tar_target(data_dir_name, config |> pluck("path", "data", .default = "data")),
   tar_target(results_dir_name, config |> pluck("path", "results", .default = "results")),
   tar_target(plots_dir_name, config |> pluck("path", "plots", .default = "plots")),
   tar_target(file_prefix, base_provenance |> as_file_name()),
 
-  # config > refinement:
+  ## config > refinement ----
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
 
-  # config > sample data column names:
+  ## config > sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
 
-  # config > sample data column names:
+  ## config > sample data column names ----
   tar_target(limits, list(
     sample = config |> pluck("annotation", "sample", "limit", .default = 10L),
     variable_of_interest = config |> pluck("annotation", "category", "limit", .default = 10L)
   )),
 
-  # column data > samples:
+  # column data > samples ----
   tar_target(samples_file, "Samples.tsv", format = "file"),
   tar_target(samples, readr::read_tsv(samples_file)),
   tar_target(samples_col_data, make_col_data(list(samples))),
 
-  # column data > libraries:
+  # column data > libraries ----
   tar_target(libraries_file, "Libraries.tsv", format = "file"),
   tar_target(libraries, readr::read_tsv(libraries_file)),
   tar_target(libraries_col_data, make_col_data(list(libraries, samples))),
 
-  # assay data (counts):
+  # assay data (counts) ----
   tar_target(counts_file, find_counts_file(data_dir_name), format = "file"),
   tar_target(counts, readr::read_tsv(counts_file)),
   tar_target(assay_data, make_assay_data(counts)),
 
-  # summary data from previous steps:
+  # summary data from previous steps ----
   tar_target(libraries_summary_file, find_libraries_summary_file(data_dir_name), format = "file"),
   tar_target(libraries_summary, readr::read_tsv(libraries_summary_file) |> tidy_libraries_summary()),
   tar_target(libraries_summary_rows, make_previous_summary_rows(libraries_summary, libraries_summary_file, base_provenance)),
 
-  # row data (taxonomy):
+  # row data (taxonomy) ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
   tar_target(row_data, make_row_data(taxonomy)),
 
-  # SummarizedExperiment > libraries > raw:
+  # SummarizedExperiment > libraries > raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
   tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
 
-  # SummarizedExperiment > samples > raw:
+  # SummarizedExperiment > samples > raw ----
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(resolution = "samples"))),
 
-  # SummarizedExperiment > samples > refined:
+  # SummarizedExperiment > samples > refined ----
   tar_target(
     se_refined,
     se_raw |>
@@ -104,12 +104,12 @@ list(
       tidy()
   ),
 
-  # SummarizedExperiment > all:
+  # SummarizedExperiment > all ----
   tar_target(se, list(se_libs_raw, se_raw, se_refined, se_deep), iteration = "list"),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
 
-  # SummarizedExperiment > all > summary:
+  ## SummarizedExperiment > all > summary ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(
     se_summary,
@@ -126,7 +126,7 @@ list(
     format = "file"
   ),
 
-  #### ordination ####
+  # ordination ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   tar_target(permanova,
     test_distance(ps_distance, variable_of_interest, limits),
@@ -144,7 +144,7 @@ list(
   ),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot)),
 
-  # summary report
+  # summary report ----
   tar_target(
     summary_report,
     make_summary_report(
