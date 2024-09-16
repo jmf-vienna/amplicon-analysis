@@ -72,14 +72,14 @@ citation_text <- function(x) {
     stringr::str_replace("\\*([0-9]+)\\*", "__\\1__") # nolint: nonportable_path_linter.
 }
 
-make_prev_steps_summary_rows <- function(x, provenance) {
+make_previous_summary_rows <- function(x, provenance) {
   sample_id_var_name <-
     x |>
     names() |>
     head(1L)
 
   x |>
-    dplyr::group_by(step) |>
+    dplyr::group_by(phase) |>
     dplyr::summarise(
       samples = dplyr::n_distinct(.data[[sample_id_var_name]]),
       total_counts = sum(count),
@@ -87,12 +87,12 @@ make_prev_steps_summary_rows <- function(x, provenance) {
       max_sample_counts = max(count),
       median_sample_counts = median(count)
     ) |>
-    dplyr::rename(state = step) |>
     tibble::add_column(
       project = provenance |> purrr::chuck("project"),
       gene = provenance |> purrr::chuck("gene"),
       resolution = "libraries",
-      .before = "state"
+      state = "crude",
+      .before = "phase"
     ) |>
     tibble::add_column(
       sample = sample_id_var_name,
