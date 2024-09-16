@@ -76,11 +76,11 @@ list(
   tar_target(row_data, make_row_data(taxonomy)),
 
   # SummarizedExperiment > libraries > raw:
-  tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(stage = "libraries", state = "raw"))),
+  tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
   tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
 
   # SummarizedExperiment > samples > raw:
-  tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(stage = "samples"))),
+  tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(resolution = "samples"))),
 
   # SummarizedExperiment > samples > refined:
   tar_target(

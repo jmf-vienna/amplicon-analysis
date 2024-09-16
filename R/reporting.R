@@ -91,7 +91,7 @@ make_prev_steps_summary_rows <- function(x, provenance) {
     tibble::add_column(
       project = provenance |> purrr::chuck("project"),
       gene = provenance |> purrr::chuck("gene"),
-      stage = "libraries",
+      resolution = "libraries",
       .before = "state"
     ) |>
     tibble::add_column(
