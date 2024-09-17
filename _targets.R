@@ -134,7 +134,7 @@ list(
   ),
   tar_target(permanovas, permanova |> bind_rows()),
   tar_target(permanovas_file,
-    write_tsv(permanovas, fs::path(results_dir_name, stringr::str_c(file_prefix, "PERMANOVAs", sep = "_"), ext = "tsv")),
+    write_tsv(permanovas, fs::path(results_dir_name, stringr::str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
     format = "file"
   ),
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
