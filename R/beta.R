@@ -67,11 +67,38 @@ plot_ordination <- function(ps, variable, point_label, limits, theme) {
   }
 
   plot |>
-    plot_titles(
-      ps,
-      title = "beta diversity analysis"
-    ) |>
     update_provenance(ps, list(
       aesthetics = list(color = variable)
     ))
+}
+
+plot_ordination_with_tests <- function(plot, test_result) {
+  if (is.null(plot)) {
+    return(invisible())
+  }
+
+  permanova_p_value <- test_result |> dplyr::pull(`PERMANOVA p-value`)
+  subtitle <- if (!is.na(permanova_p_value)) {
+    permanova_p_value <-
+      permanova_p_value |>
+      rstatix::p_format() |>
+      rstatix::p_mark_significant()
+    beta_dispersion_p_value <-
+      test_result |>
+      dplyr::pull(`beta dispersion p-value`) |>
+      rstatix::p_format() |>
+      rstatix::p_mark_significant()
+    variable_of_interest <-
+      test_result |>
+      dplyr::pull(`variable of interest`)
+
+    glue::glue("{variable_of_interest} PERMANOVA p={permanova_p_value} (dispersion ANOVA p={beta_dispersion_p_value})") |>
+      stringr::str_replace_all(stringr::fixed("=<"), "<")
+  }
+
+  plot |>
+    plot_titles(
+      title = "beta diversity analysis",
+      subtitle = subtitle
+    )
 }

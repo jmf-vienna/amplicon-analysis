@@ -54,8 +54,11 @@ as_title <- function(x) {
     stringr::str_replace_all("(≤|≥): ", "\\1")
 }
 
-plot_titles <- function(plot, data, n = 4L, title = NULL, subtitle = NULL) {
-  provenance <- data |> get_provenance()
+plot_titles <- function(plot, n = 4L, title = NULL, subtitle = NULL) {
+  provenance <-
+    plot |>
+    get_provenance() |>
+    purrr::list_assign(aesthetics = rlang::zap())
 
   plot + ggplot2::labs(
     title = provenance |>

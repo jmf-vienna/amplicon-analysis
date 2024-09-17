@@ -126,7 +126,7 @@ list(
     format = "file"
   ),
 
-  # ordination ----
+  # beta diversity ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   tar_target(permanova,
     test_distance(ps_distance, variable_of_interest, limits),
@@ -138,9 +138,13 @@ list(
     format = "file"
   ),
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
-  tar_target(ordination_plot,
+  tar_target(ordination_plot_raw,
     plot_ordination(ps_ordination, variable_of_interest, sample_label_from, limits, theme),
     pattern = cross(ps_ordination, variable_of_interest)
+  ),
+  tar_target(ordination_plot,
+    plot_ordination_with_tests(ordination_plot_raw, permanova),
+    pattern = map(ordination_plot_raw, permanova)
   ),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot)),
 
