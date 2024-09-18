@@ -36,6 +36,7 @@ test_distance <- function(ps, variable, limits) {
       microViz::dist_permanova,
       ps,
       variables = variable,
+      n_perms = 9999,
       seed = 0L,
       verbose = FALSE
     )
