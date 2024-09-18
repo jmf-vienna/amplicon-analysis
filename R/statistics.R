@@ -1,8 +1,14 @@
+p_format <- function(x) {
+  x |>
+    rstatix::p_format() |>
+    rstatix::p_mark_significant()
+}
+
 super_safely <- function(fun, ...) {
   res <- purrr::quietly(purrr::safely(fun))(...) |> purrr::list_flatten(name_spec = "{inner}")
 
   res[["log"]] <-
-    res[c("messages", "warnings", "error")] |>
+    res[rev(c("messages", "warnings", "error"))] |>
     purrr::map(as.character) |>
     unlist() |>
     stringr::str_trim() |>

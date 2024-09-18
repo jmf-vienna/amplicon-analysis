@@ -77,36 +77,28 @@ plot_ordination_with_tests <- function(plot, test_result) {
     return(invisible())
   }
 
-  variable_of_interest <-
-    test_result |>
-    dplyr::pull(`variable of interest`)
+  variable_of_interest <- test_result |> dplyr::pull(`variable of interest`)
 
+  # assertion that plot and test belong together
   stopifnot(identical(
     plot |> get_provenance() |> purrr::list_assign(ordination = rlang::zap()),
     test_result |> get_provenance() |> purrr::list_assign(aesthetics = list(color = variable_of_interest))
   ))
 
   permanova_p_value <- test_result |> dplyr::pull(`PERMANOVA p-value`)
-  subtitle <- if (!is.na(permanova_p_value)) {
-    permanova_p_value <-
-      permanova_p_value |>
-      rstatix::p_format() |>
-      rstatix::p_mark_significant()
-    beta_dispersion_p_value <-
-      test_result |>
-      dplyr::pull(`beta dispersion ANOVA p-value`) |>
-      rstatix::p_format() |>
-      rstatix::p_mark_significant()
+  beta_dispersion_p_value <- test_result |> dplyr::pull(`beta dispersion ANOVA p-value`)
 
-    glue::glue("{variable_of_interest} test: PERMANOVA p={permanova_p_value} with dispersion ANOVA p={beta_dispersion_p_value}") |>
-      stringr::str_replace_all(stringr::fixed("=<"), "<")
-  } else {
-    ""
+  subtitle <- ""
+  if (!is.na(permanova_p_value)) {
+    subtitle <- glue::glue("{variable_of_interest} test: PERMANOVA p={p_format(permanova_p_value)}")
+    if (!is.na(beta_dispersion_p_value)) {
+      subtitle <- subtitle |> stringr::str_c(glue::glue(" with dispersion ANOVA p={p_format(beta_dispersion_p_value)}"))
+    }
   }
 
   plot |>
     plot_titles(
       title = "beta diversity analysis",
-      subtitles = subtitle
+      subtitles = subtitle |> stringr::str_replace_all(stringr::fixed("=<"), "<")
     )
 }
