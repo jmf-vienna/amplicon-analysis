@@ -59,6 +59,8 @@ summary_as_row <- function(se) {
 }
 
 write_flattened <- function(se, file, assay_name = "counts") {
+  loadNamespace(class(se))
+
   assay_matrix <-
     se |>
     SummarizedExperiment::assay(assay_name) |>

@@ -77,6 +77,9 @@ plot_ordination_with_tests <- function(plot, test_result) {
     return(invisible())
   }
 
+  variable_of_interest <-
+    test_result |>
+    dplyr::pull(`variable of interest`)
   permanova_p_value <- test_result |> dplyr::pull(`PERMANOVA p-value`)
   subtitle <- if (!is.na(permanova_p_value)) {
     permanova_p_value <-
@@ -88,17 +91,16 @@ plot_ordination_with_tests <- function(plot, test_result) {
       dplyr::pull(`beta dispersion p-value`) |>
       rstatix::p_format() |>
       rstatix::p_mark_significant()
-    variable_of_interest <-
-      test_result |>
-      dplyr::pull(`variable of interest`)
 
-    glue::glue("{variable_of_interest} PERMANOVA p={permanova_p_value} (dispersion ANOVA p={beta_dispersion_p_value})") |>
+    glue::glue("{variable_of_interest} test: PERMANOVA p={permanova_p_value} with dispersion ANOVA p={beta_dispersion_p_value}") |>
       stringr::str_replace_all(stringr::fixed("=<"), "<")
+  } else {
+    ""
   }
 
   plot |>
     plot_titles(
       title = "beta diversity analysis",
-      subtitle = subtitle
+      subtitles = subtitle
     )
 }
