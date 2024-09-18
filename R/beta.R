@@ -90,15 +90,15 @@ plot_ordination_with_tests <- function(plot, test_result) {
 
   subtitle <- ""
   if (!is.na(permanova_p_value)) {
-    subtitle <- glue::glue("{variable_of_interest} test: PERMANOVA p={p_format(permanova_p_value)}")
+    subtitle <- glue::glue("{variable_of_interest} test: PERMANOVA {p_format(permanova_p_value)}")
     if (!is.na(beta_dispersion_p_value)) {
-      subtitle <- subtitle |> stringr::str_c(glue::glue(" with dispersion ANOVA p={p_format(beta_dispersion_p_value)}"))
+      subtitle <- subtitle |> stringr::str_c(glue::glue(" with dispersion ANOVA {p_format(beta_dispersion_p_value)}"))
     }
   }
 
   plot |>
     plot_titles(
       title = "beta diversity analysis",
-      subtitles = subtitle |> stringr::str_replace_all(stringr::fixed("=<"), "<")
+      subtitles = subtitle
     )
 }

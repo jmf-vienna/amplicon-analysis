@@ -1,6 +1,8 @@
 p_format <- function(x) {
+  withr::local_options(list(scipen = 999L))
+
   x |>
-    rstatix::p_format() |>
+    rstatix::p_format(add.p = TRUE) |>
     rstatix::p_mark_significant()
 }
 
