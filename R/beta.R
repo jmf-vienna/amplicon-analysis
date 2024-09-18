@@ -94,7 +94,7 @@ plot_ordination_with_tests <- function(plot, test_result) {
       rstatix::p_mark_significant()
     beta_dispersion_p_value <-
       test_result |>
-      dplyr::pull(`beta dispersion p-value`) |>
+      dplyr::pull(`beta dispersion ANOVA p-value`) |>
       rstatix::p_format() |>
       rstatix::p_mark_significant()
 

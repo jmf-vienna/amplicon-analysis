@@ -1,3 +1,16 @@
+super_safely <- function(fun, ...) {
+  res <- purrr::quietly(purrr::safely(fun))(...) |> purrr::list_flatten(name_spec = "{inner}")
+
+  res[["log"]] <-
+    res[c("messages", "warnings", "error")] |>
+    purrr::map(as.character) |>
+    unlist() |>
+    stringr::str_trim() |>
+    stringr::str_flatten(" | ")
+
+  res
+}
+
 test_distance <- function(ps, variable, limits) {
   loadNamespace("microViz")
 
@@ -9,53 +22,61 @@ test_distance <- function(ps, variable, limits) {
   vi <- ps |> ps_variable_info(variable)
 
   if (!vi[["testable"]]) {
-    permanova_error <- "must have at least two groups with at least two replicates each"
-  } else if (vi[[".length_levels"]] > limits[["variable_of_interest"]]) {
-    permanova_error <- "must not have more than {limits$variable_of_interest} levels (has {vi$.length_levels})"
-  }
+    permanova_error <- bdisp_error <- "must have at least two groups with at least two replicates each"
+  } else {
+    permanova <- super_safely(
+      microViz::dist_permanova,
+      ps,
+      variables = variable,
+      seed = 0L,
+      verbose = FALSE
+    )
 
-  if (is.null(permanova_error)) {
-    ps_extra <-
-      ps |>
-      microViz::dist_permanova(
-        variables = variable,
-        seed = 0L,
-        verbose = FALSE
-      )
+    if (permanova[["log"]] == "") {
+      permanova_p_value <-
+        permanova |>
+        purrr::chuck("result") |>
+        microViz::perm_get() |>
+        as.data.frame() |>
+        tibble::rownames_to_column() |>
+        dplyr::filter(rowname == variable) |>
+        dplyr::pull("Pr(>F)")
+    } else {
+      permanova_error <- permanova[["log"]]
+    }
 
-    permanova_p_value <-
-      ps_extra |>
-      microViz::perm_get() |>
-      as.data.frame() |>
-      tibble::rownames_to_column() |>
-      dplyr::filter(rowname == variable) |>
-      dplyr::pull("Pr(>F)")
+    bdisp <- super_safely(
+      microViz::dist_bdisp,
+      ps,
+      variables = variable
+    )
 
-    ps_extra <-
-      ps_extra |>
-      microViz::dist_bdisp(variables = variable)
-
-    bdisp_p_value <-
-      ps_extra |>
-      microViz::bdisp_get() |>
-      purrr::chuck(variable) |>
-      purrr::chuck("anova") |>
-      as.data.frame() |>
-      tibble::rownames_to_column() |>
-      dplyr::filter(rowname == "Groups") |>
-      dplyr::pull("Pr(>F)")
+    if (bdisp[["log"]] == "") {
+      bdisp_p_value <-
+        bdisp |>
+        purrr::chuck("result") |>
+        microViz::bdisp_get() |>
+        purrr::chuck(variable) |>
+        purrr::chuck("anova") |>
+        as.data.frame() |>
+        tibble::rownames_to_column() |>
+        dplyr::filter(rowname == "Groups") |>
+        dplyr::pull("Pr(>F)")
+    } else {
+      bdisp_error <- bdisp[["log"]]
+    }
   }
 
   if (is.null(permanova_error)) {
     permanova_error <- ""
   } else {
-    cli::cli_alert_warning(stringr::str_c("{.var {variable}} ", permanova_error))
+    cli::cli_alert_warning(stringr::str_c("{.var {variable}} PERMANOVA: ", permanova_error))
   }
 
   if (is.null(bdisp_error)) {
     bdisp_error <- ""
   } else {
-    cli::cli_alert_warning(stringr::str_c("{.var {variable}} ", bdisp_error))
+    cli::cli_alert_warning(stringr::str_c("{.var {variable}} beta dispertion: ", bdisp_error))
   }
 
   ps |>
@@ -64,7 +85,7 @@ test_distance <- function(ps, variable, limits) {
       `variable of interest` = variable,
       `PERMANOVA p-value` = permanova_p_value,
       `PERMANOVA error` = permanova_error |> cli::pluralize(),
-      `beta dispersion p-value` = bdisp_p_value,
+      `beta dispersion ANOVA p-value` = bdisp_p_value,
       `beta dispersion error` = bdisp_error |> cli::pluralize()
     ) |>
     update_provenance(ps)
