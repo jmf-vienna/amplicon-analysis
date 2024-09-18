@@ -5,6 +5,13 @@ calulcate_distance <- function(ps, distance = "aitchison") {
 }
 
 calulcate_ordination <- function(ps) {
+  loadNamespace("microViz")
+
+  if (phyloseq::nsamples(ps) < 2L) {
+    cli::cli_alert_warning("at least two samples are required for ordination analysis")
+    return(invisible())
+  }
+
   ps_new <-
     ps |>
     microViz::ord_calc()
@@ -16,6 +23,10 @@ calulcate_ordination <- function(ps) {
 }
 
 plot_ordination <- function(ps, variable, point_label, limits, theme) {
+  if (is.null(ps)) {
+    return(invisible())
+  }
+
   vi <- ps |> ps_variable_info(variable)
   vi_label <- ps |> ps_variable_info(point_label)
 
