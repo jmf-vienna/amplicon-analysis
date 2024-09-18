@@ -66,5 +66,6 @@ test_distance <- function(ps, variable, limits) {
       `PERMANOVA error` = permanova_error |> cli::pluralize(),
       `beta dispersion p-value` = bdisp_p_value,
       `beta dispersion error` = bdisp_error |> cli::pluralize()
-    )
+    ) |>
+    update_provenance(ps)
 }

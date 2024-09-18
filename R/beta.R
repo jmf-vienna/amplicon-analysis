@@ -80,6 +80,12 @@ plot_ordination_with_tests <- function(plot, test_result) {
   variable_of_interest <-
     test_result |>
     dplyr::pull(`variable of interest`)
+
+  stopifnot(identical(
+    plot |> get_provenance() |> purrr::list_assign(ordination = rlang::zap()),
+    test_result |> get_provenance() |> purrr::list_assign(aesthetics = list(color = variable_of_interest))
+  ))
+
   permanova_p_value <- test_result |> dplyr::pull(`PERMANOVA p-value`)
   subtitle <- if (!is.na(permanova_p_value)) {
     permanova_p_value <-
