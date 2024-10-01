@@ -29,14 +29,14 @@ test_distance <- function(ps, variable, limits) {
 
   vi <- ps |> ps_variable_info(variable)
 
-  if (!vi[["testable"]]) {
+  if (!vi[["testable"]]) { # nolint: if_not_else_linter.
     permanova_error <- bdisp_error <- "must have at least two groups with at least two replicates each"
   } else {
     permanova <- super_safely(
       microViz::dist_permanova,
       ps,
       variables = variable,
-      n_perms = 9999,
+      n_perms = 9999L,
       seed = 0L,
       verbose = FALSE
     )

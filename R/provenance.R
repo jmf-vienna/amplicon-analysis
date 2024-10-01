@@ -77,6 +77,7 @@ plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subti
         c(subtitle) |>
         as_title(),
       subtitles
-    ) |> stringr::str_flatten("\n")
+    ) |>
+      stringr::str_flatten("\n")
   )
 }
