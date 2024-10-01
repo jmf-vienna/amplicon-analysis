@@ -30,15 +30,13 @@ trim_empty <- function(x, verbose = TRUE) {
 sample_id_var_name <- function(se) {
   se |>
     SummarizedExperiment::colData() |>
-    names() |>
-    head(1L)
+    first_name()
 }
 
 feature_id_var_name <- function(se) {
   se |>
     SummarizedExperiment::rowData() |>
-    names() |>
-    tail(1L)
+    first_id_name()
 }
 
 summary_as_row <- function(se) {

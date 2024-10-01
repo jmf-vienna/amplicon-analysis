@@ -62,7 +62,7 @@ list(
 
   # assay data (counts) ----
   tar_target(counts_file, find_counts_file(data_dir_name), format = "file"),
-  tar_target(counts, readr::read_tsv(counts_file)),
+  tar_target(counts, readr::read_tsv(counts_file) |> tidy_counts()),
   tar_target(assay_data, make_assay_data(counts)),
 
   # summary data from previous steps ----
@@ -72,8 +72,10 @@ list(
 
   # row data (taxonomy) ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
-  tar_target(taxonomy, readr::read_tsv(taxonomy_file)),
-  tar_target(row_data, make_row_data(taxonomy)),
+  tar_target(taxonomy, readr::read_tsv(taxonomy_file) |> tidy_taxonomy()),
+  tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
+  tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
+  tar_target(row_data, make_row_data(taxonomy, features_info)),
 
   # SummarizedExperiment > libraries > raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),

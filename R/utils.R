@@ -1,3 +1,16 @@
+first_name <- function(x, ...) {
+  x |>
+    names() |>
+    dplyr::first(...)
+}
+
+first_id_name <- function(x) {
+  x |>
+    names() |>
+    stringr::str_subset("[^A-Z]ID$") |>
+    dplyr::first()
+}
+
 as_tibble <- function(x, var = "rowname") {
   x |>
     as.data.frame() |>

@@ -18,6 +18,12 @@ find_taxonomy_file <- function(path, params) {
   file
 }
 
+find_features_info_file <- function(path) {
+  file <- fs::dir_ls(path, glob = "*ASVs.tsv")
+  cli::cli_alert("found features info table at {.file {file}}")
+  file
+}
+
 force_valid_file_name <- function(x) {
   x |> stringr::str_replace_all("[^a-zA-Z0-9-]", "_")
 }

@@ -4,12 +4,16 @@ make_col_data <- function(x) {
   )
 }
 
-make_row_data <- function(taxonomy) {
-  taxonomy |> tidy_taxonomy()
+make_row_data <- function(taxonomy, features_info) {
+  dplyr::left_join(
+    taxonomy,
+    features_info,
+    by = features_info |> first_name()
+  )
 }
 
 make_assay_data <- function(counts) {
-  counts <- counts |> tidy_counts()
+  counts <- counts
   names <- counts |> names()
   feature_column <- names[[1L]]
   samples_column <- names[[2L]]
@@ -28,15 +32,8 @@ make_assay_data <- function(counts) {
 }
 
 make_se <- function(counts, col_data, row_data, provenance) {
-  sample_id_var <-
-    col_data |>
-    names() |>
-    head(1L)
-
-  feature_id_var <-
-    row_data |>
-    names() |>
-    tail(1L)
+  sample_id_var <- col_data |> first_id_name()
+  feature_id_var <- row_data |> first_id_name()
 
   cli::cli_alert("ID variable names: sample = {.field {sample_id_var}} and feature = {.field {feature_id_var}}")
 
@@ -87,5 +84,9 @@ tidy_libraries_summary <- function(x) {
 }
 
 tidy_taxonomy <- function(x) {
+  x
+}
+
+tidy_features_info <- function(x) {
   x
 }
