@@ -35,6 +35,7 @@ list(
   tar_target(file_prefix, base_provenance |> as_file_name()),
 
   ## config > refinement ----
+  tar_target(negative_controls, config |> pluck("filter", "negative controls", .default = character())),
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
@@ -44,7 +45,7 @@ list(
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
 
-  ## config > sample data column names ----
+  ## config > limits ----
   tar_target(limits, list(
     sample = config |> pluck("annotation", "sample", "limit", .default = 10L),
     variable_of_interest = config |> pluck("annotation", "category", "limit", .default = 10L)
@@ -79,7 +80,7 @@ list(
 
   # SummarizedExperiment > libraries > raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
-  tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance)),
+  tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, se_libs_raw_provenance) |> add_decontam(negative_controls)),
 
   # SummarizedExperiment > samples > raw ----
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(resolution = "samples"))),

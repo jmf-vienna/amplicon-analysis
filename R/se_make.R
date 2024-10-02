@@ -64,6 +64,18 @@ make_se <- function(counts, col_data, row_data, provenance) {
     set_provenance(provenance)
 }
 
+add_decontam <- function(se, negative_controls) {
+  assay <- se |> SummarizedExperiment::assay()
+  nc <- colnames(assay) %in% negative_controls
+
+  decontam_result <- decontam::isContaminant(t(assay), neg = nc)
+  stopifnot(identical(rownames(assay), rownames(decontam_result)))
+
+  SummarizedExperiment::rowData(se)[["decontam_p_value"]] <- decontam_result[["p"]]
+
+  se
+}
+
 merge_cols <- function(se, by, keep_names, provenance = list()) {
   se <-
     mia::mergeCols(se, se[[by]]) |>
