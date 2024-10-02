@@ -38,8 +38,8 @@ filtered_features_helper <- function(before, after, by) {
   features_after <- SummarizedExperiment::rowData(after)[[by]]
 
   if (by == "decontam_p_value") {
-    features_before <- features_before |> cut(0L:10L * 0.1, include.lowest = TRUE)
-    features_after <- features_after |> cut(0L:10L * 0.1, include.lowest = TRUE)
+    features_before <- features_before |> cut(0L:10L * 0.1, right = FALSE)
+    features_after <- features_after |> cut(0L:10L * 0.1, right = FALSE)
   }
 
   n_removed <- length(features_before) - length(features_after)
