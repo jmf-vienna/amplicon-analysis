@@ -33,26 +33,26 @@ filter_undesirable_features <- function(se, config) {
   se
 }
 
-filtered_features_helper <- function(before, after, rank) {
-  features_before <- SummarizedExperiment::rowData(before)[[rank]]
-  features_after <- SummarizedExperiment::rowData(after)[[rank]]
+filtered_features_helper <- function(before, after, by) {
+  features_before <- SummarizedExperiment::rowData(before)[[by]]
+  features_after <- SummarizedExperiment::rowData(after)[[by]]
 
-  if (rank == "decontam_p_value") {
+  if (by == "decontam_p_value") {
     features_before <- features_before |> cut(0L:10L * 0.1, include.lowest = TRUE)
     features_after <- features_after |> cut(0L:10L * 0.1, include.lowest = TRUE)
   }
 
   n_removed <- length(features_before) - length(features_after)
   removed_features <- setdiff(features_before, features_after) |> jmf::uniques()
-  cli::cli_alert("removed {n_removed} feature{?s} via {rank} filter")
+  cli::cli_alert("removed {n_removed} feature{?s} via {by} filter")
 
   removed_features_count <-
     features_before[features_before %in% removed_features] |>
     vctrs::vec_count() |>
     tibble::as_tibble() |>
-    dplyr::rename(feature = key, n = count)
+    dplyr::rename(value = key)
 
-  stopifnot(identical(n_removed, removed_features_count |> dplyr::pull(n) |> sum()))
+  stopifnot(identical(n_removed, removed_features_count |> dplyr::pull(count) |> sum()))
 
   filtered_features <- list(
     list(
@@ -60,7 +60,7 @@ filtered_features_helper <- function(before, after, rank) {
       features = removed_features_count
     )
   )
-  names(filtered_features) <- rank
+  names(filtered_features) <- by
 
   S4Vectors::metadata(after) <- S4Vectors::metadata(after) |> modifyList(list(filtered_features = filtered_features))
 
@@ -74,8 +74,8 @@ filtered_features_table <- function(se) {
     S4Vectors::metadata() |>
     purrr::pluck("filtered_features", .default = list()) |>
     purrr::list_transpose() |>
-    purrr::pluck("features", .default = tibble::tibble(feature = character(), n = integer())) |>
-    dplyr::bind_rows(.id = "rank")
+    purrr::pluck("features", .default = tibble::tibble(value = character(), count = integer())) |>
+    dplyr::bind_rows(.id = "filter")
 }
 
 filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
