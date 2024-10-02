@@ -1,3 +1,17 @@
+filter_contaminants <- function(se, decontam_threshold) {
+  loadNamespace(class(se))
+
+  if (isTRUE(all.equal(decontam_threshold, 0.0))) {
+    # keep everything
+    return(se)
+  }
+
+  p <- SummarizedExperiment::rowData(se)[["decontam_p_value"]]
+
+  new_se <- se[is.na(p) | p >= decontam_threshold]
+  filtered_features_helper(se, new_se, "decontam_p_value")
+}
+
 keep_desirable_features <- function(se, config) {
   loadNamespace(class(se))
 
@@ -22,6 +36,11 @@ filter_undesirable_features <- function(se, config) {
 filtered_features_helper <- function(before, after, rank) {
   features_before <- SummarizedExperiment::rowData(before)[[rank]]
   features_after <- SummarizedExperiment::rowData(after)[[rank]]
+
+  if (rank == "decontam_p_value") {
+    features_before <- features_before |> cut(0L:10L * 0.1, include.lowest = TRUE)
+    features_after <- features_after |> cut(0L:10L * 0.1, include.lowest = TRUE)
+  }
 
   n_removed <- length(features_before) - length(features_after)
   removed_features <- setdiff(features_before, features_after) |> jmf::uniques()

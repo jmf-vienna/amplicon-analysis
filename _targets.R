@@ -40,6 +40,7 @@ list(
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
+  tar_target(decontam_threshold, config |> pluck("filter", "decontam", .default = 0.0)),
 
   ## config > sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
@@ -86,9 +87,11 @@ list(
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(resolution = "samples"))),
 
   # SummarizedExperiment > samples > refined ----
+  # filter features:
   tar_target(
     se_refined,
     se_raw |>
+      filter_contaminants(decontam_threshold) |>
       keep_desirable_features(desirables) |>
       filter_undesirable_features(undesirables) |>
       update_provenance(se_raw, list(state = "refined")) |>
@@ -100,6 +103,7 @@ list(
     write_tsv(se_refined_filtered_features_table, fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_features", sep = "_"), ext = "tsv")),
     format = "file"
   ),
+  # filter samples:
   tar_target(
     se_deep,
     se_refined |>
