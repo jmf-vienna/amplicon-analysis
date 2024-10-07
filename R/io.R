@@ -13,7 +13,18 @@ find_libraries_summary_file <- function(path) {
 find_taxonomy_file <- function(path, params) {
   reference <- params |> purrr::pluck("reference", .default = "*")
   classifier <- params |> purrr::pluck("classifier", .default = "*")
-  file <- fs::dir_ls(path, glob = glue::glue("*.{reference}_reference.{classifier}_classified.tsv")) |> head(1L)
+  glob <- glue::glue("*.{reference}_reference.{classifier}_classified.tsv")
+
+  file <- fs::dir_ls(path, glob = glob)
+
+  if (vec_is_empty(file)) {
+    cli::cli_abort("failed finding taxonomy file using {.val {glob}}")
+  }
+
+  if (length(file) > 1L) {
+    file <- file |> head(1L)
+  }
+
   cli::cli_alert("found taxonomy table at {.file {file}}")
   file
 }

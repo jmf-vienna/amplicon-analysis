@@ -3,7 +3,10 @@ library(purrr, include.only = "pluck")
 
 jmf::quiet()
 options(warn = 2L)
-targets::tar_option_set(format = "qs")
+targets::tar_option_set(
+  format = "qs",
+  packages = c("vctrs", "stringr")
+)
 
 targets::tar_config_get("script") |>
   fs::path_dir() |>
