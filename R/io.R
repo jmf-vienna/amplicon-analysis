@@ -45,9 +45,9 @@ prepare_export <- function(file) {
     fs::dir_create(mode = Sys.getenv("DIR_CREATE_MODE", "u=rwx,go=rx"))
 }
 
-write_tsv <- function(x, file) {
+write_tsv <- function(x, file, na = "") {
   prepare_export(file)
-  readr::write_tsv(x, file, na = "")
+  readr::write_tsv(x, file, na = na)
   cli::cli_alert("table saved to {.file {file}}")
   file
 }
