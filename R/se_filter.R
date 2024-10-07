@@ -15,6 +15,9 @@ filter_contaminants <- function(se, decontam_threshold) {
 keep_desirable_features <- function(se, config) {
   loadNamespace(class(se))
 
+  valid_ranks <- intersect(c(mia::taxonomyRanks(se), "ASV_ID"), names(config))
+  config <- config[valid_ranks]
+
   purrr::reduce2(names(config), config, \(se, rank, values) {
     se_new <- se[SummarizedExperiment::rowData(se)[[rank]] %in% values]
     se_new <- filtered_features_helper(se, se_new, rank)
@@ -24,6 +27,9 @@ keep_desirable_features <- function(se, config) {
 
 filter_undesirable_features <- function(se, config) {
   loadNamespace(class(se))
+
+  valid_ranks <- intersect(c(mia::taxonomyRanks(se), "ASV_ID"), names(config))
+  config <- config[valid_ranks]
 
   se <- purrr::reduce2(names(config), config, \(se, rank, values) {
     se_new <- se[!SummarizedExperiment::rowData(se)[[rank]] %in% values]
