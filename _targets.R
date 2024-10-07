@@ -78,9 +78,10 @@ list(
   # row data (taxonomy) ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file) |> tidy_taxonomy()),
+  tar_target(taxonomy_ranks, handle_taxonomy_ranks(taxonomy)), # this has side effects
   tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
   tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
-  tar_target(row_data, make_row_data(taxonomy, features_info)),
+  tar_target(row_data, make_row_data(taxonomy, taxonomy_ranks, features_info)),
 
   # SummarizedExperiment > libraries > raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),

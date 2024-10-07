@@ -35,8 +35,8 @@ sample_id_var_name <- function(se) {
 
 feature_id_var_name <- function(se) {
   se |>
-    SummarizedExperiment::rowData() |>
-    first_id_name()
+    mia::taxonomyRanks() |>
+    dplyr::last()
 }
 
 summary_as_row <- function(se) {

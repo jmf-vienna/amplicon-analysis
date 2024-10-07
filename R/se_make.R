@@ -4,7 +4,15 @@ make_col_data <- function(x) {
   )
 }
 
-make_row_data <- function(taxonomy, features_info) {
+handle_taxonomy_ranks <- function(taxonomy) {
+  mia::setTaxonomyRanks(taxonomy |> names())
+  ranks <- mia::getTaxonomyRanks()
+  cli::cli_alert("taxonomy ranks detected: {.val {ranks}}")
+  ranks
+}
+
+make_row_data <- function(taxonomy, taxonomy_ranks, features_info) {
+  # taxonomy_ranks is not used, purely in here to handle dependencies
   dplyr::left_join(
     taxonomy,
     features_info,
