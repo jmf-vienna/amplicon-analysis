@@ -2,6 +2,12 @@ tidy <- function(se) {
   se |> trim_empty()
 }
 
+taxonomy_ranks <- function(se) {
+  se |>
+    S4Vectors::metadata() |>
+    chuck("taxonomy_ranks")
+}
+
 trim_empty <- function(x, verbose = TRUE) {
   rs <- rowSums(SummarizedExperiment::assay(x))
   cs <- colSums(SummarizedExperiment::assay(x))
@@ -35,7 +41,7 @@ sample_id_var_name <- function(se) {
 
 feature_id_var_name <- function(se) {
   se |>
-    mia::taxonomyRanks() |>
+    taxonomy_ranks() |>
     dplyr::last()
 }
 

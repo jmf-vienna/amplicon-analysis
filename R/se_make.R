@@ -4,15 +4,13 @@ make_col_data <- function(x) {
   )
 }
 
-handle_taxonomy_ranks <- function(taxonomy) {
-  mia::setTaxonomyRanks(taxonomy |> names())
-  ranks <- mia::getTaxonomyRanks()
+detect_taxonomy_ranks <- function(taxonomy) {
+  ranks <- taxonomy |> names()
   cli::cli_alert("taxonomy ranks detected: {.val {ranks}}")
   ranks
 }
 
-make_row_data <- function(taxonomy, taxonomy_ranks, features_info) {
-  # taxonomy_ranks is not used, purely in here to handle dependencies
+make_row_data <- function(taxonomy, features_info) {
   dplyr::left_join(
     taxonomy,
     features_info,
@@ -39,9 +37,9 @@ make_assay_data <- function(counts) {
     as.matrix()
 }
 
-make_se <- function(counts, col_data, row_data, provenance) {
+make_se <- function(counts, col_data, row_data, ranks, provenance) {
   sample_id_var <- col_data |> first_id_name()
-  feature_id_var <- row_data |> first_id_name()
+  feature_id_var <- ranks |> dplyr::last()
 
   cli::cli_alert("ID variable names: sample = {.field {sample_id_var}} and feature = {.field {feature_id_var}}")
 
@@ -67,7 +65,10 @@ make_se <- function(counts, col_data, row_data, provenance) {
   SingleCellExperiment::SingleCellExperiment(
     assays = list(counts = counts),
     colData = col_data,
-    rowData = row_data
+    rowData = row_data,
+    metadata = list(
+      taxonomy_ranks = ranks
+    )
   ) |>
     set_provenance(provenance)
 }
