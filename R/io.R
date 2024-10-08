@@ -45,8 +45,15 @@ prepare_export <- function(file) {
     fs::dir_create(mode = Sys.getenv("DIR_CREATE_MODE", "u=rwx,go=rx"))
 }
 
-write_tsv <- function(x, file, na = "") {
+write_tsv <- function(x, file, na = "invisible") {
   prepare_export(file)
+
+  rlang::arg_match0(na, c("invisible", "explicit"))
+  na <- dplyr::case_when(
+    na == "invisible" ~ "",
+    na == "explicit" ~ "NA"
+  )
+
   readr::write_tsv(x, file, na = na)
   cli::cli_alert("table saved to {.file {file}}")
   file

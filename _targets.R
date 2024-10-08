@@ -5,7 +5,7 @@ jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
   format = "qs",
-  packages = c("vctrs", "stringr")
+  packages = c("rlang", "cli", "vctrs", "stringr")
 )
 
 targets::tar_config_get("script") |>
@@ -107,7 +107,7 @@ list(
     write_tsv(
       se_refined_filtered_features_table,
       fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_features", sep = "_"), ext = "tsv"),
-      na = "NA"
+      na = "explicit"
     ),
     format = "file"
   ),
