@@ -15,7 +15,7 @@ filter_contaminants <- function(se, decontam_threshold) {
 keep_desirable_features <- function(se, config) {
   loadNamespace(class(se))
 
-  valid_ranks <- intersect(mia::taxonomyRanks(se), names(config))
+  valid_ranks <- intersect(taxonomy_ranks(se), names(config))
   config <- config[valid_ranks]
 
   purrr::reduce2(names(config), config, \(se, rank, values) {
@@ -28,7 +28,7 @@ keep_desirable_features <- function(se, config) {
 filter_undesirable_features <- function(se, config) {
   loadNamespace(class(se))
 
-  valid_ranks <- intersect(mia::taxonomyRanks(se), names(config))
+  valid_ranks <- intersect(taxonomy_ranks(se), names(config))
   config <- config[valid_ranks]
 
   se <- purrr::reduce2(names(config), config, \(se, rank, values) {
