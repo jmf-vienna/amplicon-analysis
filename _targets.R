@@ -4,8 +4,9 @@ library(targets)
 jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
+  packages = c("cli", "stringr", "vctrs"),
   format = "qs",
-  packages = c("cli", "stringr", "vctrs")
+  iteration = "list"
 )
 
 targets::tar_config_get("script") |>
@@ -120,7 +121,7 @@ list(
   ),
 
   # SummarizedExperiment > all ----
-  tar_target(se, list(se_libs_raw, se_raw, se_refined, se_deep), iteration = "list"),
+  tar_target(se, list(se_libs_raw, se_raw, se_refined, se_deep)),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
 
@@ -129,6 +130,7 @@ list(
   tar_target(
     se_summary,
     se_summary_rows |>
+      dplyr::bind_rows() |>
       dplyr::bind_rows(libraries_summary_rows, se_part = _) |>
       dplyr::relocate(
         sample, feature, samples, features, total_counts, min_sample_counts, max_sample_counts, median_sample_counts,
@@ -146,7 +148,7 @@ list(
   ## tests ----
   tar_target(permanova,
     test_distance(ps_distance, variable_of_interest, limits),
-    pattern = cross(ps_distance, variable_of_interest), iteration = "list"
+    pattern = cross(ps_distance, variable_of_interest)
   ),
   tar_target(permanovas, permanova |> bind_rows()),
   tar_target(permanovas_file,
