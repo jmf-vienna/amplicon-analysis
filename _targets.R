@@ -147,7 +147,7 @@ list(
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   ## tests ----
   tar_target(permanova,
-    test_distance(ps_distance, variable_of_interest, limits),
+    test_distance(ps_distance, variable_of_interest),
     pattern = cross(ps_distance, variable_of_interest)
   ),
   tar_target(permanovas, permanova |> bind_rows()),

@@ -19,7 +19,7 @@ super_safely <- function(fun, ...) {
   res
 }
 
-test_distance <- function(ps, variable, limits) {
+test_distance <- function(ps, variable) {
   loadNamespace("microViz")
 
   permanova_p_value <- NA_real_
@@ -88,14 +88,16 @@ test_distance <- function(ps, variable, limits) {
     cli::cli_alert_warning(stringr::str_c("{.var {variable}} beta dispertion: ", bdisp_error))
   }
 
-  ps |>
-    provenance_as_tibble() |>
+  seq_len(2L) |>
+    map(\(i) {
+      provenance_as_tibble(ps)
+    }) |>
+    dplyr::bind_rows() |>
     tibble::add_column(
       `variable of interest` = variable,
-      `PERMANOVA p-value` = permanova_p_value,
-      `PERMANOVA error` = permanova_error |> cli::pluralize(),
-      `beta dispersion ANOVA p-value` = bdisp_p_value,
-      `beta dispersion error` = bdisp_error |> cli::pluralize()
+      test = c("PERMANOVA", "beta dispersion ANOVA"),
+      `p-value` = c(permanova_p_value, bdisp_p_value),
+      error = c(permanova_error |> cli::pluralize(), bdisp_error |> cli::pluralize())
     ) |>
     update_provenance(ps)
 }

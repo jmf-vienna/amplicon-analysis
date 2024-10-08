@@ -88,7 +88,10 @@ plot_ordination_with_tests <- function(plot, test_result) {
     return(invisible())
   }
 
-  variable_of_interest <- test_result |> dplyr::pull(`variable of interest`)
+  variable_of_interest <-
+    test_result |>
+    dplyr::pull(`variable of interest`) |>
+    unique()
 
   # assertion that plot and test belong together
   stopifnot(identical(
@@ -96,8 +99,14 @@ plot_ordination_with_tests <- function(plot, test_result) {
     test_result |> get_provenance() |> purrr::list_assign(aesthetics = list(color = variable_of_interest))
   ))
 
-  permanova_p_value <- test_result |> dplyr::pull(`PERMANOVA p-value`)
-  beta_dispersion_p_value <- test_result |> dplyr::pull(`beta dispersion ANOVA p-value`)
+  permanova_p_value <-
+    test_result |>
+    dplyr::filter(test == "PERMANOVA") |>
+    dplyr::pull(`p-value`)
+  beta_dispersion_p_value <-
+    test_result |>
+    dplyr::filter(test == "beta dispersion ANOVA") |>
+    dplyr::pull(`p-value`)
 
   subtitle <- ""
   if (!is.na(permanova_p_value)) {
