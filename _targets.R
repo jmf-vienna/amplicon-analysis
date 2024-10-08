@@ -1,11 +1,11 @@
-library(targets)
 library(purrr)
+library(targets)
 
 jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
   format = "qs",
-  packages = c("rlang", "cli", "vctrs", "stringr")
+  packages = c("cli", "stringr", "vctrs")
 )
 
 targets::tar_config_get("script") |>
