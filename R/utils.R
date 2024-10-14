@@ -1,3 +1,12 @@
+fortify <- function(x) {
+  withr::local_collate("en_US.UTF-8")
+
+  x |>
+    as.factor() |>
+    forcats::fct_na_value_to_level("NA") |>
+    droplevels()
+}
+
 first_name <- function(x, ...) {
   x |>
     names() |>
