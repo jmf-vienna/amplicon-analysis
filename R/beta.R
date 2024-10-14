@@ -27,6 +27,9 @@ plot_ordination <- function(ps, variable, point_label, limits, theme) {
     return(invisible())
   }
 
+  # this is in line with test_distance()
+  ps <- ps |> microViz::ps_mutate(across(any_of(variable), as.factor))
+
   vi <- ps |> ps_variable_info(variable)
   vi_label <- ps |> ps_variable_info(point_label)
 
