@@ -100,6 +100,14 @@ tidy_counts <- function(x) {
   x
 }
 
+tidy_samples <- function(x) {
+  x
+}
+
+tidy_libraries <- function(x) {
+  x
+}
+
 tidy_libraries_summary <- function(x) {
   x
 }
