@@ -22,10 +22,8 @@ super_safely <- function(fun, ...) {
 test_distance <- function(ps, variable) {
   loadNamespace("microViz")
 
-  # all variables are tested as categories (even continuous variables, for now)
-  if (variable %in% phyloseq::sample_variables(ps)) {
-    ps <- ps |> microViz::ps_mutate("{variable}" := .data[[variable]] |> fortify()) # nolint: object_name_linter.
-  }
+  # all variables are tested as categories (factors) - even continuous variables (for now)
+  ps <- ps |> microViz::ps_mutate(across(any_of(variable), fortify))
 
   permanova_p_value <- NA_real_
   permanova_error <- NULL
