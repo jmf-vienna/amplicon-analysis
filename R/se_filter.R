@@ -50,7 +50,7 @@ filtered_features_helper <- function(before, after, by) {
 
   n_removed <- length(features_before) - length(features_after)
   removed_features <- setdiff(features_before, features_after) |> jmf::uniques()
-  cli::cli_alert("removed {n_removed} feature{?s} via {by} filter")
+  cli::cli_alert("removed {n_removed} feature{?s} via {by} filter{qty(removed_features)}{?/: /: }{removed_features}")
 
   removed_features_count <-
     features_before[features_before %in% removed_features] |>
