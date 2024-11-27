@@ -1,12 +1,12 @@
-library(purrr)
 library(targets)
 
 jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
-  packages = c("cli", "stringr", "vctrs"),
+  packages = c("cli", "purrr", "stringr", "vctrs"),
   format = "qs",
-  iteration = "list"
+  iteration = "list",
+  controller = crew::crew_controller_local(workers = 2L)
 )
 
 targets::tar_config_get("script") |>
