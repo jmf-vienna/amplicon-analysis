@@ -87,7 +87,7 @@ add_decontam <- function(se, negative_controls) {
 
 merge_cols <- function(se, by, keep_names, provenance = list()) {
   se <-
-    mia::mergeCols(se, se[[by]]) |>
+    mia::agglomerateByVariable(se, "cols", by) |>
     update_provenance(se, provenance)
   SummarizedExperiment::colData(se) <- SummarizedExperiment::colData(se)[keep_names]
   se
