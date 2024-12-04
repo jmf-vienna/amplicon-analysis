@@ -3,7 +3,13 @@ p_format <- function(x) {
 
   x |>
     rstatix::p_format(add.p = TRUE) |>
-    rstatix::p_mark_significant()
+    rstatix::p_mark_significant() |>
+    dplyr::na_if("p=NA")
+}
+
+finalize_tests_table <- function(data) {
+  data |>
+    dplyr::mutate(`p-value formatted` = `p-value` |> p_format(), .after = `p-value`)
 }
 
 super_safely <- function(fun, ...) {

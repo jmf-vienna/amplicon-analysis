@@ -154,7 +154,7 @@ list(
     test_distance(ps_distance, variable_of_interest),
     pattern = cross(ps_distance, variable_of_interest)
   ),
-  tar_target(permanovas, permanova |> bind_rows()),
+  tar_target(permanovas, permanova |> bind_rows() |> finalize_tests_table()),
   tar_target(permanovas_file,
     write_tsv(permanovas, fs::path(results_dir_name, stringr::str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
     format = "file"

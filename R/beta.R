@@ -113,6 +113,7 @@ plot_ordination_with_tests <- function(plot, test_result) {
 
   subtitle <- ""
   if (!is.na(permanova_p_value)) {
+    p_format(0) # does nothing, just to enable re-evaluation
     subtitle <- glue::glue("{variable_of_interest} test: PERMANOVA {p_format(permanova_p_value)}")
     if (!is.na(beta_dispersion_p_value)) {
       subtitle <- subtitle |> stringr::str_c(glue::glue(" with dispersion ANOVA {p_format(beta_dispersion_p_value)}"))
