@@ -45,6 +45,13 @@ prepare_export <- function(file) {
     fs::dir_create(mode = Sys.getenv("DIR_CREATE_MODE", "u=rwx,go=rx"))
 }
 
+write_rds <- function(x, file) {
+  prepare_export(file)
+  saveRDS(x, file)
+  cli::cli_alert("RDS saved to {.file {file}}")
+  file
+}
+
 write_tsv <- function(x, file, na = "invisible") {
   prepare_export(file)
 

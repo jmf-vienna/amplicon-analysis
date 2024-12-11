@@ -40,6 +40,7 @@ list(
   tar_target(data_dir_name, config |> pluck("path", "data", .default = "data")),
   tar_target(results_dir_name, config |> pluck("path", "results", .default = "results")),
   tar_target(plots_dir_name, config |> pluck("path", "plots", .default = "plots")),
+  tar_target(rd_dir_name, config |> pluck("path", "rd", .default = "rd")),
   tar_target(file_prefix, base_provenance |> as_file_name()),
 
   ## config > refinement ----
@@ -126,8 +127,10 @@ list(
 
   # SummarizedExperiment > all ----
   tar_target(se, list(se_libs_raw, se_raw, se_refined, se_deep)),
+  tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
+  tar_target(ps_file, export_ps(ps, rd_dir_name), format = "file", pattern = map(ps)),
 
   ## SummarizedExperiment > all > summary ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
