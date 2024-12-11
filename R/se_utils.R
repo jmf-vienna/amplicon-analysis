@@ -127,6 +127,9 @@ export_flattened <- function(se, dir_name, assay_name = "counts") {
 }
 
 export_se <- function(se, dir_name) {
-  file <- fs::path(dir_name, se |> update_provenance(new = list(export = "SE")) |> provenance_as_file_name(), ext = "rds")
-  write_rds(se, file)
+  file <- fs::path(dir_name, se |> update_provenance(new = list(export = "SE")) |> provenance_as_file_name())
+  c(
+    write_rds(se, fs::path(file, ext = "rds")),
+    write_qs2(se, fs::path(file, ext = "qs2"))
+  )
 }

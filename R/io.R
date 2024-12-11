@@ -52,6 +52,13 @@ write_rds <- function(x, file) {
   file
 }
 
+write_qs2 <- function(x, file) {
+  prepare_export(file)
+  qs2::qs_save(x, file)
+  cli::cli_alert("QS2 saved to {.file {file}}")
+  file
+}
+
 write_tsv <- function(x, file, na = "invisible") {
   prepare_export(file)
 
