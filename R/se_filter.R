@@ -56,7 +56,8 @@ filtered_features_helper <- function(before, after, by) {
     features_before[features_before %in% removed_features] |>
     vctrs::vec_count() |>
     tibble::as_tibble() |>
-    dplyr::rename(value = key)
+    dplyr::rename(value = key) |>
+    dplyr::arrange(value)
 
   stopifnot(identical(n_removed, removed_features_count |> dplyr::pull(count) |> sum()))
 
