@@ -1,7 +1,7 @@
 as_phyloseq <- function(se) {
   se |>
     mia::convertToPhyloseq() |>
-    microViz::tax_fix() |>
+    microViz::tax_fix(anon_unique = FALSE, verbose = FALSE) |>
     microViz::phyloseq_validate() |>
     update_provenance(se)
 }
