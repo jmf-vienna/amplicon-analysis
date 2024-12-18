@@ -92,7 +92,7 @@ filtered_features_table <- function(se) {
       x |>
         dplyr::rename_with(\(x) "value", last_col()) |>
         dplyr::group_by(value) |>
-        dplyr::summarise(count = dplyr::n())
+        dplyr::summarise(count = dplyr::n(), features = Feature_ID |> str_flatten(" "))
     }) |>
     dplyr::bind_rows(.id = "filter")
 }
