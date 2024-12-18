@@ -143,7 +143,9 @@ list(
       dplyr::bind_rows() |>
       dplyr::bind_rows(libraries_summary_rows, se_part = _) |>
       dplyr::relocate(
-        sample, feature, samples, features, total_counts, min_sample_counts, max_sample_counts, median_sample_counts,
+        sample, feature, samples, features,
+        total_counts, min_sample_counts, max_sample_counts, median_sample_counts,
+        min_sequence_length:median_sequence_length,
         .after = last_col()
       )
   ),

@@ -49,6 +49,8 @@ feature_id_var_name <- function(se) {
 
 summary_as_row <- function(se) {
   summary <- se |> mia::summary()
+  sequence_length <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
+
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
@@ -60,7 +62,10 @@ summary_as_row <- function(se) {
       total_counts = summary[["samples"]] |> dplyr::pull(total_counts),
       min_sample_counts = summary[["samples"]] |> dplyr::pull(min_counts),
       max_sample_counts = summary[["samples"]] |> dplyr::pull(max_counts),
-      median_sample_counts = summary[["samples"]] |> dplyr::pull(median_counts)
+      median_sample_counts = summary[["samples"]] |> dplyr::pull(median_counts),
+      min_sequence_length = min(sequence_length),
+      max_sequence_length = max(sequence_length),
+      median_sequence_length = median(sequence_length)
     )
 }
 
