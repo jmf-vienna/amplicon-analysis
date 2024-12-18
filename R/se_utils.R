@@ -9,6 +9,8 @@ taxonomy_ranks <- function(se) {
 }
 
 trim_empty <- function(x, verbose = TRUE) {
+  loadNamespace(class(x))
+
   rs <- rowSums(SummarizedExperiment::assay(x))
   cs <- colSums(SummarizedExperiment::assay(x))
 

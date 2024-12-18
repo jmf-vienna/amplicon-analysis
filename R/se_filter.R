@@ -1,10 +1,10 @@
 filter_contaminants <- function(se, decontam_threshold) {
-  loadNamespace(class(se))
-
   if (isTRUE(all.equal(decontam_threshold, 0.0))) {
     # keep everything
     return(se)
   }
+
+  loadNamespace(class(se))
 
   p <- SummarizedExperiment::rowData(se)[["decontam_p_value"]]
 
@@ -13,12 +13,12 @@ filter_contaminants <- function(se, decontam_threshold) {
 }
 
 filter_by_length <- function(se, min = 0L, max = Inf) {
-  loadNamespace(class(se))
-
   if (identical(min, 0L) && identical(max, Inf)) {
     # keep everything
     return(se)
   }
+
+  loadNamespace(class(se))
 
   l <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
 
@@ -27,6 +27,11 @@ filter_by_length <- function(se, min = 0L, max = Inf) {
 }
 
 keep_desirable_features <- function(se, config) {
+  if (vec_is_empty(config)) {
+    # keep everything
+    return(se)
+  }
+
   loadNamespace(class(se))
 
   valid_ranks <- intersect(taxonomy_ranks(se), names(config))
@@ -40,6 +45,11 @@ keep_desirable_features <- function(se, config) {
 }
 
 filter_undesirable_features <- function(se, config) {
+  if (vec_is_empty(config)) {
+    # keep everything
+    return(se)
+  }
+
   loadNamespace(class(se))
 
   valid_ranks <- intersect(taxonomy_ranks(se), names(config))
