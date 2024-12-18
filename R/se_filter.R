@@ -64,39 +64,20 @@ filter_undesirable_features <- function(se, config) {
 }
 
 filtered_features_helper <- function(before, after, by) {
-  features_before <- SummarizedExperiment::rowData(before)[[by]]
-  features_after <- SummarizedExperiment::rowData(after)[[by]]
+  removed_ids <- setdiff(rownames(before), rownames(after))
+  removed <-
+    SummarizedExperiment::rowData(before)[removed_ids, by, drop = FALSE] |>
+    as_tibble("Feature_ID") |>
+    dplyr::mutate(across(any_of("decontam_p_value"), \(x) cut(x, 0L:10L * 0.1, right = FALSE))) |>
+    dplyr::mutate(across(where(is.numeric), as.character))
 
-  if (by == "decontam_p_value") {
-    features_before <- features_before |> cut(0L:10L * 0.1, right = FALSE)
-    features_after <- features_after |> cut(0L:10L * 0.1, right = FALSE)
-  } else if (by == "Sequence_length") {
-    features_before <- features_before |> as.character()
-    features_after <- features_after |> as.character()
-  }
+  removed_values <- removed |>
+    dplyr::pull() |>
+    jmf::uniques()
+  cli::cli_alert("removed {nrow(removed)} feature{?s} via {by} filter{qty(removed_values)}{?/: /: }{removed_values}")
 
-  n_removed <- length(features_before) - length(features_after)
-  removed_features <- setdiff(features_before, features_after) |> jmf::uniques()
-  cli::cli_alert("removed {n_removed} feature{?s} via {by} filter{qty(removed_features)}{?/: /: }{removed_features}")
-
-  removed_features_count <-
-    features_before[features_before %in% removed_features] |>
-    vctrs::vec_count() |>
-    tibble::as_tibble() |>
-    dplyr::rename(value = key) |>
-    dplyr::arrange(value)
-
-  stopifnot(identical(n_removed, removed_features_count |> dplyr::pull(count) |> sum()))
-
-  filtered_features <- list(
-    list(
-      n = n_removed,
-      features = removed_features_count
-    )
-  )
-  names(filtered_features) <- by
-
-  S4Vectors::metadata(after) <- S4Vectors::metadata(after) |> modifyList(list(filtered_features = filtered_features))
+  new <- list(removed) |> set_names(by)
+  S4Vectors::metadata(after) <- S4Vectors::metadata(after) |> list_modify(filtered_features = new)
 
   after
 }
@@ -107,8 +88,12 @@ filtered_features_table <- function(se) {
   se |>
     S4Vectors::metadata() |>
     purrr::pluck("filtered_features", .default = list()) |>
-    purrr::list_transpose() |>
-    purrr::pluck("features", .default = tibble::tibble(value = character(), count = integer())) |>
+    map(\(x) {
+      x |>
+        dplyr::rename_with(\(x) "value", last_col()) |>
+        dplyr::group_by(value) |>
+        dplyr::summarise(count = dplyr::n())
+    }) |>
     dplyr::bind_rows(.id = "filter")
 }
 
