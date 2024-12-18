@@ -12,6 +12,20 @@ filter_contaminants <- function(se, decontam_threshold) {
   filtered_features_helper(se, new_se, "decontam_p_value")
 }
 
+filter_by_length <- function(se, min = 0L, max = Inf) {
+  loadNamespace(class(se))
+
+  if (identical(min, 0L) && identical(max, Inf)) {
+    # keep everything
+    return(se)
+  }
+
+  l <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
+
+  new_se <- se[l >= min & l <= max]
+  filtered_features_helper(se, new_se, "Sequence_length")
+}
+
 keep_desirable_features <- function(se, config) {
   loadNamespace(class(se))
 
@@ -46,6 +60,9 @@ filtered_features_helper <- function(before, after, by) {
   if (by == "decontam_p_value") {
     features_before <- features_before |> cut(0L:10L * 0.1, right = FALSE)
     features_after <- features_after |> cut(0L:10L * 0.1, right = FALSE)
+  } else if (by == "Sequence_length") {
+    features_before <- features_before |> as.character()
+    features_after <- features_after |> as.character()
   }
 
   n_removed <- length(features_before) - length(features_after)
