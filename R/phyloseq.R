@@ -1,4 +1,11 @@
 as_phyloseq <- function(se) {
+  loadNamespace("mia")
+
+  if (nrow(se) == 0L) {
+    cli::cli_alert_warning("skipped because there are zero features")
+    return(invisible())
+  }
+
   se |>
     mia::convertToPhyloseq() |>
     microViz::tax_fix(anon_unique = FALSE, verbose = FALSE) |>
@@ -6,10 +13,15 @@ as_phyloseq <- function(se) {
     update_provenance(se)
 }
 
-export_ps <- function(se, dir_name) {
-  file <- fs::path(dir_name, se |> update_provenance(new = list(export = "phyloseq")) |> provenance_as_file_name())
+export_ps <- function(ps, dir_name) {
+  if (is.null(ps)) {
+    cli::cli_alert_warning("skipped because container is NULL")
+    return(invisible())
+  }
+
+  file <- fs::path(dir_name, ps |> update_provenance(new = list(export = "phyloseq")) |> provenance_as_file_name())
   c(
-    write_rds(se, fs::path(file, ext = "rds")),
-    write_qs2(se, fs::path(file, ext = "qs2"))
+    write_rds(ps, fs::path(file, ext = "rds")),
+    write_qs2(ps, fs::path(file, ext = "qs2"))
   )
 }

@@ -1,10 +1,20 @@
 calulcate_distance <- function(ps, distance = "aitchison") {
+  if (is.null(ps)) {
+    cli::cli_alert_warning("skipped because container is NULL")
+    return(invisible())
+  }
+
   ps |>
     microViz::dist_calc(distance) |>
     update_provenance(ps, list(distance = distance))
 }
 
 calulcate_ordination <- function(ps) {
+  if (is.null(ps)) {
+    cli::cli_alert_warning("skipped because container is NULL")
+    return(invisible())
+  }
+
   loadNamespace("microViz")
 
   if (phyloseq::nsamples(ps) < 2L) {
@@ -24,6 +34,7 @@ calulcate_ordination <- function(ps) {
 
 plot_ordination <- function(ps, variable, point_label, limits, theme) {
   if (is.null(ps)) {
+    cli::cli_alert_warning("skipped because container is NULL")
     return(invisible())
   }
 

@@ -26,6 +26,11 @@ super_safely <- function(fun, ...) {
 }
 
 test_distance <- function(ps, variable) {
+  if (is.null(ps)) {
+    cli::cli_alert_warning("skipped because container is NULL")
+    return(invisible())
+  }
+
   loadNamespace("microViz")
 
   # all variables are tested as categories (factors) - even continuous variables (for now)
