@@ -48,8 +48,11 @@ feature_id_var_name <- function(se) {
 }
 
 summary_as_row <- function(se) {
-  summary <- se |> mia::summary()
+  sample_counts <- scuttle::perCellQCMetrics(se, use_altexps = FALSE)[["sum"]]
+  if (vec_is_empty(sample_counts)) sample_counts <- NA_integer_
+
   sequence_length <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
+  if (vec_is_empty(sequence_length)) sequence_length <- NA_integer_
 
   se |>
     provenance_as_tibble() |>
@@ -58,11 +61,11 @@ summary_as_row <- function(se) {
       sample = se |> sample_id_var_name(),
       feature = se |> feature_id_var_name(),
       samples = se |> SummarizedExperiment::colData() |> nrow(),
-      features = summary[["features"]] |> dplyr::pull(total),
-      total_counts = summary[["samples"]] |> dplyr::pull(total_counts),
-      min_sample_counts = summary[["samples"]] |> dplyr::pull(min_counts),
-      max_sample_counts = summary[["samples"]] |> dplyr::pull(max_counts),
-      median_sample_counts = summary[["samples"]] |> dplyr::pull(median_counts),
+      features = nrow(se),
+      total_counts = sum(sample_counts),
+      min_sample_counts = min(sample_counts),
+      max_sample_counts = max(sample_counts),
+      median_sample_counts = median(sample_counts),
       min_sequence_length = min(sequence_length),
       max_sequence_length = max(sequence_length),
       median_sequence_length = median(sequence_length)
