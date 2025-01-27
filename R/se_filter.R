@@ -100,10 +100,9 @@ filtered_features_table <- function(se) {
 filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   keep <-
     se |>
-    scuttle::perCellQCMetrics(use_altexps = FALSE) |>
-    as_tibble() |>
-    dplyr::filter(sum >= min, sum <= max) |>
-    dplyr::pull(1L)
+    col_counts() |>
+    dplyr::filter(Sum >= min, Sum <= max) |>
+    dplyr::pull(ID)
 
   res <- se[, keep]
 

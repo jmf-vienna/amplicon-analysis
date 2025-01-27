@@ -47,8 +47,21 @@ feature_id_var_name <- function(se) {
     dplyr::last()
 }
 
+col_counts <- function(se) {
+  loadNamespace(class(se))
+
+  se |>
+    SummarizedExperiment::assay() |>
+    colSums() |>
+    as_tibble() |>
+    dplyr::rename(ID = rowname, Sum = x)
+}
+
 summary_as_row <- function(se) {
-  sample_counts <- scuttle::perCellQCMetrics(se, use_altexps = FALSE)[["sum"]]
+  sample_counts <-
+    se |>
+    col_counts() |>
+    dplyr::pull(Sum)
   if (vec_is_empty(sample_counts)) sample_counts <- NA_integer_
 
   sequence_length <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
