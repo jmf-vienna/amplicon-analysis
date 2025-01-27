@@ -99,7 +99,12 @@ list(
   tar_target(se_libs_raw, se_libs_rawer |> add_decontam(negative_controls, failed_libraries)),
 
   # SummarizedExperiment > samples > raw ----
-  tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(resolution = "samples"))),
+  tar_target(se_raw, merge_cols(
+    se_libs_raw[, !colnames(se_libs_raw) %in% failed_libraries] |> tidy(),
+    samples |> names() |> dplyr::first(),
+    samples |> names(),
+    list(resolution = "samples")
+  )),
 
   # SummarizedExperiment > samples > refined ----
   # filter features:
