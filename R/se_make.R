@@ -74,14 +74,20 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
 }
 
 add_decontam <- function(se, negative_controls) {
-  assay <- se |> SummarizedExperiment::assay()
-  nc <- colnames(assay) %in% negative_controls
+  if (ncol(se) > 1L) {
+    assay <- se |> SummarizedExperiment::assay()
+    nc <- colnames(assay) %in% negative_controls
 
-  decontam_result <- decontam::isContaminant(t(assay), neg = nc)
-  stopifnot(identical(rownames(assay), rownames(decontam_result)))
+    decontam_result <- decontam::isContaminant(t(assay), neg = nc)
+    stopifnot(identical(rownames(assay), rownames(decontam_result)))
 
-  SummarizedExperiment::rowData(se)[["decontam_p_value"]] <- decontam_result[["p"]]
+    p <- decontam_result[["p"]]
+  } else {
+    cli::cli_alert_warning("skipped decontam (less than 2 libraries)")
+    p <- NA_real_
+  }
 
+  SummarizedExperiment::rowData(se)[["decontam_p_value"]] <- p
   se
 }
 
