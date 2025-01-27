@@ -49,6 +49,7 @@ list(
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
+  tar_target(pass_libraries_yield_min, config |> pluck("filter", "pass", "yield", "min", .default = yield_min)),
   tar_target(decontam_threshold, config |> pluck("filter", "decontam", .default = 0.0)),
   tar_target(length_min, config |> pluck("filter", "length", "min", .default = 0L)),
   tar_target(length_max, config |> pluck("filter", "length", "max", .default = Inf)),
@@ -93,7 +94,9 @@ list(
 
   # SummarizedExperiment > libraries > raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
-  tar_target(se_libs_raw, make_se(assay_data, libraries_col_data, row_data, ranks, se_libs_raw_provenance) |> add_decontam(negative_controls)),
+  tar_target(se_libs_rawer, make_se(assay_data, libraries_col_data, row_data, ranks, se_libs_raw_provenance)),
+  tar_target(failed_libraries, get_failed_libraries(se_libs_rawer, negative_controls, pass_libraries_yield_min)),
+  tar_target(se_libs_raw, se_libs_rawer |> add_decontam(negative_controls, failed_libraries)),
 
   # SummarizedExperiment > samples > raw ----
   tar_target(se_raw, merge_cols(se_libs_raw, samples |> names() |> head(1L), samples |> names(), list(resolution = "samples"))),

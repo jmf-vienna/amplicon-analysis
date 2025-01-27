@@ -73,9 +73,25 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
     set_provenance(provenance)
 }
 
-add_decontam <- function(se, negative_controls) {
+get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min) {
+  failed_libraries <-
+    se |>
+    col_sums() |>
+    dplyr::filter(!ID %in% negative_controls, Sum < pass_libraries_yield_min) |>
+    dplyr::pull(ID)
+
+  if (!vec_is_empty(failed_libraries)) {
+    cli::cli_alert("failed librar{?y/ies}: {.field {failed_libraries}}")
+  }
+
+  failed_libraries
+}
+
+add_decontam <- function(se, negative_controls, failed_libraries = character()) {
   if (ncol(se) > 1L) {
-    assay <- se |> SummarizedExperiment::assay()
+    se_ready <- se[, !colnames(se) %in% failed_libraries]
+
+    assay <- se_ready |> SummarizedExperiment::assay()
     nc <- colnames(assay) %in% negative_controls
 
     decontam_result <- decontam::isContaminant(t(assay), neg = nc)
