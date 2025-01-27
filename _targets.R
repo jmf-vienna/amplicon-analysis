@@ -49,7 +49,7 @@ list(
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
-  tar_target(pass_libraries_yield_min, config |> pluck("filter", "pass", "yield", "min", .default = yield_min)),
+  tar_target(pass_libraries_yield_min, config |> pluck("filter", "pass", "yield", "min", .default = 0L)),
   tar_target(decontam_threshold, config |> pluck("filter", "decontam", .default = 0.0)),
   tar_target(length_min, config |> pluck("filter", "length", "min", .default = 0L)),
   tar_target(length_max, config |> pluck("filter", "length", "max", .default = Inf)),
