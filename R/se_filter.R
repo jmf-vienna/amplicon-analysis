@@ -100,7 +100,7 @@ filtered_features_table <- function(se) {
 filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   keep <-
     se |>
-    col_counts() |>
+    col_sums() |>
     dplyr::filter(Sum >= min, Sum <= max) |>
     dplyr::pull(ID)
 

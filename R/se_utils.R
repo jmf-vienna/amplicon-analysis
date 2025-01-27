@@ -47,7 +47,7 @@ feature_id_var_name <- function(se) {
     dplyr::last()
 }
 
-col_counts <- function(se) {
+col_sums <- function(se) {
   loadNamespace(class(se))
 
   se |>
@@ -60,7 +60,7 @@ col_counts <- function(se) {
 summary_as_row <- function(se) {
   sample_counts <-
     se |>
-    col_counts() |>
+    col_sums() |>
     dplyr::pull(Sum)
   if (vec_is_empty(sample_counts)) sample_counts <- NA_integer_
 
