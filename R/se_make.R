@@ -108,10 +108,26 @@ add_decontam <- function(se, negative_controls, failed_libraries = character()) 
 }
 
 merge_cols <- function(se, by, keep_names, provenance = list()) {
+  loadNamespace("mia")
+
+  lib_counts <-
+    se |>
+    SummarizedExperiment::colData() |>
+    as_tibble() |>
+    dplyr::group_by(across(all_of(by))) |>
+    dplyr::count(name = ".Number_of_libraries")
+
   se <-
     mia::agglomerateByVariable(se, "cols", by) |>
     update_provenance(se, provenance)
-  SummarizedExperiment::colData(se) <- SummarizedExperiment::colData(se)[keep_names]
+
+  SummarizedExperiment::colData(se) <-
+    SummarizedExperiment::colData(se) |>
+    as_tibble() |>
+    dplyr::select(all_of(keep_names)) |>
+    dplyr::inner_join(lib_counts, by = by) |>
+    S4Vectors::DataFrame(row.names = colnames(se))
+
   se
 }
 
