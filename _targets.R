@@ -92,13 +92,16 @@ list(
   tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
   tar_target(row_data, make_row_data(taxonomy, features_info)),
 
-  # SummarizedExperiment > libraries > raw ----
+  # SEs ----
+  ## library SEs ----
+  ### raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
   tar_target(se_libs_rawer, make_se(assay_data, libraries_col_data, row_data, ranks, se_libs_raw_provenance)),
   tar_target(failed_libraries, get_failed_libraries(se_libs_rawer, negative_controls, pass_libraries_yield_min)),
   tar_target(se_libs_raw, se_libs_rawer |> add_decontam(negative_controls, failed_libraries)),
 
-  # SummarizedExperiment > samples > raw ----
+  ## sample SEs ----
+  ### raw ----
   tar_target(se_raw, merge_cols(
     se_libs_raw[, !colnames(se_libs_raw) %in% failed_libraries] |> tidy(),
     samples |> names() |> dplyr::first(),
@@ -106,8 +109,8 @@ list(
     list(resolution = "samples")
   )),
 
-  # SummarizedExperiment > samples > refined ----
-  # filter features:
+  ### refined ----
+  #### filter features ----
   tar_target(
     se_refined,
     se_raw |>
@@ -128,7 +131,7 @@ list(
     ),
     format = "file"
   ),
-  # filter samples:
+  #### filter samples ----
   tar_target(
     se_deep,
     se_refined |>
@@ -136,14 +139,14 @@ list(
       tidy()
   ),
 
-  # SummarizedExperiment > all ----
+  ## all SEs ----
   tar_target(se, list(se_libs_raw, se_raw, se_refined, se_deep)),
   tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
   tar_target(ps_file, export_ps(ps, rd_dir_name), format = "file", pattern = map(ps)),
 
-  ## SummarizedExperiment > all > summary ----
+  ## SE summaries ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(
     se_summary,
