@@ -111,11 +111,13 @@ list(
       update_provenance(new = list(state = "refined")) |>
       tidy()
   ),
-  tar_target(refined_filtered_features_table, filtered_features_table(se_libs_refined)),
+
+  ### filtered features table ----
+  tar_target(filtered_features_table, make_filtered_features_table(se_libs_refined)),
   tar_target(
-    refined_filtered_features_file,
+    filtered_features_file,
     write_tsv(
-      refined_filtered_features_table,
+      filtered_features_table,
       fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_features", sep = "_"), ext = "tsv"),
       na = "explicit"
     ),
@@ -131,7 +133,7 @@ list(
     list(resolution = "samples")
   )),
 
-  ### refined (filter failed libraries) ----
+  ### refined (and filter failed libraries) ----
   tar_target(se_refined, merge_cols(
     se_libs_refined[, !colnames(se_libs_refined) %in% failed_libraries] |> tidy(),
     samples |> names() |> dplyr::first(),
@@ -145,6 +147,20 @@ list(
     se_refined |>
       filter_samples_by_sum(yield_min, yield_max) |>
       tidy()
+  ),
+
+  ### filtered samples table ----
+  tar_target(filtered_samples_table, make_filtered_samples_table(list(
+    list(se_libs_raw, se_libs_refined),
+    list(se_refined, se_deep)
+  ))),
+  tar_target(
+    filtered_samples_table_file,
+    write_tsv(
+      filtered_samples_table,
+      fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_samples", sep = "_"), ext = "tsv")
+    ),
+    format = "file"
   ),
 
   ## all SEs ----

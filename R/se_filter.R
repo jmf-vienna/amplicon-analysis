@@ -82,7 +82,7 @@ filtered_features_helper <- function(before, after, by) {
   after
 }
 
-filtered_features_table <- function(se) {
+make_filtered_features_table <- function(se) {
   loadNamespace(class(se))
 
   se |>
@@ -115,4 +115,27 @@ filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   }
 
   res
+}
+
+make_filtered_samples_table <- function(se_pairs) {
+  loadNamespace(class(se_pairs |> chuck(1L, 1L)))
+
+  map(se_pairs, \(se_pair) {
+    se1 <- se_pair |> chuck(1L)
+    se2 <- se_pair |> chuck(2L)
+
+    se2 |>
+      provenance_as_tibble() |>
+      tibble::add_column(
+        removed =
+          setdiff(
+            se1 |> colnames(),
+            se2 |> colnames()
+          ) |>
+            str_flatten(" ")
+      )
+  }) |>
+    rev() |>
+    dplyr::bind_rows() |>
+    dplyr::arrange(desc(dplyr::row_number()))
 }
