@@ -41,6 +41,22 @@ sample_id_var_name <- function(se) {
     first_name()
 }
 
+library_id_var_name <- function(se) {
+  se |>
+    SummarizedExperiment::colData() |>
+    names() |>
+    stringr::str_subset("(lib|Lib|LIB|library|Library|LIBRARY).+ID$") |>
+    dplyr::first()
+}
+
+biosample_id_var_name <- function(se) {
+  se |>
+    SummarizedExperiment::colData() |>
+    names() |>
+    stringr::str_subset("(sample|Sample|SAMPLE).+ID$") |>
+    dplyr::first()
+}
+
 feature_id_var_name <- function(se) {
   se |>
     taxonomy_ranks() |>
@@ -58,6 +74,30 @@ col_sums <- function(se) {
 }
 
 summary_as_row <- function(se) {
+  loadNamespace(class(se))
+
+  col_data <-
+    se |>
+    SummarizedExperiment::colData() |>
+    as_tibble()
+
+  biosample_id_var_name <- se |> biosample_id_var_name()
+  n_biosamples <-
+    col_data |>
+    dplyr::pull(biosample_id_var_name) |>
+    vec_unique_count()
+
+  library_id_var_name <- se |> library_id_var_name()
+  n_libraries <- if (col_data |> tibble::has_name(".Number_of_libraries")) {
+    col_data |>
+      dplyr::pull(.Number_of_libraries) |>
+      sum()
+  } else {
+    col_data |>
+      dplyr::pull(library_id_var_name) |>
+      vec_unique_count()
+  }
+
   sample_counts <-
     se |>
     col_sums() |>
@@ -73,7 +113,8 @@ summary_as_row <- function(se) {
       tool = "JADA4",
       sample = se |> sample_id_var_name(),
       feature = se |> feature_id_var_name(),
-      samples = se |> SummarizedExperiment::colData() |> nrow(),
+      biosamples = n_biosamples,
+      libraries = n_libraries,
       features = nrow(se),
       total_counts = sum(sample_counts),
       min_sample_counts = min(sample_counts),

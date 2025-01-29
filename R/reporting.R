@@ -73,7 +73,7 @@ citation_text <- function(x) {
 }
 
 make_previous_summary_rows <- function(x, file_name, provenance) {
-  sample_id_var_name <-
+  library_id_var_name <-
     x |>
     names() |>
     head(1L)
@@ -82,7 +82,7 @@ make_previous_summary_rows <- function(x, file_name, provenance) {
     dplyr::mutate(phase = forcats::fct_inorder(phase)) |>
     dplyr::group_by(phase) |>
     dplyr::summarise(
-      samples = dplyr::n_distinct(.data[[sample_id_var_name]]),
+      libraries = dplyr::n_distinct(.data[[library_id_var_name]]),
       total_counts = sum(count),
       min_sample_counts = min(count),
       max_sample_counts = max(count),
@@ -94,7 +94,7 @@ make_previous_summary_rows <- function(x, file_name, provenance) {
       tool = file_name |> fs::path_file() |> stringr::str_remove("_.+"),
       resolution = "libraries",
       state = "crude",
-      sample = sample_id_var_name,
+      sample = library_id_var_name,
       .before = 1L
     )
 }
