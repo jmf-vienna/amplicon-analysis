@@ -100,20 +100,20 @@ list(
   tar_target(failed_libraries, get_failed_libraries(se_libs_rawer, negative_controls, pass_libraries_yield_min)),
   tar_target(se_libs_raw, se_libs_rawer |> add_decontam(negative_controls, failed_libraries)),
 
-  ### refined (filter features) ----
+  ### clean (filter features) ----
   tar_target(
-    se_libs_refined,
+    se_libs_clean,
     se_libs_raw |>
       filter_by_length(length_min, length_max) |>
       filter_contaminants(decontam_threshold) |>
       keep_desirable_features(desirables) |>
       filter_undesirable_features(undesirables) |>
-      update_provenance(new = list(state = "refined")) |>
+      update_provenance(new = list(state = "clean")) |>
       tidy()
   ),
 
   ### filtered features table ----
-  tar_target(filtered_features_table, make_filtered_features_table(se_libs_refined)),
+  tar_target(filtered_features_table, make_filtered_features_table(se_libs_clean)),
   tar_target(
     filtered_features_file,
     write_tsv(
@@ -124,10 +124,10 @@ list(
     format = "file"
   ),
 
-  ### remove failed libraries ----
+  ### pass (filter failed libraries) ----
   tar_target(
-    se_libs_passed,
-    se_libs_refined |>
+    se_libs_pass,
+    se_libs_clean |>
       remove_cols(failed_libraries) |>
       update_provenance(new = list(state = "pass")) |>
       tidy()
@@ -144,7 +144,7 @@ list(
 
   ### refined ----
   tar_target(se_refined, merge_cols(
-    se_libs_passed,
+    se_libs_pass,
     samples |> names() |> dplyr::first(),
     samples |> names(),
     list(resolution = "samples", state = "refined")
@@ -158,10 +158,10 @@ list(
       tidy()
   ),
 
-  ### filtered samples table ----
+  ## filtered samples table ----
   tar_target(filtered_samples_table, make_filtered_samples_table(list(
-    list(se_libs_raw, se_libs_refined),
-    list(se_libs_refined, se_libs_passed),
+    list(se_libs_raw, se_libs_clean),
+    list(se_libs_clean, se_libs_pass),
     list(se_refined, se_deep)
   ))),
   tar_target(
@@ -174,7 +174,7 @@ list(
   ),
 
   ## all SEs ----
-  tar_target(se, list(se_libs_raw, se_raw, se_libs_refined, se_refined, se_deep)),
+  tar_target(se, list(se_libs_raw, se_raw, se_libs_clean, se_refined, se_deep)),
   tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
