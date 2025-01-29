@@ -154,12 +154,19 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as_tibble("ID") |>
     dplyr::rename(.row_sums = x)
 
+  prevalence <-
+    (assay_matrix > 0L) |>
+    rowSums() |>
+    as_tibble("ID") |>
+    dplyr::rename(.prevalence = x)
+
   row_data <-
     se |>
     SummarizedExperiment::rowData() |>
     as_tibble("ID") |>
     dplyr::left_join(row_sums, by = "ID") |>
-    dplyr::relocate(.row_sums, .after = ID)
+    dplyr::left_join(prevalence, by = "ID") |>
+    dplyr::relocate(.row_sums:last_col(), .after = ID)
 
   col_sums <-
     assay_matrix |>
