@@ -107,10 +107,27 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as_tibble("ID") |>
     dplyr::mutate(across(where(is.numeric), as.character))
 
+  row_sums <-
+    assay_matrix |>
+    rowSums() |>
+    as_tibble("ID") |>
+    dplyr::rename(.row_sums = x)
+
   row_data <-
     se |>
     SummarizedExperiment::rowData() |>
-    as_tibble("ID")
+    as_tibble("ID") |>
+    dplyr::left_join(row_sums, by = "ID") |>
+    dplyr::relocate(.row_sums, .after = ID)
+
+  col_sums <-
+    assay_matrix |>
+    colSums() |>
+    as.matrix() |>
+    t() |>
+    tibble::as_tibble() |>
+    dplyr::mutate(across(everything(), as.character)) |>
+    tibble::add_column(ID = ".col_sums", .before = 1L)
 
   col_data <-
     se |>
@@ -121,7 +138,8 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as.data.frame(row.names = rownames(col_data)) |>
     as.matrix() |>
     t() |>
-    as_tibble("ID")
+    as_tibble("ID") |>
+    dplyr::bind_rows(col_sums)
 
   stopifnot(identical(
     assay_data |> dplyr::select(ID),
