@@ -97,6 +97,11 @@ make_filtered_features_table <- function(se) {
     dplyr::bind_rows(.id = "filter")
 }
 
+remove_cols <- function(se, cols) {
+  loadNamespace(class(se))
+  se[, !colnames(se) %in% cols]
+}
+
 filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   keep <-
     se |>

@@ -124,6 +124,15 @@ list(
     format = "file"
   ),
 
+  ### remove failed libraries ----
+  tar_target(
+    se_libs_passed,
+    se_libs_refined |>
+      remove_cols(failed_libraries) |>
+      update_provenance(new = list(state = "pass")) |>
+      tidy()
+  ),
+
   ## sample SEs ----
   ### raw (not used later on) ----
   tar_target(se_raw, merge_cols(
@@ -133,12 +142,12 @@ list(
     list(resolution = "samples")
   )),
 
-  ### refined (and filter failed libraries) ----
+  ### refined ----
   tar_target(se_refined, merge_cols(
-    se_libs_refined[, !colnames(se_libs_refined) %in% failed_libraries] |> tidy(),
+    se_libs_passed,
     samples |> names() |> dplyr::first(),
     samples |> names(),
-    list(resolution = "samples")
+    list(resolution = "samples", state = "refined")
   )),
 
   ### deep (filter samples) ----
@@ -152,6 +161,7 @@ list(
   ### filtered samples table ----
   tar_target(filtered_samples_table, make_filtered_samples_table(list(
     list(se_libs_raw, se_libs_refined),
+    list(se_libs_refined, se_libs_passed),
     list(se_refined, se_deep)
   ))),
   tar_target(
