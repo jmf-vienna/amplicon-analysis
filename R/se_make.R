@@ -110,12 +110,20 @@ add_decontam <- function(se, negative_controls, failed_libraries = character()) 
 merge_cols <- function(se, by, keep_names, provenance = list()) {
   loadNamespace("mia")
 
+  lib_id <-
+    se |>
+    SummarizedExperiment::colData() |>
+    first_id_name()
+
   lib_counts <-
     se |>
     SummarizedExperiment::colData() |>
     as_tibble() |>
     dplyr::group_by(across(all_of(by))) |>
-    dplyr::count(name = ".Number_of_libraries")
+    dplyr::summarise(
+      .Number_of_libraries = dplyr::n(),
+      .Libraries = .data[[lib_id]] |> str_flatten(" ")
+    )
 
   se <-
     mia::agglomerateByVariable(se, "cols", by) |>
