@@ -177,6 +177,15 @@ write_flattened <- function(se, file, assay_name = "counts") {
     dplyr::mutate(across(everything(), as.character)) |>
     tibble::add_column(ID = ".col_sums", .before = 1L)
 
+  features <-
+    (assay_matrix > 0L) |>
+    colSums() |>
+    as.matrix() |>
+    t() |>
+    tibble::as_tibble() |>
+    dplyr::mutate(across(everything(), as.character)) |>
+    tibble::add_column(ID = ".Number_of_features", .before = 1L)
+
   col_data <-
     se |>
     SummarizedExperiment::colData()
@@ -187,6 +196,7 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as.matrix() |>
     t() |>
     as_tibble("ID") |>
+    dplyr::bind_rows(features) |>
     dplyr::bind_rows(col_sums)
 
   stopifnot(identical(
