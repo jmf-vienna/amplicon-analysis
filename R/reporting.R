@@ -81,6 +81,7 @@ make_previous_summary_rows <- function(x, file_name, provenance) {
   x |>
     dplyr::mutate(phase = forcats::fct_inorder(phase)) |>
     dplyr::group_by(phase) |>
+    dplyr::filter(count > 0L) |>
     dplyr::summarise(
       libraries = dplyr::n_distinct(.data[[library_id_var_name]]),
       total_counts = sum(count),
