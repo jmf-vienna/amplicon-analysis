@@ -84,12 +84,15 @@ list(
   tar_target(libraries_summary, readr::read_tsv(libraries_summary_file) |> tidy_libraries_summary()),
   tar_target(libraries_summary_rows, make_previous_summary_rows(libraries_summary, libraries_summary_file, base_provenance)),
 
-  # row data (taxonomy) ----
+  # row data ----
+  ## features info ----
+  tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
+  tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
+  ## taxonomy ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
   tar_target(taxonomy, readr::read_tsv(taxonomy_file) |> tidy_taxonomy()),
   tar_target(ranks, detect_taxonomy_ranks(taxonomy)),
-  tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
-  tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
+  ## merge ----
   tar_target(row_data, make_row_data(taxonomy, features_info)),
 
   # SEs ----
