@@ -11,7 +11,13 @@ taxonomy_fallback <- function(taxonomy, features_info) {
       features_info |>
       dplyr::select(1L) |>
       tibble::add_column(
-        Domain = NA_character_,
+        Domain = "Unclassified",
+        Phylum = NA_character_,
+        Class = NA_character_,
+        Order = NA_character_,
+        Family = NA_character_,
+        Genus = NA_character_,
+        Species = NA_character_,
         .before = 1L
       )
     return(fallback)
