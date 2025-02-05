@@ -18,7 +18,8 @@ find_taxonomy_file <- function(path, params) {
   file <- fs::dir_ls(path, glob = glob)
 
   if (vec_is_empty(file)) {
-    cli::cli_abort("failed finding taxonomy file using {.val {glob}}")
+    cli::cli_alert_danger("failed finding taxonomy file using {.val {glob}}")
+    return(invisible())
   }
 
   if (length(file) > 1L) {

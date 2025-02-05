@@ -4,6 +4,22 @@ make_col_data <- function(x) {
   )
 }
 
+taxonomy_fallback <- function(taxonomy, features_info) {
+  if (ncol(taxonomy) == 0L) {
+    cli::cli_alert_warning("falling back to empty taxonomy")
+    fallback <-
+      features_info |>
+      dplyr::select(1L) |>
+      tibble::add_column(
+        Domain = NA_character_,
+        .before = 1L
+      )
+    return(fallback)
+  }
+
+  taxonomy
+}
+
 detect_taxonomy_ranks <- function(taxonomy) {
   ranks <- taxonomy |> names()
   cli::cli_alert("taxonomy ranks detected: {.val {ranks}}")

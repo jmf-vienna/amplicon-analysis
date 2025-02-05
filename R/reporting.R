@@ -19,6 +19,7 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
     purrr::map(citation_text) |>
     stringr::str_c("* `", packages, "`: ", text = _, collapse = "\n")
 
+  input_files <- input_files |> discard(vec_is_empty)
   input_files_md <- stringr::str_c("* ", names(input_files), ": `", input_files, "`", collapse = "\n")
 
   glue::glue(
