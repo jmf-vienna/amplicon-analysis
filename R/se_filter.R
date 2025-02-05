@@ -94,7 +94,11 @@ make_filtered_features_table <- function(se) {
         dplyr::group_by(value) |>
         dplyr::summarise(count = dplyr::n(), features = Feature_ID |> str_flatten(" "))
     }) |>
-    dplyr::bind_rows(.id = "filter")
+    dplyr::bind_rows(.id = "filter") |>
+    dplyr::bind_rows(
+      # default empty table
+      tibble::tibble(filter = NA_character_, value = NA_character_, count = NA_integer_, features = NA_character_, .rows = 0L)
+    )
 }
 
 remove_cols <- function(se, cols) {
