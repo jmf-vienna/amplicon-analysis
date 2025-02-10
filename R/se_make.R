@@ -95,7 +95,7 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
     set_provenance(provenance)
 }
 
-get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min) {
+get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min, failed_samples) {
   failed_libraries <-
     se |>
     col_sums() |>
@@ -103,10 +103,21 @@ get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min
     dplyr::pull(ID)
 
   if (!vec_is_empty(failed_libraries)) {
-    cli::cli_alert("failed librar{?y/ies}: {.field {failed_libraries}}")
+    cli::cli_alert("failed librar{?y/ies} (not enough yield): {.field {failed_libraries}}")
   }
 
-  failed_libraries
+  failed_libraries_via_sample <-
+    se |>
+    SummarizedExperiment::colData() |>
+    as_tibble() |>
+    dplyr::filter(.data[[biosample_id_var_name(se)]] %in% failed_samples) |>
+    dplyr::pull(1L)
+
+  if (!vec_is_empty(failed_libraries_via_sample)) {
+    cli::cli_alert("failed librar{?y/ies} (marked via failed samples): {.field {failed_libraries_via_sample}}")
+  }
+
+  union(failed_libraries, failed_libraries_via_sample)
 }
 
 add_decontam <- function(se, negative_controls, failed_libraries = character()) {

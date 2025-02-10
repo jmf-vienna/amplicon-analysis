@@ -53,6 +53,7 @@ list(
   tar_target(decontam_threshold, config |> pluck("filter", "decontam", .default = 0.0)),
   tar_target(length_min, config |> pluck("filter", "length", "min", .default = 0L)),
   tar_target(length_max, config |> pluck("filter", "length", "max", .default = Inf)),
+  tar_target(failed_samples, config |> pluck("filter", "failed samples", .default = character())),
 
   ## config > sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
@@ -100,7 +101,7 @@ list(
   ### raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
   tar_target(se_libs_rawer, make_se(assay_data, libraries_col_data, row_data, ranks, se_libs_raw_provenance)),
-  tar_target(failed_libraries, get_failed_libraries(se_libs_rawer, negative_controls, pass_libraries_yield_min)),
+  tar_target(failed_libraries, get_failed_libraries(se_libs_rawer, negative_controls, pass_libraries_yield_min, failed_samples)),
   tar_target(se_libs_raw, se_libs_rawer |> add_decontam(negative_controls, failed_libraries)),
 
   ### clean (filter features) ----
