@@ -103,9 +103,7 @@ test_distance <- function(ps, variable) {
   }
 
   seq_len(2L) |>
-    map(\(i) {
-      provenance_as_tibble(ps)
-    }) |>
+    map(\(i) provenance_as_tibble(ps)) |>
     dplyr::bind_rows() |>
     tibble::add_column(
       `variable of interest` = variable,

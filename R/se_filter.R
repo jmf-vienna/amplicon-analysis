@@ -68,8 +68,10 @@ filtered_features_helper <- function(before, after, by) {
   removed <-
     SummarizedExperiment::rowData(before)[removed_ids, by, drop = FALSE] |>
     as_tibble("Feature_ID") |>
-    dplyr::mutate(across(any_of("decontam_p_value"), \(x) cut(x, 0L:10L * 0.1, right = FALSE))) |>
-    dplyr::mutate(across(where(is.numeric), as.character))
+    dplyr::mutate(
+      across(any_of("decontam_p_value"), \(x) cut(x, 0L:10L * 0.1, right = FALSE)),
+      across(where(is.numeric), as.character)
+    )
 
   removed_values <- removed |>
     dplyr::pull() |>
@@ -136,12 +138,7 @@ make_filtered_samples_table <- function(se_pairs) {
     se2 |>
       provenance_as_tibble() |>
       tibble::add_column(
-        removed =
-          setdiff(
-            se1 |> colnames(),
-            se2 |> colnames()
-          ) |>
-            str_flatten(" ")
+        removed = setdiff(colnames(se1), colnames(se2)) |> str_flatten(" ")
       )
   }) |>
     rev() |>

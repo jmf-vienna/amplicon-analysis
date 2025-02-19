@@ -1,6 +1,7 @@
 variable_info <- function(x) {
   counts <- vctrs::vec_count(x, sort = "none")
 
+  # nolint start: nrow_subset_linter.
   list(
     .length = length(x),
     .length_levels = nrow(counts),
@@ -21,6 +22,7 @@ variable_info <- function(x) {
         nrow()
       >= 2L
   )
+  # nolint end
 }
 
 ps_variable_info <- function(ps, variable_name) {
