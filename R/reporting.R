@@ -93,7 +93,7 @@ make_previous_summary_rows <- function(x, file_name, provenance) {
     tibble::add_column(
       project = provenance |> purrr::chuck("project"),
       gene = provenance |> purrr::chuck("gene"),
-      tool = file_name |> fs::path_file() |> stringr::str_remove("_.+"),
+      tool = file_name |> path_file() |> str_extract("[A-Z][A-Za-z0-9]+"),
       resolution = "libraries",
       state = "crude",
       sample = library_id_var_name,
