@@ -1,6 +1,7 @@
-make_col_data <- function(x) {
+make_col_data <- function(tables) {
+  tables <- keep(tables, \(x) !vec_is_empty(x))
   suppressMessages(
-    purrr::reduce(x, dplyr::inner_join)
+    reduce(tables, dplyr::inner_join)
   )
 }
 
@@ -180,6 +181,10 @@ tidy_counts <- function(x) {
 }
 
 tidy_samples <- function(x) {
+  x
+}
+
+tidy_sublibraries <- function(x) {
   x
 }
 

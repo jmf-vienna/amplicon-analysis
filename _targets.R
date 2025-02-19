@@ -70,10 +70,14 @@ list(
   tar_target(samples, readr::read_tsv(samples_file) |> tidy_samples()),
   tar_target(samples_col_data, make_col_data(list(samples))),
 
+  # column data > sublibraries ----
+  tar_target(sublibraries_file, "Sublibraries.tsv", format = "file"),
+  tar_target(sublibraries, readr::read_tsv(sublibraries_file) |> tidy_sublibraries()),
+
   # column data > libraries ----
   tar_target(libraries_file, "Libraries.tsv", format = "file"),
   tar_target(libraries, readr::read_tsv(libraries_file) |> tidy_libraries()),
-  tar_target(libraries_col_data, make_col_data(list(libraries, samples))),
+  tar_target(libraries_col_data, make_col_data(list(sublibraries, libraries, samples))),
 
   # assay data (counts) ----
   tar_target(counts_file, find_counts_file(data_dir_name), format = "file"),
