@@ -95,7 +95,7 @@ list(
   tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
   ## taxonomy ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
-  tar_target(taxonomy, readr::read_tsv(taxonomy_file) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
+  tar_target(taxonomy, readr::read_tsv(taxonomy_file, guess_max = Inf) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
   tar_target(ranks, detect_taxonomy_ranks(taxonomy)),
   ## merge ----
   tar_target(row_data, make_row_data(taxonomy, features_info)),
