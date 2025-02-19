@@ -31,7 +31,7 @@ find_taxonomy_file <- function(path, params) {
 }
 
 find_features_info_file <- function(path) {
-  file <- find_one_file(path, glob = "*ASVs.tsv", verbose = FALSE)
+  file <- find_one_file(path, regexp = "(features|ASVs|OTUs)[.]tsv$", verbose = FALSE)
   cli::cli_alert("found features info table at {.file {file}}")
   file
 }
