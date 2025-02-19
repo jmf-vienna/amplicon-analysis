@@ -1,7 +1,16 @@
+library(conflicted)
+
 if (interactive()) {
-  require(cli)
-  require(purrr)
-  require(stringr)
   require(targets)
+
+  require(cli)
+  require(dplyr)
+  require(fs)
+  require(purrr)
+  require(readr)
+  require(rlang)
+  require(stringr)
+  require(tibble)
+  require(tidyr)
   require(vctrs)
 }

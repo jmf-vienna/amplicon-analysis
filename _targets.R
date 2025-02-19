@@ -3,7 +3,7 @@ library(targets)
 jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
-  packages = c("cli", "fs", "purrr", "stringr", "vctrs"),
+  packages = c("cli", "fs", "purrr", "rlang", "stringr", "vctrs"),
   format = "qs",
   iteration = "list",
   controller = crew::crew_controller_local(workers = 2L)

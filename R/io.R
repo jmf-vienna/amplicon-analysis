@@ -2,14 +2,17 @@ force_valid_file_name <- function(x) {
   x |> stringr::str_replace_all("[^a-zA-Z0-9-]", "_")
 }
 
-find_one_file <- function(path, glob) {
+find_one_file <- function(path, glob, verbose = TRUE) {
   res <- dir_ls(path, type = "file", glob = glob)
 
   if (!is_string(res)) {
     cli_abort("Expected exactly one file matching the pattern {.arg {glob}} in {.path {path}}, but found {?none/}{.file {res}} instead!")
   }
 
-  cli_alert("found {.file {res}}")
+  if (verbose) {
+    cli_alert("found {.file {res}}")
+  }
+
   res
 }
 

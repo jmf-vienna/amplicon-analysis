@@ -1,11 +1,11 @@
 find_counts_file <- function(path) {
-  file <- fs::dir_ls(path, glob = "*counts.tsv")
+  file <- find_one_file(path, glob = "*counts.tsv", verbose = FALSE)
   cli::cli_alert("found counts table at {.file {file}}")
   file
 }
 
 find_libraries_summary_file <- function(path) {
-  file <- fs::dir_ls(path, glob = "*libraries.tsv")
+  file <- find_one_file(path, glob = "*libraries.tsv", verbose = FALSE)
   cli::cli_alert("found libraries summary table at {.file {file}}")
   file
 }
@@ -31,7 +31,7 @@ find_taxonomy_file <- function(path, params) {
 }
 
 find_features_info_file <- function(path) {
-  file <- fs::dir_ls(path, glob = "*ASVs.tsv")
+  file <- find_one_file(path, glob = "*ASVs.tsv", verbose = FALSE)
   cli::cli_alert("found features info table at {.file {file}}")
   file
 }
