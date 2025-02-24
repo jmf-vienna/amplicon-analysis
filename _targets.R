@@ -3,7 +3,7 @@ library(targets)
 jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
-  packages = c("cli", "fs", "purrr", "rlang", "stringr", "vctrs"),
+  packages = c("cli", "fs", "purrr", "readr", "rlang", "stringr", "vctrs"),
   format = "qs",
   iteration = "list",
   controller = crew::crew_controller_local(workers = 2L)
@@ -85,9 +85,13 @@ list(
   tar_target(assay_data, make_assay_data(counts)),
 
   # metrics from previous steps ----
-  tar_target(prior_library_metrics_file, find_prior_library_metrics_file(data_dir_name), format = "file"),
-  tar_target(prior_library_metrics, readr::read_tsv(prior_library_metrics_file) |> tidy_libraries_summary()),
-  tar_target(prior_libraries_summary_rows, make_previous_summary_rows(prior_library_metrics, prior_library_metrics_file, base_provenance)),
+  tar_target(prior_library_metrics_file, find_prior_metrics_file(data_dir_name), format = "file"),
+  tar_target(
+    prior_library_metrics,
+    prior_library_metrics_file |>
+      read_tsv() |>
+      tidy_prior_metrics(base_provenance)
+  ),
 
   # row data ----
   ## features info ----
@@ -182,37 +186,59 @@ list(
   ),
 
   ## all SEs ----
-  tar_target(se, list(se_libs_raw, se_raw, se_libs_clean, se_refined, se_deep)),
+  tar_target(lib_se, list(se_libs_raw, se_libs_clean)),
+  tar_target(sam_se, list(se_raw, se_refined, se_deep)),
+  tar_target(se, list_c(list(lib_se, sam_se))),
   tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
   tar_target(ps_file, export_ps(ps, rd_dir_name), format = "file", pattern = map(ps)),
 
-  ## metrics ----
-  tar_target(library_metrics, prior_library_metrics),
+  # library metrics ----
+  tar_target(se_library_metrics, make_library_metrics(lib_se), pattern = map(lib_se)),
+  tar_target(
+    library_metrics,
+    se_library_metrics |>
+      dplyr::bind_rows() |>
+      dplyr::bind_rows(prior_library_metrics, se_part = _) |>
+      dplyr::inner_join(dplyr::select(libraries, library_id = 1L, biosample_id = 2L), by = "library_id") |>
+      dplyr::relocate(count, .after = last_col()) |>
+      dplyr::arrange(library_id)
+  ),
   tar_target(
     library_metrics_file,
     write_tsv(library_metrics, fs::path(results_dir_name, stringr::str_c(file_prefix, "library_metrics", sep = "_"), ext = "tsv")),
     format = "file"
   ),
 
-  ## summary rows ----
-  tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
+  # biosample metrics ----
+  tar_target(se_biosample_metrics, make_biosample_metrics(sam_se), pattern = map(sam_se)),
   tar_target(
-    se_summary,
-    se_summary_rows |>
+    biosample_metrics,
+    se_biosample_metrics |>
       dplyr::bind_rows() |>
-      dplyr::bind_rows(prior_libraries_summary_rows, se_part = _) |>
-      dplyr::relocate(
-        sample, feature, biosamples, libraries, features,
-        total_counts, min_sample_counts, max_sample_counts, median_sample_counts,
-        min_sequence_length:median_sequence_length,
-        .after = last_col()
-      )
+      dplyr::bind_rows(
+        library_metrics |>
+          dplyr::group_by(across(!c(library_id, count))) |>
+          dplyr::summarise(count = sum(count), .groups = "drop"),
+        second_argument = _
+      ) |>
+      dplyr::relocate(sample_id_var, biosample_id, libraries, count, .after = last_col()) |>
+      dplyr::arrange(biosample_id)
   ),
   tar_target(
-    se_summary_file,
-    write_tsv(se_summary, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
+    biosample_metrics_file,
+    write_tsv(biosample_metrics, fs::path(results_dir_name, stringr::str_c(file_prefix, "biosample_metrics", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
+
+  # summary rows ----
+  tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
+  tar_target(se_summary, se_summary_rows |> dplyr::bind_rows()),
+  tar_target(metrics_summary, make_metrics_summary(library_metrics, biosample_metrics, se_summary)),
+  tar_target(
+    metrics_summary_file,
+    write_tsv(metrics_summary, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
     format = "file"
   ),
 

@@ -100,8 +100,8 @@ get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min
   failed_libraries <-
     se |>
     col_sums() |>
-    dplyr::filter(!ID %in% negative_controls, Sum < pass_libraries_yield_min) |>
-    dplyr::pull(ID)
+    dplyr::filter(!sample_id %in% negative_controls, count < pass_libraries_yield_min) |>
+    dplyr::pull(sample_id)
 
   if (!vec_is_empty(failed_libraries)) {
     cli::cli_alert("failed librar{?y/ies} (not enough yield): {.field {failed_libraries}}")
@@ -192,7 +192,7 @@ tidy_libraries <- function(x) {
   x
 }
 
-tidy_libraries_summary <- function(x) {
+tidy_prior_metrics <- function(x, base_provenance) {
   x
 }
 

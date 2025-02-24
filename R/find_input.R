@@ -4,7 +4,7 @@ find_counts_file <- function(path) {
   file
 }
 
-find_prior_library_metrics_file <- function(path) {
+find_prior_metrics_file <- function(path) {
   file <- find_one_file(path, regexp = "(libraries|samples)[.]tsv$", verbose = FALSE)
   cli::cli_alert("found libraries summary table at {.file {file}}")
   file

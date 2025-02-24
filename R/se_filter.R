@@ -112,8 +112,8 @@ filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   keep <-
     se |>
     col_sums() |>
-    dplyr::filter(Sum >= min, Sum <= max) |>
-    dplyr::pull(ID)
+    dplyr::filter(count >= min, count <= max) |>
+    dplyr::pull(sample_id)
 
   res <- se[, keep]
 

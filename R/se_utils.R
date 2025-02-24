@@ -70,39 +70,67 @@ col_sums <- function(se) {
     SummarizedExperiment::assay() |>
     colSums() |>
     as_tibble() |>
-    dplyr::rename(ID = rowname, Sum = x)
+    dplyr::rename(sample_id = rowname, count = x)
+}
+
+make_metrics <- function(se) {
+  loadNamespace(class(se))
+
+  se |>
+    provenance_as_tibble() |>
+    tibble::add_column(
+      tool = "JADA4",
+      sample_id_var = sample_id_var_name(se)
+    ) |>
+    dplyr::bind_cols(
+      col_sums(se)
+    )
+}
+
+make_library_metrics <- function(se) {
+  se |>
+    make_metrics() |>
+    dplyr::rename(library_id = sample_id)
+}
+
+make_biosample_metrics <- function(se) {
+  loadNamespace(class(se))
+
+  n_libs <-
+    se |>
+    SummarizedExperiment::colData() |>
+    as_tibble() |>
+    dplyr::select(biosample_id = 1L, libraries = .Number_of_libraries)
+
+  se |>
+    make_metrics() |>
+    dplyr::rename(biosample_id = sample_id) |>
+    dplyr::inner_join(n_libs, by = "biosample_id")
+}
+
+make_metrics_summary <- function(library_metrics, biosample_metrics, se_summary) {
+  dplyr::bind_rows(
+    biosample_metrics |> dplyr::filter(resolution == "samples"),
+    library_metrics
+  ) |>
+    dplyr::filter(count > 0L) |>
+    dplyr::mutate(state = forcats::fct_inorder(state)) |>
+    dplyr::group_by(dplyr::across(project:sample_id_var)) |>
+    dplyr::summarise(
+      libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(library_id, na.rm = TRUE),
+      biosamples = dplyr::n_distinct(biosample_id),
+      total_counts = sum(count),
+      min_sample_counts = min(count),
+      max_sample_counts = max(count),
+      median_sample_counts = median(count),
+      .groups = "drop"
+    ) |>
+    dplyr::left_join(se_summary, by = dplyr::join_by(project, gene, resolution, state, `sample filter ≥`)) |>
+    dplyr::arrange(!is.na(`sample filter ≥`))
 }
 
 summary_as_row <- function(se) {
   loadNamespace(class(se))
-
-  col_data <-
-    se |>
-    SummarizedExperiment::colData() |>
-    as_tibble()
-
-  biosample_id_var_name <- se |> biosample_id_var_name()
-  n_biosamples <-
-    col_data |>
-    dplyr::pull(biosample_id_var_name) |>
-    vec_unique_count()
-
-  library_id_var_name <- se |> library_id_var_name()
-  n_libraries <- if (col_data |> tibble::has_name(".Number_of_libraries")) {
-    col_data |>
-      dplyr::pull(.Number_of_libraries) |>
-      sum()
-  } else {
-    col_data |>
-      dplyr::pull(library_id_var_name) |>
-      vec_unique_count()
-  }
-
-  sample_counts <-
-    se |>
-    col_sums() |>
-    dplyr::pull(Sum)
-  if (vec_is_empty(sample_counts)) sample_counts <- NA_integer_
 
   sequence_length <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
   if (vec_is_empty(sequence_length)) sequence_length <- NA_integer_
@@ -110,16 +138,8 @@ summary_as_row <- function(se) {
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
-      tool = "JADA4",
-      sample = se |> sample_id_var_name(),
-      feature = se |> feature_id_var_name(),
-      biosamples = n_biosamples,
-      libraries = n_libraries,
+      feature_id_var = se |> feature_id_var_name(),
       features = nrow(se),
-      total_counts = sum(sample_counts),
-      min_sample_counts = min(sample_counts),
-      max_sample_counts = max(sample_counts),
-      median_sample_counts = median(sample_counts),
       min_sequence_length = min(sequence_length),
       max_sequence_length = max(sequence_length),
       median_sequence_length = median(sequence_length)

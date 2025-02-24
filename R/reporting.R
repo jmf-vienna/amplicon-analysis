@@ -72,31 +72,3 @@ citation_text <- function(x) {
   ) |>
     stringr::str_replace("\\*([0-9]+)\\*", "__\\1__") # nolint: nonportable_path_linter.
 }
-
-make_previous_summary_rows <- function(x, file_name, provenance) {
-  library_id_var_name <-
-    x |>
-    names() |>
-    head(1L)
-
-  x |>
-    dplyr::mutate(phase = forcats::fct_inorder(phase)) |>
-    dplyr::group_by(phase) |>
-    dplyr::filter(count > 0L) |>
-    dplyr::summarise(
-      libraries = dplyr::n_distinct(.data[[library_id_var_name]]),
-      total_counts = sum(count),
-      min_sample_counts = min(count),
-      max_sample_counts = max(count),
-      median_sample_counts = median(count)
-    ) |>
-    tibble::add_column(
-      project = provenance |> purrr::chuck("project"),
-      gene = provenance |> purrr::chuck("gene"),
-      tool = file_name |> path_file() |> str_extract("[A-Z][A-Za-z0-9]+"),
-      resolution = "libraries",
-      state = "crude",
-      sample = library_id_var_name,
-      .before = 1L
-    )
-}
