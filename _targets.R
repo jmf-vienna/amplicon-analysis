@@ -106,7 +106,7 @@ list(
   tar_target(row_data, make_row_data(taxonomy, features_info)),
 
   # variable names ----
-  tar_target(library_id_var, libraries |> first_name()),
+  tar_target(library_id_var, libraries_col_data |> first_name()),
   tar_target(biosample_id_var, samples |> first_name()),
   tar_target(feature_id_var, ranks |> dplyr::last()),
 
@@ -208,7 +208,7 @@ list(
       dplyr::bind_rows() |>
       dplyr::bind_rows(prior_library_metrics, se_part = _) |>
       dplyr::inner_join(
-        dplyr::select(libraries, library_id = all_of(library_id_var), biosample_id = all_of(biosample_id_var)),
+        dplyr::select(libraries_col_data, library_id = all_of(library_id_var), biosample_id = all_of(biosample_id_var)),
         by = "library_id"
       ) |>
       dplyr::relocate(count, .after = last_col()) |>
