@@ -84,10 +84,10 @@ list(
   tar_target(counts, readr::read_tsv(counts_file) |> tidy_counts()),
   tar_target(assay_data, make_assay_data(counts)),
 
-  # summary data from previous steps ----
-  tar_target(libraries_summary_file, find_libraries_summary_file(data_dir_name), format = "file"),
-  tar_target(libraries_summary, readr::read_tsv(libraries_summary_file) |> tidy_libraries_summary()),
-  tar_target(libraries_summary_rows, make_previous_summary_rows(libraries_summary, libraries_summary_file, base_provenance)),
+  # metrics from previous steps ----
+  tar_target(library_metrics_file, find_library_metrics_file(data_dir_name), format = "file"),
+  tar_target(library_metrics, readr::read_tsv(library_metrics_file) |> tidy_libraries_summary()),
+  tar_target(libraries_summary_rows, make_previous_summary_rows(library_metrics, library_metrics_file, base_provenance)),
 
   # row data ----
   ## features info ----
@@ -242,7 +242,7 @@ list(
         samples = samples_file,
         libraries = libraries_file,
         counts = counts_file,
-        `libraries summary` = libraries_summary_file,
+        `library metrics` = library_metrics_file,
         taxonomy = taxonomy_file
       ),
       list(
