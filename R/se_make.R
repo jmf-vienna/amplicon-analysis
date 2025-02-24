@@ -192,7 +192,7 @@ tidy_libraries <- function(x) {
   x
 }
 
-tidy_prior_metrics <- function(x, base_provenance) {
+tidy_prior_metrics <- function(x) {
   x
 }
 

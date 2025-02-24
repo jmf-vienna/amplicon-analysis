@@ -90,7 +90,8 @@ list(
     prior_library_metrics,
     prior_library_metrics_file |>
       read_tsv() |>
-      tidy_prior_metrics(base_provenance)
+      tidy_prior_metrics() |>
+      dplyr::bind_cols(base_provenance |> tibble::as_tibble(), second_argument = _)
   ),
 
   # row data ----
