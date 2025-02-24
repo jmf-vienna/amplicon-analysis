@@ -104,6 +104,11 @@ list(
   ## merge ----
   tar_target(row_data, make_row_data(taxonomy, features_info)),
 
+  # variable names ----
+  tar_target(library_id_var, libraries |> first_name()),
+  tar_target(biosample_id_var, samples |> first_name()),
+  tar_target(feature_id_var, ranks |> dplyr::last()),
+
   # SEs ----
   ## library SEs ----
   ### raw ----
@@ -149,7 +154,7 @@ list(
   ### raw (not used later on) ----
   tar_target(se_raw, merge_cols(
     se_libs_raw,
-    samples |> names() |> dplyr::first(),
+    biosample_id_var,
     samples |> names(),
     list(resolution = "samples")
   )),
@@ -157,7 +162,7 @@ list(
   ### refined ----
   tar_target(se_refined, merge_cols(
     se_libs_pass,
-    samples |> names() |> dplyr::first(),
+    biosample_id_var,
     samples |> names(),
     list(resolution = "samples", state = "refined")
   )),
@@ -201,7 +206,10 @@ list(
     se_library_metrics |>
       dplyr::bind_rows() |>
       dplyr::bind_rows(prior_library_metrics, se_part = _) |>
-      dplyr::inner_join(dplyr::select(libraries, library_id = 1L, biosample_id = 2L), by = "library_id") |>
+      dplyr::inner_join(
+        dplyr::select(libraries, library_id = all_of(library_id_var), biosample_id = all_of(biosample_id_var)),
+        by = "library_id"
+      ) |>
       dplyr::relocate(count, .after = last_col()) |>
       dplyr::arrange(library_id)
   ),
