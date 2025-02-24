@@ -85,9 +85,9 @@ list(
   tar_target(assay_data, make_assay_data(counts)),
 
   # metrics from previous steps ----
-  tar_target(library_metrics_file, find_library_metrics_file(data_dir_name), format = "file"),
-  tar_target(library_metrics, readr::read_tsv(library_metrics_file) |> tidy_libraries_summary()),
-  tar_target(libraries_summary_rows, make_previous_summary_rows(library_metrics, library_metrics_file, base_provenance)),
+  tar_target(prior_library_metrics_file, find_prior_library_metrics_file(data_dir_name), format = "file"),
+  tar_target(prior_library_metrics, readr::read_tsv(prior_library_metrics_file) |> tidy_libraries_summary()),
+  tar_target(prior_libraries_summary_rows, make_previous_summary_rows(prior_library_metrics, prior_library_metrics_file, base_provenance)),
 
   # row data ----
   ## features info ----
@@ -188,13 +188,21 @@ list(
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
   tar_target(ps_file, export_ps(ps, rd_dir_name), format = "file", pattern = map(ps)),
 
-  ## SE summaries ----
+  ## metrics ----
+  tar_target(library_metrics, prior_library_metrics),
+  tar_target(
+    library_metrics_file,
+    write_tsv(library_metrics, fs::path(results_dir_name, stringr::str_c(file_prefix, "library_metrics", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
+
+  ## summary rows ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(
     se_summary,
     se_summary_rows |>
       dplyr::bind_rows() |>
-      dplyr::bind_rows(libraries_summary_rows, se_part = _) |>
+      dplyr::bind_rows(prior_libraries_summary_rows, se_part = _) |>
       dplyr::relocate(
         sample, feature, biosamples, libraries, features,
         total_counts, min_sample_counts, max_sample_counts, median_sample_counts,
@@ -242,7 +250,7 @@ list(
         samples = samples_file,
         libraries = libraries_file,
         counts = counts_file,
-        `library metrics` = library_metrics_file,
+        `library metrics` = prior_library_metrics_file,
         taxonomy = taxonomy_file
       ),
       list(
