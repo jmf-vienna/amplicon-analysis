@@ -20,7 +20,7 @@ first_id_name <- function(x) {
     dplyr::first()
 }
 
-as_tibble <- function(x, var = "rowname") {
+as_full_tibble <- function(x, var = "rowname") {
   x |>
     as.data.frame() |>
     tibble::rownames_to_column(var) |>

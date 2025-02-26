@@ -67,7 +67,7 @@ filtered_features_helper <- function(before, after, by) {
   removed_ids <- setdiff(rownames(before), rownames(after))
   removed <-
     SummarizedExperiment::rowData(before)[removed_ids, by, drop = FALSE] |>
-    as_tibble("Feature_ID") |>
+    as_full_tibble("Feature_ID") |>
     dplyr::mutate(
       across(any_of("decontam_p_value"), \(x) cut(x, 0L:10L * 0.1, right = FALSE)),
       across(where(is.numeric), as.character)

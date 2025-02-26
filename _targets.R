@@ -91,7 +91,7 @@ list(
     prior_library_metrics_file |>
       read_tsv() |>
       tidy_prior_metrics() |>
-      bind_cols(base_provenance |> tibble::as_tibble(), second_argument = _)
+      bind_cols(base_provenance |> as_tibble(), second_argument = _)
   ),
 
   # row data ----

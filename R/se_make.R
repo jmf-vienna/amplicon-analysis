@@ -110,7 +110,7 @@ get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min
   failed_libraries_via_sample <-
     se |>
     SummarizedExperiment::colData() |>
-    as_tibble() |>
+    as_full_tibble() |>
     dplyr::filter(.data[[biosample_id_var_name(se)]] %in% failed_samples) |>
     dplyr::pull(1L)
 
@@ -152,7 +152,7 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
   lib_counts <-
     se |>
     SummarizedExperiment::colData() |>
-    as_tibble() |>
+    as_full_tibble() |>
     dplyr::group_by(across(all_of(by))) |>
     dplyr::summarise(
       .Number_of_libraries = dplyr::n(),
@@ -165,7 +165,7 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
 
   SummarizedExperiment::colData(se) <-
     SummarizedExperiment::colData(se) |>
-    as_tibble() |>
+    as_full_tibble() |>
     dplyr::select(all_of(keep_names)) |>
     dplyr::inner_join(lib_counts, by = by) |>
     S4Vectors::DataFrame(row.names = colnames(se))

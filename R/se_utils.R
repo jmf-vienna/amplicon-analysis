@@ -69,7 +69,7 @@ col_sums <- function(se) {
   se |>
     SummarizedExperiment::assay() |>
     colSums() |>
-    as_tibble() |>
+    as_full_tibble() |>
     dplyr::rename(sample_id = rowname, count = x)
 }
 
@@ -99,7 +99,7 @@ make_biosample_metrics <- function(se, biosample_id_var) {
   n_libs <-
     se |>
     SummarizedExperiment::colData() |>
-    as_tibble() |>
+    as_full_tibble() |>
     dplyr::select(sample_id = 1L, libraries = .Number_of_libraries)
 
   se |>
@@ -165,25 +165,25 @@ write_flattened <- function(se, file, assay_name = "counts") {
 
   assay_data <-
     assay_matrix |>
-    as_tibble("ID") |>
+    as_full_tibble("ID") |>
     dplyr::mutate(across(where(is.numeric), as.character))
 
   row_sums <-
     assay_matrix |>
     rowSums() |>
-    as_tibble("ID") |>
+    as_full_tibble("ID") |>
     dplyr::rename(.row_sums = x)
 
   prevalence <-
     (assay_matrix > 0L) |>
     rowSums() |>
-    as_tibble("ID") |>
+    as_full_tibble("ID") |>
     dplyr::rename(.prevalence = x)
 
   row_data <-
     se |>
     SummarizedExperiment::rowData() |>
-    as_tibble("ID") |>
+    as_full_tibble("ID") |>
     dplyr::left_join(row_sums, by = "ID") |>
     dplyr::left_join(prevalence, by = "ID") |>
     dplyr::relocate(.row_sums:last_col(), .after = ID)
@@ -215,7 +215,7 @@ write_flattened <- function(se, file, assay_name = "counts") {
     as.data.frame(row.names = rownames(col_data)) |>
     as.matrix() |>
     t() |>
-    as_tibble("ID") |>
+    as_full_tibble("ID") |>
     dplyr::bind_rows(features) |>
     dplyr::bind_rows(col_sums)
 
