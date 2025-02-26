@@ -76,6 +76,12 @@ col_sums <- function(se) {
 make_metrics <- function(se) {
   loadNamespace(class(se))
 
+  features <-
+    (SummarizedExperiment::assay(se) > 0L) |>
+    colSums() |>
+    as_full_tibble() |>
+    dplyr::rename(sample_id = rowname, features = x)
+
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
@@ -84,7 +90,8 @@ make_metrics <- function(se) {
     ) |>
     dplyr::bind_cols(
       col_sums(se)
-    )
+    ) |>
+    inner_join(features)
 }
 
 make_library_metrics <- function(se, library_id_var) {
@@ -105,7 +112,7 @@ make_biosample_metrics <- function(se, biosample_id_var) {
   se |>
     make_metrics() |>
     dplyr::inner_join(n_libs, by = "sample_id") |>
-    dplyr::relocate(count, .after = last_col()) |>
+    dplyr::relocate(count, features, .after = last_col()) |>
     dplyr::rename("{biosample_id_var}" := sample_id)
 }
 

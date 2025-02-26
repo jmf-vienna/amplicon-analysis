@@ -208,7 +208,7 @@ list(
         select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
         by = library_id_var
       ) |>
-      relocate(count, .after = last_col()) |>
+      relocate(count, features, .after = last_col()) |>
       smart_arrange() |>
       arrange(across(all_of(library_id_var)))
   ),
@@ -227,8 +227,8 @@ list(
       add_column(phase = NA_character_, .after = "state") |>
       list(
         library_metrics |>
-          group_by(across(!c(all_of(library_id_var), count))) |>
-          summarise(libraries = NA_integer_, count = sum(count), .groups = "drop"),
+          group_by(across(!c(all_of(library_id_var), count, features))) |>
+          summarise(libraries = NA_integer_, count = sum(count), features = NA_integer_, .groups = "drop"),
         second_argument = _
       ) |>
       smart_bind_rows() |>
