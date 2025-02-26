@@ -1,3 +1,4 @@
+cli::cli_alert("sourcing .Rprofile")
 library(conflicted)
 
 if (interactive()) {
@@ -14,4 +15,6 @@ if (interactive()) {
   require(tibble)
   require(tidyr)
   require(vctrs)
+} else {
+  cli::cli_abort("sourcing .Rprofile non-interactively")
 }
