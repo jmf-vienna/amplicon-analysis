@@ -45,3 +45,9 @@ smart_bind_rows <- function(x) {
     dplyr::bind_rows() |>
     dplyr::relocate(tidyselect::all_of(ordered_names))
 }
+
+smart_arrange <- function(x, cols = c("tool", "resolution", "state", "phase")) {
+  x |>
+    dplyr::mutate(dplyr::across(any_of(cols), forcats::fct_inorder)) |>
+    dplyr::arrange(dplyr::across(any_of(cols)))
+}

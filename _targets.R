@@ -205,13 +205,14 @@ list(
   tar_target(
     library_metrics,
     se_library_metrics |>
-      dplyr::bind_rows() |>
-      dplyr::bind_rows(prior_library_metrics, se_part = _) |>
+      smart_bind_rows() |>
+      dplyr::bind_rows(prior_library_metrics, second_argument = _) |>
       dplyr::inner_join(
         dplyr::select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
         by = library_id_var
       ) |>
       dplyr::relocate(count, .after = last_col()) |>
+      smart_arrange() |>
       dplyr::arrange(dplyr::across(all_of(library_id_var)))
   ),
   tar_target(
@@ -225,14 +226,16 @@ list(
   tar_target(
     biosample_metrics,
     se_biosample_metrics |>
-      dplyr::bind_rows() |>
-      dplyr::bind_rows(
+      smart_bind_rows() |>
+      tibble::add_column(phase = NA_character_, .after = "state") |>
+      list(
         library_metrics |>
           dplyr::group_by(across(!c(all_of(library_id_var), count))) |>
-          dplyr::summarise(count = sum(count), .groups = "drop"),
+          dplyr::summarise(libraries = NA_integer_, count = sum(count), .groups = "drop"),
         second_argument = _
       ) |>
-      dplyr::relocate(all_of(biosample_id_var), libraries, count, .after = last_col()) |>
+      smart_bind_rows() |>
+      smart_arrange() |>
       dplyr::arrange(dplyr::across(all_of(biosample_id_var)))
   ),
   tar_target(

@@ -79,7 +79,8 @@ make_metrics <- function(se) {
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
-      tool = "JADA4"
+      tool = "JADA4",
+      .after = "gene"
     ) |>
     dplyr::bind_cols(
       col_sums(se)
@@ -104,6 +105,7 @@ make_biosample_metrics <- function(se, biosample_id_var) {
   se |>
     make_metrics() |>
     dplyr::inner_join(n_libs, by = "sample_id") |>
+    dplyr::relocate(count, .after = last_col()) |>
     dplyr::rename("{biosample_id_var}" := sample_id)
 }
 
@@ -113,7 +115,6 @@ make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_
     library_metrics
   ) |>
     dplyr::filter(count > 0L) |>
-    dplyr::mutate(state = forcats::fct_inorder(state)) |>
     dplyr::group_by(dplyr::across(project:`sample filter ≥`)) |>
     dplyr::summarise(
       libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(.data[[library_id_var]], na.rm = TRUE),
