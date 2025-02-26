@@ -42,7 +42,7 @@ as_file_name <- function(x) {
     force_valid_file_name()
 }
 
-as_title <- function(x) {
+as_title <- function(x, collapse = " | ") {
   x <-
     x |>
     unlist()
@@ -54,7 +54,7 @@ as_title <- function(x) {
 
   stringr::str_c(n, dplyr::if_else(str_length(n) > 0L, ": ", ""), x) |>
     stringr::str_replace("(≤|≥): ", "\\1") |>
-    stringr::str_flatten(" | ")
+    stringr::str_flatten(collapse)
 }
 
 plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subtitles = NULL) {
