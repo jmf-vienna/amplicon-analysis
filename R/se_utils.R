@@ -79,46 +79,45 @@ make_metrics <- function(se) {
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
-      tool = "JADA4",
-      sample_id_var = sample_id_var_name(se)
+      tool = "JADA4"
     ) |>
     dplyr::bind_cols(
       col_sums(se)
     )
 }
 
-make_library_metrics <- function(se) {
+make_library_metrics <- function(se, library_id_var) {
   se |>
     make_metrics() |>
-    dplyr::rename(library_id = sample_id)
+    dplyr::rename("{library_id_var}" := sample_id)
 }
 
-make_biosample_metrics <- function(se) {
+make_biosample_metrics <- function(se, biosample_id_var) {
   loadNamespace(class(se))
 
   n_libs <-
     se |>
     SummarizedExperiment::colData() |>
     as_tibble() |>
-    dplyr::select(biosample_id = 1L, libraries = .Number_of_libraries)
+    dplyr::select(sample_id = 1L, libraries = .Number_of_libraries)
 
   se |>
     make_metrics() |>
-    dplyr::rename(biosample_id = sample_id) |>
-    dplyr::inner_join(n_libs, by = "biosample_id")
+    dplyr::inner_join(n_libs, by = "sample_id") |>
+    dplyr::rename("{biosample_id_var}" := sample_id)
 }
 
-make_metrics_summary <- function(library_metrics, biosample_metrics, se_summary) {
+make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary) {
   dplyr::bind_rows(
     biosample_metrics |> dplyr::filter(resolution == "samples"),
     library_metrics
   ) |>
     dplyr::filter(count > 0L) |>
     dplyr::mutate(state = forcats::fct_inorder(state)) |>
-    dplyr::group_by(dplyr::across(project:sample_id_var)) |>
+    dplyr::group_by(dplyr::across(project:`sample filter ≥`)) |>
     dplyr::summarise(
-      libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(library_id, na.rm = TRUE),
-      biosamples = dplyr::n_distinct(biosample_id),
+      libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(.data[[library_id_var]], na.rm = TRUE),
+      biosamples = dplyr::n_distinct(.data[[biosample_id_var]]),
       total_counts = sum(count),
       min_sample_counts = min(count),
       max_sample_counts = max(count),

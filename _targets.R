@@ -201,18 +201,18 @@ list(
   tar_target(ps_file, export_ps(ps, rd_dir_name), format = "file", pattern = map(ps)),
 
   # library metrics ----
-  tar_target(se_library_metrics, make_library_metrics(lib_se), pattern = map(lib_se)),
+  tar_target(se_library_metrics, make_library_metrics(lib_se, library_id_var), pattern = map(lib_se)),
   tar_target(
     library_metrics,
     se_library_metrics |>
       dplyr::bind_rows() |>
       dplyr::bind_rows(prior_library_metrics, se_part = _) |>
       dplyr::inner_join(
-        dplyr::select(libraries_col_data, library_id = all_of(library_id_var), biosample_id = all_of(biosample_id_var)),
-        by = "library_id"
+        dplyr::select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
+        by = library_id_var
       ) |>
       dplyr::relocate(count, .after = last_col()) |>
-      dplyr::arrange(library_id)
+      dplyr::arrange(dplyr::across(all_of(library_id_var)))
   ),
   tar_target(
     library_metrics_file,
@@ -221,19 +221,19 @@ list(
   ),
 
   # biosample metrics ----
-  tar_target(se_biosample_metrics, make_biosample_metrics(sam_se), pattern = map(sam_se)),
+  tar_target(se_biosample_metrics, make_biosample_metrics(sam_se, biosample_id_var), pattern = map(sam_se)),
   tar_target(
     biosample_metrics,
     se_biosample_metrics |>
       dplyr::bind_rows() |>
       dplyr::bind_rows(
         library_metrics |>
-          dplyr::group_by(across(!c(library_id, count))) |>
+          dplyr::group_by(across(!c(all_of(library_id_var), count))) |>
           dplyr::summarise(count = sum(count), .groups = "drop"),
         second_argument = _
       ) |>
-      dplyr::relocate(sample_id_var, biosample_id, libraries, count, .after = last_col()) |>
-      dplyr::arrange(biosample_id)
+      dplyr::relocate(all_of(biosample_id_var), libraries, count, .after = last_col()) |>
+      dplyr::arrange(dplyr::across(all_of(biosample_id_var)))
   ),
   tar_target(
     biosample_metrics_file,
@@ -244,7 +244,7 @@ list(
   # summary rows ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(se_summary, se_summary_rows |> dplyr::bind_rows()),
-  tar_target(metrics_summary, make_metrics_summary(library_metrics, biosample_metrics, se_summary)),
+  tar_target(metrics_summary, make_metrics_summary(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary)),
   tar_target(
     metrics_summary_file,
     write_tsv(metrics_summary, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
