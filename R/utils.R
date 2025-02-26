@@ -27,7 +27,7 @@ as_tibble <- function(x, var = "rowname") {
     tibble::as_tibble()
 }
 
-bind_rows <- function(x) {
+smart_bind_rows <- function(x) {
   widest_names <-
     x |>
     purrr::map(names) |>
