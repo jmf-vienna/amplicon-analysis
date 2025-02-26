@@ -5,6 +5,7 @@ if (interactive()) {
 
   require(cli)
   require(dplyr)
+  require(forcats)
   require(fs)
   require(purrr)
   require(readr)

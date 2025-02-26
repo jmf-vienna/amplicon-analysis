@@ -3,7 +3,7 @@ library(targets)
 jmf::quiet()
 options(warn = 2L)
 targets::tar_option_set(
-  packages = c("cli", "fs", "purrr", "readr", "rlang", "stringr", "vctrs"),
+  packages = c("cli", "dplyr", "forcats", "fs", "purrr", "readr", "rlang", "stringr", "tibble", "tidyr", "vctrs"),
   format = "qs",
   iteration = "list",
   controller = crew::crew_controller_local(workers = 2L)
@@ -91,7 +91,7 @@ list(
     prior_library_metrics_file |>
       read_tsv() |>
       tidy_prior_metrics() |>
-      dplyr::bind_cols(base_provenance |> tibble::as_tibble(), second_argument = _)
+      bind_cols(base_provenance |> tibble::as_tibble(), second_argument = _)
   ),
 
   # row data ----
@@ -108,7 +108,7 @@ list(
   # variable names ----
   tar_target(library_id_var, libraries_col_data |> first_name()),
   tar_target(biosample_id_var, samples |> first_name()),
-  tar_target(feature_id_var, ranks |> dplyr::last()),
+  tar_target(feature_id_var, ranks |> last()),
 
   # SEs ----
   ## library SEs ----
@@ -206,14 +206,14 @@ list(
     library_metrics,
     se_library_metrics |>
       smart_bind_rows() |>
-      dplyr::bind_rows(prior_library_metrics, second_argument = _) |>
-      dplyr::inner_join(
-        dplyr::select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
+      bind_rows(prior_library_metrics, second_argument = _) |>
+      inner_join(
+        select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
         by = library_id_var
       ) |>
-      dplyr::relocate(count, .after = last_col()) |>
+      relocate(count, .after = last_col()) |>
       smart_arrange() |>
-      dplyr::arrange(dplyr::across(all_of(library_id_var)))
+      arrange(across(all_of(library_id_var)))
   ),
   tar_target(
     library_metrics_file,
@@ -230,13 +230,13 @@ list(
       tibble::add_column(phase = NA_character_, .after = "state") |>
       list(
         library_metrics |>
-          dplyr::group_by(across(!c(all_of(library_id_var), count))) |>
-          dplyr::summarise(libraries = NA_integer_, count = sum(count), .groups = "drop"),
+          group_by(across(!c(all_of(library_id_var), count))) |>
+          summarise(libraries = NA_integer_, count = sum(count), .groups = "drop"),
         second_argument = _
       ) |>
       smart_bind_rows() |>
       smart_arrange() |>
-      dplyr::arrange(dplyr::across(all_of(biosample_id_var)))
+      arrange(across(all_of(biosample_id_var)))
   ),
   tar_target(
     biosample_metrics_file,
@@ -246,7 +246,7 @@ list(
 
   # summary rows ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
-  tar_target(se_summary, se_summary_rows |> dplyr::bind_rows()),
+  tar_target(se_summary, se_summary_rows |> bind_rows()),
   tar_target(metrics_summary, make_metrics_summary(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary)),
   tar_target(
     metrics_summary_file,
