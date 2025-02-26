@@ -2,31 +2,28 @@ library(targets)
 
 jmf::quiet()
 options(warn = 2L)
-targets::tar_option_set(
+tar_option_set(
   packages = c("cli", "dplyr", "forcats", "fs", "purrr", "readr", "rlang", "stringr", "tibble", "tidyr", "vctrs"),
   format = "qs",
   iteration = "list",
   controller = crew::crew_controller_local(workers = 2L)
 )
 
-targets::tar_config_get("script") |>
+tar_config_get("script") |>
   fs::path_dir() |>
   fs::path("R") |>
-  fs::dir_ls(glob = "*.R") |>
-  purrr::walk(source)
+  tar_source()
 
 if (fs::dir_exists("R")) {
-  fs::path("R") |>
-    fs::dir_ls(glob = "*.R") |>
-    purrr::walk(source)
+  tar_source()
 }
 
 if (fs::file_exists("customize.R")) {
-  source("customize.R")
+  tar_source("customize.R")
 }
 
 list(
-  tar_target(pipeline_version, get_pipeline_version(), cue = targets::tar_cue(mode = "always")),
+  tar_target(pipeline_version, get_pipeline_version(), cue = tar_cue(mode = "always")),
   tar_target(theme, ggplot_theme()),
 
   # config ----
@@ -67,21 +64,21 @@ list(
 
   # column data > samples ----
   tar_target(samples_file, "Samples.tsv", format = "file"),
-  tar_target(samples, readr::read_tsv(samples_file) |> tidy_samples()),
+  tar_target(samples, read_tsv(samples_file) |> tidy_samples()),
   tar_target(samples_col_data, make_col_data(list(samples))),
 
   # column data > sublibraries ----
   tar_target(sublibraries_file, "Sublibraries.tsv", format = "file"),
-  tar_target(sublibraries, readr::read_tsv(sublibraries_file) |> tidy_sublibraries()),
+  tar_target(sublibraries, read_tsv(sublibraries_file) |> tidy_sublibraries()),
 
   # column data > libraries ----
   tar_target(libraries_file, "Libraries.tsv", format = "file"),
-  tar_target(libraries, readr::read_tsv(libraries_file) |> tidy_libraries()),
+  tar_target(libraries, read_tsv(libraries_file) |> tidy_libraries()),
   tar_target(libraries_col_data, make_col_data(list(sublibraries, libraries, samples))),
 
   # assay data (counts) ----
   tar_target(counts_file, find_counts_file(data_dir_name), format = "file"),
-  tar_target(counts, readr::read_tsv(counts_file) |> tidy_counts()),
+  tar_target(counts, read_tsv(counts_file) |> tidy_counts()),
   tar_target(assay_data, make_assay_data(counts)),
 
   # metrics from previous steps ----
@@ -97,10 +94,10 @@ list(
   # row data ----
   ## features info ----
   tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
-  tar_target(features_info, readr::read_tsv(features_info_file) |> tidy_features_info()),
+  tar_target(features_info, read_tsv(features_info_file) |> tidy_features_info()),
   ## taxonomy ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
-  tar_target(taxonomy, readr::read_tsv(taxonomy_file, guess_max = Inf) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
+  tar_target(taxonomy, read_tsv(taxonomy_file, guess_max = Inf) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
   tar_target(ranks, detect_taxonomy_ranks(taxonomy)),
   ## merge ----
   tar_target(row_data, make_row_data(taxonomy, features_info)),
@@ -136,7 +133,7 @@ list(
     filtered_features_file,
     write_tsv(
       filtered_features_table,
-      fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_features", sep = "_"), ext = "tsv"),
+      path(results_dir_name, str_c(file_prefix, "filtered_features", sep = "_"), ext = "tsv"),
       na = "explicit"
     ),
     format = "file"
@@ -186,7 +183,7 @@ list(
     filtered_samples_table_file,
     write_tsv(
       filtered_samples_table,
-      fs::path(results_dir_name, stringr::str_c(file_prefix, "filtered_samples", sep = "_"), ext = "tsv")
+      path(results_dir_name, str_c(file_prefix, "filtered_samples", sep = "_"), ext = "tsv")
     ),
     format = "file"
   ),
@@ -217,7 +214,7 @@ list(
   ),
   tar_target(
     library_metrics_file,
-    write_tsv(library_metrics, fs::path(results_dir_name, stringr::str_c(file_prefix, "library_metrics", sep = "_"), ext = "tsv")),
+    write_tsv(library_metrics, path(results_dir_name, str_c(file_prefix, "library_metrics", sep = "_"), ext = "tsv")),
     format = "file"
   ),
 
@@ -227,7 +224,7 @@ list(
     biosample_metrics,
     se_biosample_metrics |>
       smart_bind_rows() |>
-      tibble::add_column(phase = NA_character_, .after = "state") |>
+      add_column(phase = NA_character_, .after = "state") |>
       list(
         library_metrics |>
           group_by(across(!c(all_of(library_id_var), count))) |>
@@ -240,7 +237,7 @@ list(
   ),
   tar_target(
     biosample_metrics_file,
-    write_tsv(biosample_metrics, fs::path(results_dir_name, stringr::str_c(file_prefix, "biosample_metrics", sep = "_"), ext = "tsv")),
+    write_tsv(biosample_metrics, path(results_dir_name, str_c(file_prefix, "biosample_metrics", sep = "_"), ext = "tsv")),
     format = "file"
   ),
 
@@ -250,7 +247,7 @@ list(
   tar_target(metrics_summary, make_metrics_summary(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary)),
   tar_target(
     metrics_summary_file,
-    write_tsv(metrics_summary, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
+    write_tsv(metrics_summary, path(results_dir_name, str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
     format = "file"
   ),
 
@@ -263,7 +260,7 @@ list(
   ),
   tar_target(permanovas, permanova |> smart_bind_rows() |> finalize_tests_table()),
   tar_target(permanovas_file,
-    write_tsv(permanovas, fs::path(results_dir_name, stringr::str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
+    write_tsv(permanovas, path(results_dir_name, str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
     format = "file"
   ),
   ## ordination ----
@@ -302,7 +299,7 @@ list(
   ),
   tar_target(
     summary_report_file,
-    write_text(summary_report, fs::path(results_dir_name, stringr::str_c(file_prefix, "summary", sep = "_"), ext = "md")),
+    write_text(summary_report, path(results_dir_name, str_c(file_prefix, "summary", sep = "_"), ext = "md")),
     format = "file"
   )
 )
