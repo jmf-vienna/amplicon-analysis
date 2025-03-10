@@ -122,13 +122,15 @@ get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min
 }
 
 add_decontam <- function(se, negative_controls, failed_libraries = character()) {
+  loadNamespace(class(se))
+
   if (ncol(se) > 1L) {
     se_ready <- se[, !colnames(se) %in% failed_libraries]
 
     assay <- se_ready |> SummarizedExperiment::assay()
     nc <- colnames(assay) %in% negative_controls
 
-    decontam_result <- decontam::isContaminant(t(assay), neg = nc)
+    decontam_result <- decontam::isContaminant(t(assay), neg = nc) |> suppressWarnings()
     stopifnot(identical(rownames(assay), rownames(decontam_result)))
 
     p <- decontam_result[["p"]]
