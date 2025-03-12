@@ -145,7 +145,6 @@ summary_as_row <- function(se) {
   se |>
     provenance_as_tibble() |>
     tibble::add_column(
-      feature_id_var = se |> feature_id_var_name(),
       features = nrow(se),
       min_sequence_length = min(sequence_length),
       max_sequence_length = max(sequence_length),
