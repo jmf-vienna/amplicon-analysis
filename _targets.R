@@ -251,6 +251,11 @@ list(
     format = "file"
   ),
 
+  # plot metrics ----
+  tar_target(se_metrics, list_c(list(se_library_metrics, se_biosample_metrics))),
+  tar_target(metrics_plot, plot_metrics(se_metrics, c(yield_min, yield_max), theme), pattern = map(se_metrics), packages = "ggplot2"),
+  tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
+
   # beta diversity ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   ## tests ----

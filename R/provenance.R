@@ -61,7 +61,10 @@ plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subti
   provenance <-
     plot |>
     get_provenance() |>
-    purrr::list_assign(aesthetics = rlang::zap())
+    list_assign(
+      summary = rlang::zap(),
+      aesthetics = rlang::zap()
+    )
 
   # trim "project:" from the title
   names(provenance)[[1L]] <- ""

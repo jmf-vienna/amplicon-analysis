@@ -91,7 +91,8 @@ make_metrics <- function(se) {
     dplyr::bind_cols(
       col_sums(se)
     ) |>
-    inner_join(features, by = "sample_id")
+    inner_join(features, by = "sample_id") |>
+    update_provenance(se, list(summary = "metrics"))
 }
 
 make_library_metrics <- function(se, library_id_var) {
@@ -149,6 +150,50 @@ summary_as_row <- function(se) {
       min_sequence_length = min(sequence_length),
       max_sequence_length = max(sequence_length),
       median_sequence_length = median(sequence_length)
+    )
+}
+
+plot_metrics <- function(data, hline_at, theme) {
+  hline_at <- hline_at[hline_at > 0L & hline_at < Inf]
+  id <- data |> first_id_name()
+
+  plot <-
+    ggplot(
+      data = data,
+      mapping = aes(
+        x = .data[[id]] |> fct_rev(),
+        y = count,
+        label = str_c(scales::number(count), " ")
+      )
+    ) +
+    geom_col() +
+    geom_text(
+      color = "white",
+      hjust = 1L,
+      size = 3L,
+      family = font_family()
+    ) +
+    geom_hline(
+      yintercept = hline_at,
+      linetype = "dotted"
+    ) +
+    scale_y_log10(
+      breaks = 10L^(0L:10L),
+      minor_breaks = NULL,
+      labels = scales::label_number()
+    ) +
+    coord_flip() +
+    labs(
+      x = id
+    ) +
+    theme
+
+  plot |>
+    update_provenance(data, list(
+      aesthetics = "bar chart"
+    )) |>
+    plot_titles(
+      title = "yield"
     )
 }
 
