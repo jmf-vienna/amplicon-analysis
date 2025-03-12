@@ -289,6 +289,11 @@ list(
         taxonomy = taxonomy_file
       ),
       list(
+        vars = list(
+          `library ID` = library_id_var,
+          `biosample ID` = biosample_id_var,
+          `feature ID` = feature_id_var
+        ),
         desirables = desirables,
         undesirables = undesirables,
         yield_min = yield_min
