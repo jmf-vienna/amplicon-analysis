@@ -91,7 +91,7 @@ make_metrics <- function(se) {
     dplyr::bind_cols(
       col_sums(se)
     ) |>
-    inner_join(features)
+    inner_join(features, by = "sample_id")
 }
 
 make_library_metrics <- function(se, library_id_var) {
