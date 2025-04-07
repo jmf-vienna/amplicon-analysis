@@ -1,5 +1,5 @@
 get_provenance <- function(x) {
-  xfun::attr(x, "provenance") |> as.list()
+  attr(x, "provenance", exact = TRUE) |> as.list()
 }
 
 set_provenance <- function(x, provenance) {
