@@ -140,7 +140,7 @@ make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_
 summary_as_row <- function(se) {
   loadNamespace(class(se))
 
-  sequence_length <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
+  sequence_length <- SummarizedExperiment::rowData(se)[["sequence_length"]]
   if (vec_is_empty(sequence_length)) sequence_length <- NA_integer_
 
   se |>

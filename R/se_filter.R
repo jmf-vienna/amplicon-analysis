@@ -20,10 +20,10 @@ filter_by_length <- function(se, min = 0L, max = Inf) {
 
   loadNamespace(class(se))
 
-  l <- SummarizedExperiment::rowData(se)[["Sequence_length"]]
+  l <- SummarizedExperiment::rowData(se)[["sequence_length"]]
 
   new_se <- se[l >= min & l <= max]
-  filtered_features_helper(se, new_se, "Sequence_length")
+  filtered_features_helper(se, new_se, "sequence_length")
 }
 
 keep_desirable_features <- function(se, config) {
