@@ -115,11 +115,11 @@ plot_ordination_with_tests <- function(plot, test_result) {
 
   permanova_p_value <-
     test_result |>
-    dplyr::filter(test == "PERMANOVA") |>
+    dplyr::filter(test == "PERMANOVA", NAs != "removed") |>
     dplyr::pull(`p-value`)
   beta_dispersion_p_value <-
     test_result |>
-    dplyr::filter(test == "beta dispersion ANOVA") |>
+    dplyr::filter(test == "beta dispersion ANOVA", NAs != "removed") |>
     dplyr::pull(`p-value`)
 
   subtitle <- ""
@@ -127,6 +127,22 @@ plot_ordination_with_tests <- function(plot, test_result) {
     p_format(0L) # does nothing, just to enable re-evaluation
     subtitle <- glue::glue("{variable_of_interest} test: PERMANOVA {p_format(permanova_p_value)}")
     if (!is.na(beta_dispersion_p_value)) {
+      subtitle <- subtitle |> stringr::str_c(glue::glue(" with dispersion ANOVA {p_format(beta_dispersion_p_value)}"))
+    }
+  }
+
+  permanova_p_value <-
+    test_result |>
+    dplyr::filter(test == "PERMANOVA", NAs == "removed") |>
+    dplyr::pull(`p-value`)
+  beta_dispersion_p_value <-
+    test_result |>
+    dplyr::filter(test == "beta dispersion ANOVA", NAs == "removed") |>
+    dplyr::pull(`p-value`)
+
+  if (length(permanova_p_value) > 0L && !is.na(permanova_p_value)) {
+    subtitle <- subtitle |> stringr::str_c("\n", glue::glue("\u21b3without NAs: PERMANOVA {p_format(permanova_p_value)}"))
+    if (length(beta_dispersion_p_value) > 0L && !is.na(beta_dispersion_p_value)) {
       subtitle <- subtitle |> stringr::str_c(glue::glue(" with dispersion ANOVA {p_format(beta_dispersion_p_value)}"))
     }
   }

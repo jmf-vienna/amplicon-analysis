@@ -25,23 +25,37 @@ super_safely <- function(fun, ...) {
   res
 }
 
-test_distance <- function(ps, variable) {
-  if (is.null(ps)) {
+test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cyclocomp_linter.
+  if (is.null(ps_raw)) {
     cli::cli_alert_warning("skipped because container is NULL")
+    return(invisible())
+  }
+
+  vi_raw <- ps_variable_info(ps_raw, variable)
+
+  if (!vi_raw[["exists"]]) {
+    cli::cli_alert_warning("skipped because variable does not exist")
     return(invisible())
   }
 
   loadNamespace("microViz")
 
+  if (.filter_na) {
+    # this filters only the phyloseq object, but not the distance!
+    # dist_permanova and bdisp_get then call ps_drop_incomplete (again) and filter @dist
+    # so this works, but could have unexpected side effects
+    ps_raw <- ps_raw |> microViz::ps_drop_incomplete(variable)
+  }
+
   # all variables are tested as categories (factors) - even continuous variables (for now)
-  ps <- ps |> microViz::ps_mutate(across(any_of(variable), fortify))
+
+  ps <- ps_raw |> microViz::ps_mutate(across(any_of(variable), fortify))
+  vi <- ps_variable_info(ps, variable)
 
   permanova_p_value <- NA_real_
   permanova_error <- NULL
   bdisp_p_value <- NA_real_
   bdisp_error <- NULL
-
-  vi <- ps |> ps_variable_info(variable)
 
   if (!vi[["testable"]]) { # nolint: if_not_else_linter.
     permanova_error <- bdisp_error <- "must have at least two groups with at least two replicates each"
@@ -102,14 +116,26 @@ test_distance <- function(ps, variable) {
     cli::cli_alert_warning(stringr::str_c("{.var {variable}} beta dispertion: ", bdisp_error))
   }
 
-  seq_len(2L) |>
+  res <-
+    seq_len(2L) |>
     map(\(i) provenance_as_tibble(ps)) |>
     dplyr::bind_rows() |>
     tibble::add_column(
       `variable of interest` = variable,
+      NAs = case_when(
+        !vi_raw[["has_na"]] ~ "none",
+        vi_raw[["all_na"]] ~ "all",
+        .filter_na ~ "removed",
+        !.filter_na ~ "enumerated"
+      ),
       test = c("PERMANOVA", "beta dispersion ANOVA"),
       `p-value` = c(permanova_p_value, bdisp_p_value),
       error = c(permanova_error |> cli::pluralize(), bdisp_error |> cli::pluralize())
-    ) |>
-    update_provenance(ps)
+    )
+
+  if (!.filter_na && vi_raw[["has_na"]] && !vi_raw[["all_na"]]) {
+    res <- res |> bind_rows(test_distance(ps_raw, variable, TRUE))
+  }
+
+  res |> update_provenance(ps)
 }

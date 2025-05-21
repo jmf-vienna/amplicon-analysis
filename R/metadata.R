@@ -1,10 +1,20 @@
 variable_info <- function(x) {
+  exists <- !is.null(x)
+  if (!exists) {
+    x <- list()
+  }
+
   counts <- vctrs::vec_count(x, sort = "none")
+  n_na <- sum(is.na(x))
 
   # nolint start: nrow_subset_linter.
   list(
     .length = length(x),
     .length_levels = nrow(counts),
+    .NAs = n_na,
+    exists = exists,
+    has_na = n_na > 1L,
+    all_na = all(is.na(x)),
     # more than one value:
     multiple = length(x) > 1L,
     # more than one level:
@@ -33,6 +43,6 @@ ps_variable_info <- function(ps, variable_name) {
       dplyr::pull({{ variable_name }}) |>
       variable_info()
   } else {
-    variable_info(list())
+    variable_info(NULL)
   }
 }
