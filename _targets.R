@@ -277,6 +277,18 @@ list(
   tar_target(metrics_plot, plot_metrics(se_metrics, c(yield_min, yield_max), theme), pattern = map(se_metrics), packages = "ggplot2"),
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
+  # alpha diversity ----
+  tar_target(alpha_diversity, get_alpha_diversity(se), pattern = map(se)),
+  tar_target(
+    alpha_diversity_file,
+    write_tsv(alpha_diversity, path(results_dir_name,
+      str_c(alpha_diversity |> provenance_as_file_name(), "alpha_diversity", sep = "_"),
+      ext = "tsv"
+    )),
+    format = "file",
+    pattern = map(alpha_diversity)
+  ),
+
   # beta diversity ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   ## tests ----

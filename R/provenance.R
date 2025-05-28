@@ -14,6 +14,14 @@ update_provenance <- function(x, source = NULL, new = list()) {
     set_provenance(x, provenance = _)
 }
 
+provenance_as_short_title <- function(x, collapse = "/") {
+  x |>
+    get_provenance() |>
+    unlist() |>
+    tail(-2L) |>
+    str_c(collapse = collapse)
+}
+
 provenance_as_tibble <- function(x) {
   x |>
     get_provenance() |>
