@@ -44,7 +44,7 @@ list(
   tar_target(negative_controls, config |> pluck("filter", "negative controls", .default = character())),
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
-  tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 0L)),
+  tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 1000L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
   tar_target(pass_libraries_yield_min, config |> pluck("filter", "pass", "yield", "min", .default = 0L)),
   tar_target(decontam_threshold, config |> pluck("filter", "decontam", .default = 0.0)),
@@ -55,6 +55,16 @@ list(
   ## config > sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
+
+  ## config > analysis ----
+  tar_target(
+    alpha_diversity_indexes,
+    config |> pluck("analyze", "alpha diversity", "indexes", .default = c("chao1", "shannon", "gini_simpson"))
+  ),
+  tar_target(
+    alpha_diversity_yield_threshold,
+    config |> pluck("analyze", "alpha diversity", "yield threshold", .default = yield_min)
+  ),
 
   ## config > limits ----
   tar_target(limits, list(
@@ -191,9 +201,20 @@ list(
   ## all SEs ----
   tar_target(lib_se, list(se_libs_raw, se_libs_clean)),
   tar_target(sam_se, list(se_raw, se_refined, se_deep)),
-  tar_target(se, list_c(list(lib_se, sam_se))),
+  tar_target(all_se, list_c(list(lib_se, sam_se))),
+
+  # add alpha diversity ----
+  tar_target(se,
+    all_se |>
+      add_alpha_diversity(alpha_diversity_indexes, alpha_diversity_yield_threshold),
+    pattern = map(all_se)
+  ),
+
+  # export SEs ----
   tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
   tar_target(se_flat_file, export_flattened(se, results_dir_name), format = "file", pattern = map(se)),
+
+  # phyloseq objects ----
   tar_target(ps, as_phyloseq(se), pattern = map(se)),
   tar_target(ps_file, export_ps(ps, rd_dir_name), format = "file", pattern = map(ps)),
 

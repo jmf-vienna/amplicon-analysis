@@ -73,6 +73,13 @@ col_sums <- function(se) {
     dplyr::rename(sample_id = rowname, count = x)
 }
 
+min_col_sum <- function(se) {
+  se |>
+    col_sums() |>
+    pull(count) |>
+    min()
+}
+
 make_metrics <- function(se) {
   loadNamespace(class(se))
 
