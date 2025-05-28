@@ -71,7 +71,8 @@ plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subti
     get_provenance() |>
     list_assign(
       summary = rlang::zap(),
-      aesthetics = rlang::zap()
+      aesthetics = rlang::zap(),
+      analysis = rlang::zap()
     )
 
   # trim "project:" from the title

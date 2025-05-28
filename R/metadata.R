@@ -1,4 +1,4 @@
-variable_info <- function(x) {
+variable_info <- function(x, label) {
   exists <- !is.null(x)
   if (!exists) {
     x <- list()
@@ -9,6 +9,7 @@ variable_info <- function(x) {
 
   # nolint start: nrow_subset_linter.
   list(
+    .label = label,
     .length = length(x),
     .length_levels = nrow(counts),
     .NAs = n_na,
@@ -35,14 +36,18 @@ variable_info <- function(x) {
   # nolint end
 }
 
-ps_variable_info <- function(ps, variable_name) {
-  data <- ps |> phyloseq::sample_data()
-
-  if (!is.null(variable_name) && data |> rlang::has_name(variable_name)) {
+tibble_variable_info <- function(data, variable_name) {
+  if (!is.null(variable_name) && rlang::has_name(data, variable_name)) {
     data |>
       dplyr::pull({{ variable_name }}) |>
-      variable_info()
+      variable_info(variable_name)
   } else {
-    variable_info(NULL)
+    variable_info(NULL, variable_name)
   }
+}
+
+ps_variable_info <- function(ps, variable_name) {
+  ps |>
+    phyloseq::sample_data() |>
+    tibble_variable_info(variable_name)
 }

@@ -59,7 +59,7 @@ list(
   ## config > analysis ----
   tar_target(
     alpha_diversity_indexes,
-    config |> pluck("analyze", "alpha diversity", "indexes", .default = c("chao1", "shannon", "gini_simpson"))
+    config |> pluck("analyze", "alpha diversity", "indexes", .default = c("chao1", "shannon"))
   ),
   tar_target(
     alpha_diversity_yield_threshold,
@@ -281,13 +281,16 @@ list(
   tar_target(alpha_diversity, get_alpha_diversity(se), pattern = map(se)),
   tar_target(
     alpha_diversity_file,
-    write_tsv(alpha_diversity, path(results_dir_name,
-      str_c(alpha_diversity |> provenance_as_file_name(), "alpha_diversity", sep = "_"),
-      ext = "tsv"
-    )),
+    write_tsv(alpha_diversity, path(results_dir_name, provenance_as_file_name(alpha_diversity), ext = "tsv")),
     format = "file",
     pattern = map(alpha_diversity)
   ),
+  tar_target(alpha_diversity_plot,
+    plot_alpha_diversity(alpha_diversity, variable_of_interest, theme),
+    pattern = cross(alpha_diversity, variable_of_interest),
+    packages = "ggplot2"
+  ),
+  tar_target(alpha_diversity_plot_file, save_plot(alpha_diversity_plot, plots_dir_name), format = "file", pattern = map(alpha_diversity_plot)),
 
   # beta diversity ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),

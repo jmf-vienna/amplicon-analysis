@@ -8,6 +8,7 @@ if (interactive()) {
   require(dplyr)
   require(forcats)
   require(fs)
+  require(ggplot2)
   require(purrr)
   require(readr)
   require(rlang)
