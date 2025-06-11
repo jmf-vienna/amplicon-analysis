@@ -31,7 +31,13 @@ variable_info <- function(x, label) {
       counts |>
         dplyr::filter(count >= 2L) |>
         nrow()
-      >= 2L
+      >= 2L,
+    # all groups must have at least two replicates each (with at least two groups)
+    pairwise_testable =
+      counts |>
+        dplyr::filter(count >= 2L) |>
+        nrow()
+      == max(2L, nrow(counts))
   )
   # nolint end
 }

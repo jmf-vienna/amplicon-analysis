@@ -90,12 +90,12 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
     provenance_as_tibble() |>
     add_column(.y. = "Diversity") |>
     inner_join(alpha_diversity_test_raw, by = ".y.") |>
-    dplyr::select(!c(analysis, .y., n1, n2, statistic, p.adj.signif)) |>
+    dplyr::select(!c(analysis, .y., statistic, p.adj.signif)) |>
     tibble::add_column(distance = NA_character_, NAs = NA_character_, error = NA_character_) |>
     dplyr::rename(metric = Index, rarefaction = Rarefaction, `p-value` = p.adj, `uncorrected p-value` = p) |>
     dplyr::relocate(rarefaction, metric, distance, .before = "variable of interest") |>
     dplyr::relocate(group1, group2, NAs, test, `p-value correction`, `p-value`, .after = "variable of interest") |>
-    dplyr::relocate(`uncorrected p-value`, .after = last_col())
+    dplyr::relocate(`uncorrected p-value`, n1, n2, .after = last_col())
 }
 
 plot_alpha_diversity <- function(alpha_diversity, variable, theme) {
