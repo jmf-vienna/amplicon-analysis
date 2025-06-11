@@ -49,7 +49,7 @@ get_alpha_diversity <- function(se, variable, theme) {
     update_provenance(se, list(analysis = "alpha diversity"))
 }
 
-test_alpha_diversity <- function(alpha_diversity, variable, theme) {
+test_alpha_diversity <- function(alpha_diversity, variable, p_adjust_method) {
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }
@@ -71,12 +71,12 @@ test_alpha_diversity <- function(alpha_diversity, variable, theme) {
   results <-
     alpha_diversity |>
     dplyr::group_by(Index, Rarefaction) |>
-    rstatix::pairwise_wilcox_test(as.formula(str_c("Diversity ~ ", variable)))
+    rstatix::pairwise_wilcox_test(as.formula(str_c("Diversity ~ ", variable)), p.adjust.method = p_adjust_method)
 
   results |>
     update_provenance(alpha_diversity, list(
       test = results |> chuck(attr_getter("args"), "method") |> str_replace_all(fixed("_"), " ") |> str_to_title(),
-      `p-value correction` = results |> chuck(attr_getter("args"), "p.adjust.method") |> str_to_title(),
+      `p-value correction` = results |> chuck(attr_getter("args"), "p.adjust.method") |> str_to_title() |> str_replace("^Fdr$", "FDR"),
       `variable of interest` = variable
     ))
 }

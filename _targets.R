@@ -55,6 +55,7 @@ list(
   ## config > sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
+  tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
 
   ## config > analysis ----
   tar_target(
@@ -289,7 +290,7 @@ list(
   ## tests ----
   tar_target(
     alpha_diversity_test_raw,
-    test_alpha_diversity(alpha_diversity, variable_of_interest),
+    test_alpha_diversity(alpha_diversity, variable_of_interest, p_adjust_method),
     pattern = cross(alpha_diversity, variable_of_interest)
   ),
   tar_target(
