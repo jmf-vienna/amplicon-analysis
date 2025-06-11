@@ -314,18 +314,6 @@ list(
     test_distance(ps_distance, variable_of_interest),
     pattern = cross(ps_distance, variable_of_interest)
   ),
-  tar_target(
-    permanovas,
-    permanova |>
-      list(alpha_diversity_test) |>
-      list_c() |>
-      smart_bind_rows() |>
-      finalize_tests_table()
-  ),
-  tar_target(permanovas_file,
-    write_tsv(permanovas, path(results_dir_name, str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
-    format = "file"
-  ),
   ## ordination ----
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
   tar_target(ordination_plot_raw,
@@ -337,6 +325,20 @@ list(
     pattern = map(ordination_plot_raw, permanova)
   ),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot)),
+
+  # tests summary table
+  tar_target(
+    tests,
+    list(permanova, alpha_diversity_test) |>
+      list_c() |>
+      smart_bind_rows() |>
+      finalize_tests_table()
+  ),
+  tar_target(
+    tests_file,
+    write_tsv(tests, path(results_dir_name, str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
 
   # summary report ----
   tar_target(
