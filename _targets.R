@@ -285,6 +285,20 @@ list(
     format = "file",
     pattern = map(alpha_diversity)
   ),
+
+  ## tests ----
+  tar_target(
+    alpha_diversity_test_raw,
+    test_alpha_diversity(alpha_diversity, variable_of_interest),
+    pattern = cross(alpha_diversity, variable_of_interest)
+  ),
+  tar_target(
+    alpha_diversity_test,
+    format_alpha_diversity_test(alpha_diversity_test_raw),
+    pattern = map(alpha_diversity_test_raw)
+  ),
+
+  ## plots ----
   tar_target(alpha_diversity_plot,
     plot_alpha_diversity(alpha_diversity, variable_of_interest, theme),
     pattern = cross(alpha_diversity, variable_of_interest),
@@ -299,7 +313,14 @@ list(
     test_distance(ps_distance, variable_of_interest),
     pattern = cross(ps_distance, variable_of_interest)
   ),
-  tar_target(permanovas, permanova |> smart_bind_rows() |> finalize_tests_table()),
+  tar_target(
+    permanovas,
+    permanova |>
+      list(alpha_diversity_test) |>
+      list_c() |>
+      smart_bind_rows() |>
+      finalize_tests_table()
+  ),
   tar_target(permanovas_file,
     write_tsv(permanovas, path(results_dir_name, str_c(file_prefix, "tests", sep = "_"), ext = "tsv")),
     format = "file"

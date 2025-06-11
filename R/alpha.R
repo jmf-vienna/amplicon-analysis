@@ -49,6 +49,55 @@ get_alpha_diversity <- function(se, variable, theme) {
     update_provenance(se, list(analysis = "alpha diversity"))
 }
 
+test_alpha_diversity <- function(alpha_diversity, variable, theme) {
+  if (nrow(alpha_diversity) == 0L) {
+    return(invisible())
+  }
+
+  alpha_diversity <- alpha_diversity |> mutate(across(any_of(variable), fortify))
+
+  vi <-
+    alpha_diversity |>
+    dplyr::filter(Index == first(Index), Rarefaction == first(Rarefaction)) |>
+    tibble_variable_info(variable)
+
+  if (!vi[["testable"]]) {
+    cli::cli_alert_warning(
+      "{.field {provenance_as_short_title(alpha_diversity)}}: test skipped ({.var {variable}} must have at least two groups with at least two replicates each)"
+    )
+    return(invisible())
+  }
+
+  results <-
+    alpha_diversity |>
+    dplyr::group_by(Index, Rarefaction) |>
+    rstatix::pairwise_wilcox_test(as.formula(str_c("Diversity ~ ", variable)))
+
+  results |>
+    update_provenance(alpha_diversity, list(
+      test = results |> chuck(attr_getter("args"), "method") |> str_replace_all(fixed("_"), " ") |> str_to_title(),
+      `p-value correction` = results |> chuck(attr_getter("args"), "p.adjust.method") |> str_to_title(),
+      `variable of interest` = variable
+    ))
+}
+
+format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
+  if (is.null(alpha_diversity_test_raw)) {
+    return(invisible())
+  }
+
+  alpha_diversity_test_raw |>
+    provenance_as_tibble() |>
+    add_column(.y. = "Diversity") |>
+    inner_join(alpha_diversity_test_raw, by = ".y.") |>
+    dplyr::select(!c(analysis, .y., n1, n2, statistic, p.adj.signif)) |>
+    tibble::add_column(distance = NA_character_, NAs = NA_character_, error = NA_character_) |>
+    dplyr::rename(metric = Index, rarefaction = Rarefaction, `p-value` = p.adj, `uncorrected p-value` = p) |>
+    dplyr::relocate(rarefaction, metric, distance, .before = "variable of interest") |>
+    dplyr::relocate(group1, group2, NAs, test, `p-value correction`, `p-value`, .after = "variable of interest") |>
+    dplyr::relocate(`uncorrected p-value`, .after = last_col())
+}
+
 plot_alpha_diversity <- function(alpha_diversity, variable, theme) {
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
