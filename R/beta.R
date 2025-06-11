@@ -32,6 +32,15 @@ calulcate_ordination <- function(ps) {
     ))
 }
 
+format_beta_diversity_test <- function(beta_diversity_test_raw) {
+  if (is.null(beta_diversity_test_raw)) {
+    return(invisible())
+  }
+
+  beta_diversity_test_raw |>
+    dplyr::rename(metric = distance)
+}
+
 plot_ordination <- function(ps, variable, point_label, limits, theme) {
   if (is.null(ps)) {
     cli::cli_alert_warning("skipped because container is NULL")

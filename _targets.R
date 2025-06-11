@@ -314,6 +314,12 @@ list(
     test_distance(ps_distance, variable_of_interest),
     pattern = cross(ps_distance, variable_of_interest)
   ),
+  tar_target(
+    beta_diversity_test,
+    format_beta_diversity_test(permanova),
+    pattern = map(permanova)
+  ),
+
   ## ordination ----
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
   tar_target(ordination_plot_raw,
@@ -329,7 +335,7 @@ list(
   # tests summary table
   tar_target(
     tests,
-    list(permanova, alpha_diversity_test) |>
+    list(beta_diversity_test, alpha_diversity_test) |>
       list_c() |>
       smart_bind_rows() |>
       finalize_tests_table()
