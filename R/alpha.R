@@ -6,13 +6,19 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes, threshold, rarefact
       mia::addAlpha(
         index = alpha_diversity_indexes,
         name = str_c(".alpha_diversity_", alpha_diversity_indexes)
-      ) |>
-      mia::addAlpha(
-        index = alpha_diversity_indexes,
-        name = str_c(".alpha_diversity_at_", min, "_", alpha_diversity_indexes),
-        sample = min,
-        niter = rarefaction_rounds
       )
+
+    # rarefaction makes no sense if there is only one sample
+    if (ncol(se) > 1L) {
+      se <-
+        se |>
+        mia::addAlpha(
+          index = alpha_diversity_indexes,
+          name = str_c(".alpha_diversity_at_", min, "_", alpha_diversity_indexes),
+          sample = min,
+          niter = rarefaction_rounds
+        )
+    }
   } else {
     cli::cli_alert_warning(
       "{.field {provenance_as_short_title(se)}}: alpha diversity skipped (minimum sample size {.val {min}} is below threshold {.val {threshold}})"

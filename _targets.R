@@ -206,8 +206,7 @@ list(
 
   # add alpha diversity ----
   tar_target(se,
-    all_se |>
-      add_alpha_diversity(alpha_diversity_indexes, alpha_diversity_yield_threshold),
+    add_alpha_diversity(all_se, alpha_diversity_indexes, alpha_diversity_yield_threshold),
     pattern = map(all_se)
   ),
 
