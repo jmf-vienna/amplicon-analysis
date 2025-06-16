@@ -101,32 +101,34 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
     dplyr::rename(metric = Index, rarefaction = Rarefaction, `p-value` = p.adj, `uncorrected p-value` = p) |>
     dplyr::relocate(rarefaction, metric, .before = "variable of interest") |>
     dplyr::relocate(group1, group2, NAs, test, `p-value correction`, `p-value`, .after = "variable of interest") |>
-    dplyr::relocate(`uncorrected p-value`, n1, n2, .after = last_col())
+    dplyr::relocate(`uncorrected p-value`, n1, n2, .after = last_col()) |>
+    update_provenance(alpha_diversity_test_raw)
 }
 
-plot_alpha_diversity <- function(alpha_diversity, variable, theme) {
+plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest, theme) {
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }
 
-  alpha_diversity <- alpha_diversity |> mutate(across(any_of(variable), as.factor))
+  alpha_diversity <- alpha_diversity |> mutate(across(any_of(variable_of_interest), as.factor))
 
   vi <-
     alpha_diversity |>
     dplyr::filter(Index == first(Index), Rarefaction == first(Rarefaction)) |>
-    tibble_variable_info(variable)
+    tibble_variable_info(variable_of_interest)
 
   if (!vi[["testable"]]) {
-    cli::cli_alert_warning(
-      "{.field {provenance_as_short_title(alpha_diversity)}}: plot skipped ({.var {variable}} must have at least two groups with at least two replicates each)"
-    )
+    cli::cli_alert_warning(str_c(
+      "{.field {provenance_as_short_title(alpha_diversity)}}: ",
+      "plot skipped ({.var {variable_of_interest}} must have at least two groups with at least two replicates each)"
+    ))
     return(invisible())
   }
 
   plot <- ggplot(
     data = alpha_diversity,
     mapping = aes(
-      x = .data[[variable]],
+      x = .data[[variable_of_interest]],
       y = Diversity
     )
   ) +
@@ -147,9 +149,15 @@ plot_alpha_diversity <- function(alpha_diversity, variable, theme) {
       axis.text.x = element_text(angle = -90L, hjust = 0L, vjust = 0.5)
     )
 
+  # assertion that plot and test belong together
+  stopifnot(identical(
+    alpha_diversity |> get_provenance() |> purrr::list_assign(`variable of interest` = variable_of_interest),
+    alpha_diversity_test_raw |> get_provenance() |> purrr::list_assign(test = zap(), `p-value correction` = zap())
+  ))
+
   plot |>
     update_provenance(alpha_diversity, list(
-      aesthetics = list(by = variable)
+      aesthetics = list(by = variable_of_interest)
     )) |>
     plot_titles(
       title = "alpha diversity analysis"

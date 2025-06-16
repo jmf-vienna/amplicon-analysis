@@ -300,8 +300,8 @@ list(
 
   ## plots ----
   tar_target(alpha_diversity_plot,
-    plot_alpha_diversity(alpha_diversity, variable_of_interest, theme),
-    pattern = cross(alpha_diversity, variable_of_interest),
+    plot_alpha_diversity(alpha_diversity, alpha_diversity_test_raw, variable_of_interest, theme),
+    pattern = map(cross(alpha_diversity, variable_of_interest), alpha_diversity_test_raw),
     packages = "ggplot2"
   ),
   tar_target(alpha_diversity_plot_file, save_plot(alpha_diversity_plot, plots_dir_name), format = "file", pattern = map(alpha_diversity_plot)),
