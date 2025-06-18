@@ -156,9 +156,8 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
   if (!vec_is_empty(alpha_diversity_test_raw)) {
     ns_count <-
       alpha_diversity_test_raw |>
-      count(p.adj.signif) |>
       dplyr::filter(p.adj.signif == "ns") |>
-      pull(n)
+      nrow()
 
     pvalue_data <-
       alpha_diversity_test_raw |>
