@@ -3,7 +3,7 @@ fortify <- function(x) {
 
   x |>
     as.factor() |>
-    forcats::fct_na_value_to_level("NA") |>
+    forcats::fct_na_value_to_level("N/A") |>
     droplevels()
 }
 
