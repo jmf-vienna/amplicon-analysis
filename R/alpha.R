@@ -74,6 +74,8 @@ test_alpha_diversity <- function(alpha_diversity, variable, p_adjust_method) {
     return(invisible())
   }
 
+  cli::cli_alert("{.field {provenance_as_short_title(alpha_diversity)}}: testing {.var {variable}}")
+
   results <-
     alpha_diversity |>
     dplyr::group_by(Index, Rarefaction) |>
