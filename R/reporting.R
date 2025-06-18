@@ -8,7 +8,7 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
 
   packages <- c(
     "base",
-    "targets", "tidyverse", "rstatix",
+    "targets", "tidyverse", "rstatix", "ggpubr",
     "SummarizedExperiment", "SingleCellExperiment", "mia",
     "vegan", "scuttle",
     "phyloseq", "microViz"

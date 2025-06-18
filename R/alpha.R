@@ -138,9 +138,6 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       cols = vars(Rarefaction),
       scales = "free_y"
     ) +
-    expand_limits(
-      y = 0L
-    ) +
     labs(
       y = NULL
     ) +
@@ -154,6 +151,41 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
     alpha_diversity |> get_provenance() |> purrr::list_assign(`variable of interest` = variable_of_interest),
     alpha_diversity_test_raw |> get_provenance() |> purrr::list_assign(test = zap(), `p-value correction` = zap())
   ))
+
+  # add p-values to the plot:
+  if (!vec_is_empty(alpha_diversity_test_raw)) {
+    ns_count <-
+      alpha_diversity_test_raw |>
+      count(p.adj.signif) |>
+      dplyr::filter(p.adj.signif == "ns") |>
+      pull(n)
+
+    pvalue_data <-
+      alpha_diversity_test_raw |>
+      dplyr::filter(p.adj.signif != "ns") |>
+      rstatix::add_xy_position(x = variable_of_interest, step.increase = 0.4, scales = "free_y")
+
+    test <- alpha_diversity_test_raw |>
+      get_provenance() |>
+      chuck("test")
+    correction <- alpha_diversity_test_raw |>
+      get_provenance() |>
+      chuck("p-value correction")
+
+    plot <-
+      plot +
+      ggpubr::stat_pvalue_manual(
+        pvalue_data,
+        color = "blue",
+        tip.length = 0L
+      ) + labs(
+        caption = pluralize(
+          "{test}, {correction}-adjusted p-values: 0 **** 0.0001 *** 0.001 ** 0.01 * 0.05. {ns_count} non-significant comparison{?s} not shown."
+        )
+      ) + theme(
+        plot.caption = element_text(color = "blue")
+      )
+  }
 
   plot |>
     update_provenance(alpha_diversity, list(
