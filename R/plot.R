@@ -13,7 +13,6 @@ font_family <- function() {
 
 save_plot <- function(plot, dir_name) {
   if (is.null(plot)) {
-    cli::cli_alert_warning("skipped because plot is NULL")
     return(invisible())
   }
 

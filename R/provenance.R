@@ -65,14 +65,13 @@ as_title <- function(x, collapse = " | ") {
     stringr::str_flatten(collapse)
 }
 
-plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subtitles = NULL) {
+plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subtitles = NULL, ...) {
   provenance <-
     plot |>
     get_provenance() |>
     list_assign(
-      summary = rlang::zap(),
-      aesthetics = rlang::zap(),
-      analysis = rlang::zap()
+      aesthetics = zap(),
+      ...
     )
 
   # trim "project:" from the title

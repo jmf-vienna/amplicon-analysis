@@ -19,7 +19,7 @@ trim_empty <- function(x, verbose = TRUE) {
     x <- x[!rownames(x) %in% remove]
 
     if (verbose) {
-      cli::cli_alert("trimmed {length(remove)} empty feature{?s}: {remove}")
+      cli::cli_alert("{.field {provenance_as_short_title(x)}}: trimmed {length(remove)} empty feature{?s}: {remove}")
     }
   }
 
@@ -28,7 +28,7 @@ trim_empty <- function(x, verbose = TRUE) {
     x <- x[, !colnames(x) %in% remove]
 
     if (verbose) {
-      cli::cli_alert("trimmed {length(remove)} empty sample{?s}: {remove}")
+      cli::cli_alert("{.field {provenance_as_short_title(x)}}: trimmed {length(remove)} empty sample{?s}: {remove}")
     }
   }
 
@@ -74,6 +74,10 @@ col_sums <- function(se) {
 }
 
 min_col_sum <- function(se) {
+  if (ncol(se) == 0L) {
+    return(0L)
+  }
+
   se |>
     col_sums() |>
     pull(count) |>
@@ -130,7 +134,7 @@ make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_
     library_metrics
   ) |>
     dplyr::filter(count > 0L) |>
-    dplyr::group_by(dplyr::across(project:`sample filter ≥`)) |>
+    dplyr::group_by(dplyr::across(!JMF_sample_ID:last_col())) |>
     dplyr::summarise(
       libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(.data[[library_id_var]], na.rm = TRUE),
       biosamples = dplyr::n_distinct(.data[[biosample_id_var]]),
@@ -140,8 +144,9 @@ make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_
       median_sample_counts = median(count),
       .groups = "drop"
     ) |>
-    dplyr::left_join(se_summary, by = dplyr::join_by(project, gene, resolution, state, `sample filter ≥`)) |>
-    dplyr::arrange(!is.na(`sample filter ≥`))
+    dplyr::left_join(se_summary) |>
+    suppressMessages() |>
+    dplyr::arrange(dplyr::across(!c(project:phase, libraries:last_col()), \(x) !is.na(x)))
 }
 
 summary_as_row <- function(se) {
@@ -200,7 +205,8 @@ plot_metrics <- function(data, hline_at, theme) {
       aesthetics = "bar chart"
     )) |>
     plot_titles(
-      title = "yield"
+      title = "yield",
+      summary = zap()
     )
 }
 

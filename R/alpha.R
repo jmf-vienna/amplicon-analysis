@@ -193,6 +193,7 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       aesthetics = list(by = variable_of_interest)
     )) |>
     plot_titles(
-      title = "alpha diversity analysis"
+      title = "alpha diversity analysis",
+      analysis = zap()
     )
 }

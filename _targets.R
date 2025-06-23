@@ -33,14 +33,14 @@ list(
   tar_target(gene_name, config |> pluck("gene", "name", .default = "SOME GENE")),
   tar_target(base_provenance, list(project = project_name, gene = gene_name)),
 
-  ## config > io ----
+  ## io ----
   tar_target(data_dir_name, config |> pluck("path", "data", .default = "data")),
   tar_target(results_dir_name, config |> pluck("path", "results", .default = "results")),
   tar_target(plots_dir_name, config |> pluck("path", "plots", .default = "plots")),
   tar_target(rd_dir_name, config |> pluck("path", "rd", .default = "rd")),
   tar_target(file_prefix, base_provenance |> as_file_name()),
 
-  ## config > refinement ----
+  ## refinement ----
   tar_target(negative_controls, config |> pluck("filter", "negative controls", .default = character())),
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
@@ -52,12 +52,12 @@ list(
   tar_target(length_max, config |> pluck("filter", "length", "max", .default = Inf)),
   tar_target(failed_samples, config |> pluck("filter", "failed samples", .default = character())),
 
-  ## config > sample data column names ----
+  ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
 
-  ## config > analysis ----
+  ## analysis ----
   tar_target(
     alpha_diversity_indexes,
     config |> pluck("analyze", "alpha diversity", "indexes", .default = c("chao1", "shannon"))
@@ -67,11 +67,20 @@ list(
     config |> pluck("analyze", "alpha diversity", "yield threshold", .default = yield_min)
   ),
 
-  ## config > limits ----
+  ## limits ----
   tar_target(limits, list(
     sample = config |> pluck("annotation", "sample", "limit", .default = 10L),
     variable_of_interest = config |> pluck("annotation", "category", "limit", .default = 10L)
   )),
+
+  ## subsets ----
+  tar_target(
+    subsets,
+    list_c(list(
+      list(NULL),
+      config |> pluck("subsets")
+    ))
+  ),
 
   # column data > samples ----
   tar_target(samples_file, "Samples.tsv", format = "file"),
@@ -199,9 +208,13 @@ list(
     format = "file"
   ),
 
+  ## subset SEs ----
+  # this always includes se_deep without subsetting, as targets can not run with an empty pattern
+  tar_target(se_subsets, make_se_subsets(se_deep, subsets), pattern = map(subsets)),
+
   ## all SEs ----
   tar_target(lib_se, list(se_libs_raw, se_libs_clean)),
-  tar_target(sam_se, list(se_raw, se_refined, se_deep)),
+  tar_target(sam_se, list_c(list(list(se_raw, se_refined), se_subsets))),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
   # add alpha diversity ----

@@ -156,9 +156,17 @@ plot_ordination_with_tests <- function(plot, test_result) {
     }
   }
 
+  title <- str_c(
+    "beta diversity analysis (",
+    plot |> get_provenance() |> chuck("distance"), " ",
+    plot |> get_provenance() |> chuck("ordination"), ")"
+  )
+
   plot |>
     plot_titles(
-      title = "beta diversity analysis",
-      subtitles = subtitle
+      title = title,
+      subtitles = subtitle,
+      distance = zap(),
+      ordination = zap()
     )
 }
