@@ -10,6 +10,7 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes, threshold, rarefact
 
     # rarefaction makes no sense if there is only one sample
     if (ncol(se) > 1L) {
+      set.seed(0L)
       se <-
         se |>
         mia::addAlpha(
