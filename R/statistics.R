@@ -27,14 +27,13 @@ super_safely <- function(fun, ...) {
 
 test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cyclocomp_linter.
   if (is.null(ps_raw)) {
-    cli::cli_alert_warning("skipped because container is NULL")
     return(invisible())
   }
 
   vi_raw <- ps_variable_info(ps_raw, variable)
 
   if (!vi_raw[["exists"]]) {
-    cli::cli_alert_warning("skipped because variable does not exist")
+    cli::cli_alert_warning("{.field {provenance_as_short_title(ps_raw)}}: skipped because variable does not exist")
     return(invisible())
   }
 
@@ -107,13 +106,13 @@ test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cycl
   if (is.null(permanova_error)) {
     permanova_error <- ""
   } else {
-    cli::cli_alert_warning(stringr::str_c("{.var {variable}} PERMANOVA: ", permanova_error))
+    cli::cli_alert_warning(stringr::str_c("{.field {provenance_as_short_title(ps_raw)}}: {.var {variable}} PERMANOVA: ", permanova_error))
   }
 
   if (is.null(bdisp_error)) {
     bdisp_error <- ""
   } else {
-    cli::cli_alert_warning(stringr::str_c("{.var {variable}} beta dispertion: ", bdisp_error))
+    cli::cli_alert_warning(stringr::str_c("{.field {provenance_as_short_title(ps_raw)}}: {.var {variable}} beta dispertion: ", bdisp_error))
   }
 
   res <-

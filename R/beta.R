@@ -1,6 +1,5 @@
 calulcate_distance <- function(ps, distance = "aitchison") {
   if (is.null(ps)) {
-    cli::cli_alert_warning("skipped because container is NULL")
     return(invisible())
   }
 
@@ -11,14 +10,13 @@ calulcate_distance <- function(ps, distance = "aitchison") {
 
 calulcate_ordination <- function(ps) {
   if (is.null(ps)) {
-    cli::cli_alert_warning("skipped because container is NULL")
     return(invisible())
   }
 
   loadNamespace("microViz")
 
   if (phyloseq::nsamples(ps) < 2L) {
-    cli::cli_alert_warning("at least two samples are required for ordination analysis")
+    cli::cli_alert_warning("{.field {provenance_as_short_title(ps)}}: at least two samples are required for ordination analysis")
     return(invisible())
   }
 
@@ -43,7 +41,6 @@ format_beta_diversity_test <- function(beta_diversity_test_raw) {
 
 plot_ordination <- function(ps, variable, point_label, limits, theme) {
   if (is.null(ps)) {
-    cli::cli_alert_warning("skipped because container is NULL")
     return(invisible())
   }
 
@@ -54,17 +51,20 @@ plot_ordination <- function(ps, variable, point_label, limits, theme) {
   vi_label <- ps |> ps_variable_info(point_label)
 
   if (!vi[["duplicates"]]) {
-    cli::cli_alert_warning("{.var {variable}} must have duplicated values")
+    cli::cli_alert_warning("{.field {provenance_as_short_title(ps)}}: {.var {variable}} must have duplicated values")
     return(invisible())
   }
 
   if (!vi[["multiple_levels"]]) {
-    cli::cli_alert_warning("{.var {variable}} must have multiple levels")
+    cli::cli_alert_warning("{.field {provenance_as_short_title(ps)}}: {.var {variable}} must have multiple levels")
     return(invisible())
   }
 
   if (vi[[".length_levels"]] > limits[["variable_of_interest"]]) {
-    cli::cli_alert_warning("{.var {variable}} must not have more than {.val {limits$variable_of_interest}} levels (has {.val {vi$.length_levels}})")
+    cli::cli_alert_warning(str_c(
+      "{.field {provenance_as_short_title(ps)}}: ",
+      "{.var {variable}} must not have more than {.val {limits$variable_of_interest}} levels (has {.val {vi$.length_levels}})"
+      ))
     return(invisible())
   }
 

@@ -2,7 +2,7 @@ as_phyloseq <- function(se) {
   loadNamespace("mia")
 
   if (nrow(se) == 0L) {
-    cli::cli_alert_warning("skipped because there are zero features")
+    cli::cli_alert_warning("{.field {provenance_as_short_title(se)}}: skipped because there are zero features")
     return(invisible())
   }
 
@@ -15,7 +15,6 @@ as_phyloseq <- function(se) {
 
 export_ps <- function(ps, dir_name) {
   if (is.null(ps)) {
-    cli::cli_alert_warning("skipped because container is NULL")
     return(invisible())
   }
 
