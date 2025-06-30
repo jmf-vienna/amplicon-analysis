@@ -33,12 +33,11 @@ detect_taxonomy_ranks <- function(taxonomy) {
   ranks
 }
 
-make_row_data <- function(taxonomy, features_info) {
-  dplyr::left_join(
-    taxonomy,
-    features_info,
-    by = features_info |> first_name()
-  )
+make_row_data <- function(taxonomy, features_info, feature_annotation) {
+  by <- features_info |> first_name()
+  taxonomy |>
+    dplyr::left_join(features_info, by = by) |>
+    dplyr::left_join(feature_annotation, by = by)
 }
 
 make_assay_data <- function(counts) {

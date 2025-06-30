@@ -112,6 +112,9 @@ list(
   ),
 
   # row data ----
+  ## features annotation ----
+  tar_target(features_annotation_file, "Features.tsv", format = "file"),
+  tar_target(features_annotation, read_tsv(features_annotation_file)),
   ## features info ----
   tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
   tar_target(features_info, read_tsv(features_info_file) |> tidy_features_info()),
@@ -120,7 +123,7 @@ list(
   tar_target(taxonomy, read_tsv(taxonomy_file, guess_max = Inf) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
   tar_target(ranks, detect_taxonomy_ranks(taxonomy)),
   ## merge ----
-  tar_target(row_data, make_row_data(taxonomy, features_info)),
+  tar_target(row_data, make_row_data(taxonomy, features_info, features_annotation)),
 
   # variable names ----
   tar_target(library_id_var, libraries_col_data |> first_name()),

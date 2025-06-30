@@ -64,7 +64,7 @@ plot_ordination <- function(ps, variable, point_label, limits, theme) {
     cli::cli_alert_warning(str_c(
       "{.field {provenance_as_short_title(ps)}}: ",
       "{.var {variable}} must not have more than {.val {limits$variable_of_interest}} levels (has {.val {vi$.length_levels}})"
-      ))
+    ))
     return(invisible())
   }
 
