@@ -1,11 +1,11 @@
-find_counts_file <- function(path) {
-  file <- find_one_file(path, glob = "*counts.tsv", verbose = FALSE)
+find_counts_file <- function(path, prefix) {
+  file <- find_one_file(path, regexp = str_c(prefix, ".+counts[.]tsv$"), verbose = FALSE)
   cli::cli_alert("found counts table at {.file {file}}")
   file
 }
 
-find_prior_metrics_file <- function(path) {
-  file <- find_one_file(path, regexp = "(libraries|samples)[.]tsv$", verbose = FALSE)
+find_prior_metrics_file <- function(path, prefix) {
+  file <- find_one_file(path, regexp = str_c(prefix, ".+(libraries|samples)[.]tsv$"), verbose = FALSE)
   cli::cli_alert("found libraries summary table at {.file {file}}")
   file
 }

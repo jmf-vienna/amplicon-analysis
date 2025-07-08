@@ -39,6 +39,7 @@ list(
   tar_target(plots_dir_name, config |> pluck("path", "plots", .default = "plots")),
   tar_target(rd_dir_name, config |> pluck("path", "rd", .default = "rd")),
   tar_target(file_prefix, base_provenance |> as_file_name()),
+  tar_target(counts_file_pattern, config |> pluck("path", "pattern", .default = "")),
 
   ## refinement ----
   tar_target(negative_controls, config |> pluck("filter", "negative controls", .default = character())),
@@ -97,12 +98,12 @@ list(
   tar_target(libraries_col_data, make_col_data(list(sublibraries, libraries, samples))),
 
   # assay data (counts) ----
-  tar_target(counts_file, find_counts_file(data_dir_name), format = "file"),
+  tar_target(counts_file, find_counts_file(data_dir_name, counts_file_pattern), format = "file"),
   tar_target(counts, read_tsv(counts_file) |> tidy_counts()),
   tar_target(assay_data, make_assay_data(counts)),
 
   # metrics from previous steps ----
-  tar_target(prior_library_metrics_file, find_prior_metrics_file(data_dir_name), format = "file"),
+  tar_target(prior_library_metrics_file, find_prior_metrics_file(data_dir_name, counts_file_pattern), format = "file"),
   tar_target(
     prior_library_metrics,
     prior_library_metrics_file |>
