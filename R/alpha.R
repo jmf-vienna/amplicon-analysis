@@ -1,4 +1,4 @@
-add_alpha_diversity <- function(se, alpha_diversity_indexes, threshold, rarefaction_rounds = 10L) {
+add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", threshold = 1000L, rarefaction_rounds = 10L) {
   min <- min_col_sum(se)
   if (min >= threshold) {
     se <-
@@ -18,7 +18,9 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes, threshold, rarefact
           name = str_c(".alpha_diversity_at_", min, "_", alpha_diversity_indexes),
           sample = min,
           niter = rarefaction_rounds
-        )
+        ) |>
+        # suppress vegan::rrarefy warning message "function should be used for observed counts, but smallest count is %d"
+        suppressWarnings()
     }
   } else {
     cli::cli_alert_warning(
