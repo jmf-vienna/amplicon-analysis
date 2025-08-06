@@ -28,7 +28,7 @@ taxonomy_fallback <- function(taxonomy, features_info) {
 }
 
 detect_taxonomy_ranks <- function(taxonomy) {
-  ranks <- taxonomy |> names()
+  ranks <- taxonomy |> names() |> str_subset("^[A-Z]")
   cli::cli_alert("taxonomy ranks detected: {.val {ranks}}")
   ranks
 }
