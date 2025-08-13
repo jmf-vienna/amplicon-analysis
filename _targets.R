@@ -56,6 +56,7 @@ list(
   ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
+  tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
 
   ## analysis ----
@@ -212,13 +213,16 @@ list(
     format = "file"
   ),
 
+  ## agglomerated SEs ----
+  tar_target(se_ranks, agglomerate_by_rank(se_deep, ranks_of_interest), pattern = map(ranks_of_interest)),
+
   ## subset SEs ----
   # this always includes se_deep without subsetting, as targets can not run with an empty pattern
   tar_target(se_subsets, make_se_subsets(se_deep, subsets), pattern = map(subsets)),
 
   ## all SEs ----
   tar_target(lib_se, list(se_libs_raw, se_libs_clean, se_libs_pass)),
-  tar_target(sam_se, list_c(list(list(se_raw, se_refined), se_subsets))),
+  tar_target(sam_se, list_c(list(list(se_raw, se_refined), head(se_ranks, -1L), se_subsets))),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
   # add alpha diversity ----
@@ -246,7 +250,7 @@ list(
         select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
         by = library_id_var
       ) |>
-      relocate(count, features, .after = last_col()) |>
+      relocate(all_of(c(library_id_var, biosample_id_var, "count", "features")), .after = last_col()) |>
       smart_arrange() |>
       arrange(across(all_of(library_id_var)))
   ),

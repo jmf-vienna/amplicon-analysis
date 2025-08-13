@@ -29,9 +29,15 @@ provenance_as_tibble <- function(x) {
     tibble::as_tibble()
 }
 
-provenance_as_file_name <- function(x) {
+get_trimmed_provenance <- function(x) {
   x |>
     get_provenance() |>
+    purrr::discard(\(x) rlang::is_scalar_character(x) && stringr::str_ends(x, stringr::fixed("_ID")))
+}
+
+provenance_as_file_name <- function(x) {
+  x |>
+    get_trimmed_provenance() |>
     as_file_name()
 }
 
@@ -68,7 +74,7 @@ as_title <- function(x, collapse = " | ") {
 plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subtitles = NULL, ...) {
   provenance <-
     plot |>
-    get_provenance() |>
+    get_trimmed_provenance() |>
     list_assign(
       aesthetics = zap(),
       ...

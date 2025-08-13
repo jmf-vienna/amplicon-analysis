@@ -28,7 +28,9 @@ taxonomy_fallback <- function(taxonomy, features_info) {
 }
 
 detect_taxonomy_ranks <- function(taxonomy) {
-  ranks <- taxonomy |> names() |> str_subset("^[A-Z]")
+  ranks <- taxonomy |>
+    names() |>
+    str_subset("^[A-Z]")
   cli::cli_alert("taxonomy ranks detected: {.val {ranks}}")
   ranks
 }
@@ -62,6 +64,11 @@ make_assay_data <- function(counts) {
 make_se <- function(counts, col_data, row_data, ranks, provenance) {
   sample_id_var <- col_data |> first_id_name()
   feature_id_var <- ranks |> dplyr::last()
+  provenance <-
+    provenance |>
+    list_modify(
+      rank = feature_id_var
+    )
 
   cli::cli_alert("ID variable names: sample = {.field {sample_id_var}} and feature = {.field {feature_id_var}}")
 
@@ -203,4 +210,19 @@ tidy_taxonomy <- function(x) {
 
 tidy_features_info <- function(x) {
   x
+}
+
+
+# Taxonomic ranks
+
+agglomerate_by_rank <- function(se, rank) {
+  if (rank == feature_id_var_name(se)) {
+    return(se)
+  }
+
+  loadNamespace(class(se))
+
+  se |>
+    mia::agglomerateByRank(rank) |>
+    update_provenance(se, list(rank = rank))
 }
