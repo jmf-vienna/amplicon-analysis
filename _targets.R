@@ -217,7 +217,7 @@ list(
   tar_target(se_subsets, make_se_subsets(se_deep, subsets), pattern = map(subsets)),
 
   ## all SEs ----
-  tar_target(lib_se, list(se_libs_raw, se_libs_clean)),
+  tar_target(lib_se, list(se_libs_raw, se_libs_clean, se_libs_pass)),
   tar_target(sam_se, list_c(list(list(se_raw, se_refined), se_subsets))),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
