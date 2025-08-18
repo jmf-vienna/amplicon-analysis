@@ -215,15 +215,31 @@ list(
   ),
 
   ## agglomerated SEs ----
-  tar_target(se_ranks, agglomerate_by_rank(se_deep, ranks_of_interest, ranks_of_interest_trim), pattern = cross(ranks_of_interest, ranks_of_interest_trim)),
+  tar_target(
+    se_libs_ranks,
+    agglomerate_by_rank(se_libs_pass, ranks_of_interest, ranks_of_interest_trim),
+    pattern = cross(ranks_of_interest, ranks_of_interest_trim)
+  ),
+  tar_target(
+    se_ranks,
+    agglomerate_by_rank(se_deep, ranks_of_interest, ranks_of_interest_trim),
+    pattern = cross(ranks_of_interest, ranks_of_interest_trim)
+  ),
 
   ## subset SEs ----
   # this always includes se_deep without subsetting, as targets can not run with an empty pattern
   tar_target(se_subsets, make_se_subsets(se_deep, subsets), pattern = map(subsets)),
 
   ## all SEs ----
-  tar_target(lib_se, list(se_libs_raw, se_libs_clean, se_libs_pass)),
-  tar_target(sam_se, list_c(list(list(se_raw, se_refined), head(se_ranks, -2L), se_subsets))),
+  tar_target(lib_se, list_c(list(
+    list(se_libs_raw, se_libs_clean, se_libs_pass),
+    head(se_libs_ranks, -2L)
+  ))),
+  tar_target(sam_se, list_c(list(
+    list(se_raw, se_refined),
+    head(se_ranks, -2L),
+    se_subsets
+  ))),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
   # add alpha diversity ----

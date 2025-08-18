@@ -226,5 +226,6 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
 
   se |>
     mia::agglomerateByRank(rank, empty.rm = trim) |>
-    update_provenance(se, list(rank = rank_name))
+    update_provenance(se, list(rank = rank_name)) |>
+    tidy()
 }
