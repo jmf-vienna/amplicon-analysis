@@ -28,7 +28,8 @@ taxonomy_fallback <- function(taxonomy, features_info) {
 }
 
 detect_taxonomy_ranks <- function(taxonomy) {
-  ranks <- taxonomy |>
+  ranks <-
+    taxonomy |>
     names() |>
     str_subset("^[A-Z]")
   cli::cli_alert("taxonomy ranks detected: {.val {ranks}}")
@@ -215,7 +216,7 @@ tidy_features_info <- function(x) {
 
 # Taxonomic ranks
 
-agglomerate_by_rank <- function(se, rank, trim = FALSE) {
+agglomerate_by_rank <- function(se, ranks, rank, trim = FALSE) {
   if (rank == feature_id_var_name(se)) {
     return(se)
   }
@@ -224,8 +225,20 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
 
   rank_name <- ifelse(trim, str_c("only ", rank), rank)
 
-  se |>
+  res <-
+    se |>
     mia::agglomerateByRank(rank, empty.rm = trim) |>
     update_provenance(se, list(rank = rank_name)) |>
     tidy()
+
+  next_rank <- ranks[match(rank, ranks) + 1L]
+  remove <-
+    res |>
+    SummarizedExperiment::rowData() |>
+    as_tibble() |>
+    dplyr::select(all_of(next_rank):last_col()) |>
+    names()
+  SummarizedExperiment::rowData(res)[, remove] <- NA
+
+  res
 }
