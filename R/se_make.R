@@ -240,5 +240,12 @@ agglomerate_by_rank <- function(se, ranks, rank, trim = FALSE) {
     names()
   SummarizedExperiment::rowData(res)[, remove] <- NA
 
-  res
+  sorted_rownames <-
+    res |>
+    SummarizedExperiment::rowData() |>
+    as_full_tibble("Feature_ID") |>
+    arrange(across(all_of(ranks))) |>
+    pull(Feature_ID)
+
+  res[sorted_rownames, ]
 }
