@@ -216,12 +216,14 @@ tidy_features_info <- function(x) {
 
 # Taxonomic ranks
 
-agglomerate_by_rank <- function(se, ranks, rank, trim = FALSE) {
+agglomerate_by_rank <- function(se, rank, trim = FALSE) {
   if (rank == feature_id_var_name(se)) {
     return(se)
   }
 
   loadNamespace(class(se))
+
+  all_ranks <- S4Vectors::metadata(se)[["taxonomy_ranks"]]
 
   rank_name <- ifelse(trim, str_c("only ", rank), rank)
 
@@ -231,7 +233,7 @@ agglomerate_by_rank <- function(se, ranks, rank, trim = FALSE) {
     update_provenance(se, list(rank = rank_name)) |>
     tidy()
 
-  next_rank <- ranks[match(rank, ranks) + 1L]
+  next_rank <- all_ranks[match(rank, all_ranks) + 1L]
   remove <-
     res |>
     SummarizedExperiment::rowData() |>
@@ -244,7 +246,7 @@ agglomerate_by_rank <- function(se, ranks, rank, trim = FALSE) {
     res |>
     SummarizedExperiment::rowData() |>
     as_full_tibble("Feature_ID") |>
-    arrange(across(all_of(ranks))) |>
+    arrange(across(all_of(all_ranks))) |>
     pull(Feature_ID)
 
   res[sorted_rownames, ]
