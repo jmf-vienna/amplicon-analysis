@@ -57,6 +57,7 @@ list(
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
+  tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
 
   ## analysis ----
@@ -214,7 +215,7 @@ list(
   ),
 
   ## agglomerated SEs ----
-  tar_target(se_ranks, agglomerate_by_rank(se_deep, ranks_of_interest), pattern = map(ranks_of_interest)),
+  tar_target(se_ranks, agglomerate_by_rank(se_deep, ranks_of_interest, ranks_of_interest_trim), pattern = cross(ranks_of_interest, ranks_of_interest_trim)),
 
   ## subset SEs ----
   # this always includes se_deep without subsetting, as targets can not run with an empty pattern
@@ -222,7 +223,7 @@ list(
 
   ## all SEs ----
   tar_target(lib_se, list(se_libs_raw, se_libs_clean, se_libs_pass)),
-  tar_target(sam_se, list_c(list(list(se_raw, se_refined), head(se_ranks, -1L), se_subsets))),
+  tar_target(sam_se, list_c(list(list(se_raw, se_refined), head(se_ranks, -2L), se_subsets))),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
   # add alpha diversity ----

@@ -215,14 +215,16 @@ tidy_features_info <- function(x) {
 
 # Taxonomic ranks
 
-agglomerate_by_rank <- function(se, rank) {
+agglomerate_by_rank <- function(se, rank, trim = FALSE) {
   if (rank == feature_id_var_name(se)) {
     return(se)
   }
 
   loadNamespace(class(se))
 
+  rank_name <- ifelse(trim, str_c("only ", rank), rank)
+
   se |>
-    mia::agglomerateByRank(rank) |>
-    update_provenance(se, list(rank = rank))
+    mia::agglomerateByRank(rank, empty.rm = trim) |>
+    update_provenance(se, list(rank = rank_name))
 }
