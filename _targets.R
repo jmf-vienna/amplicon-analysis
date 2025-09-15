@@ -5,8 +5,7 @@ options(warn = 2L)
 tar_option_set(
   packages = c("cli", "dplyr", "forcats", "fs", "purrr", "readr", "rlang", "stringr", "tibble", "tidyr", "vctrs"),
   format = "qs",
-  iteration = "list",
-  controller = crew::crew_controller_local(workers = 2L)
+  iteration = "list"
 )
 
 tar_config_get("script") |>
