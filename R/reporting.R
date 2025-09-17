@@ -10,14 +10,16 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
     "base",
     "targets", "tidyverse", "rstatix", "ggpubr",
     "SummarizedExperiment", "SingleCellExperiment", "mia",
-    "vegan", "scuttle",
+    "vegan", "scuttle", "decontam",
     "phyloseq", "microViz"
   )
 
-  citations <-
-    packages |>
-    purrr::map(citation_text) |>
-    stringr::str_c("* `", packages, "`: ", text = _, collapse = "\n")
+  citations <- stringr::str_c(
+    "* `", packages, "` ",
+    "v", packages |> purrr::map(packageVersion) |> purrr::map(as.character) |> unlist(), ": ",
+    packages |> purrr::map(citation_text) |> unlist(),
+    collapse = "\n"
+  )
 
   input_files <- input_files |> discard(vec_is_empty)
   input_files_md <- stringr::str_c("* ", names(input_files), ": `", input_files, "`", collapse = "\n")
