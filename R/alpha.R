@@ -100,7 +100,7 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
   alpha_diversity_test_raw |>
     provenance_as_tibble() |>
     add_column(.y. = "Diversity") |>
-    inner_join(alpha_diversity_test_raw |> dplyr::bind_rows(), by = ".y.") |>
+    inner_join(dplyr::bind_rows(alpha_diversity_test_raw), by = ".y.") |>
     dplyr::select(!c(analysis, .y., p.adj.signif)) |>
     tibble::add_column(NAs = NA_character_, error = NA_character_) |>
     dplyr::mutate(
