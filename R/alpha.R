@@ -162,12 +162,15 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
   ))
 
   # add p-values to the plot:
-  alpha_diversity_test <- alpha_diversity_test_raw |> dplyr::bind_rows()
-  if (!vec_is_empty(alpha_diversity_test)) {
+  if (!vec_is_empty(first(alpha_diversity_test_raw))) {
     ns_count <-
-      alpha_diversity_test |>
-      dplyr::filter(p.adj.signif == "ns") |>
-      nrow()
+      alpha_diversity_test_raw |>
+      map(\(x) {
+        x |>
+          dplyr::filter(p.adj.signif == "ns") |>
+          vec_size()
+      }) |>
+      reduce(`+`)
 
     pvalue_data <-
       alpha_diversity_test_raw |>
