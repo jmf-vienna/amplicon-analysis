@@ -14,7 +14,7 @@ variable_info <- function(x, label) {
     .length_levels = nrow(counts),
     .NAs = n_na,
     exists = exists,
-    has_na = n_na > 1L,
+    has_na = n_na >= 1L,
     all_na = all(is.na(x)),
     # more than one value:
     multiple = length(x) > 1L,
