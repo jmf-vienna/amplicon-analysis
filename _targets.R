@@ -1,7 +1,7 @@
 library(targets)
 
 jmf::quiet()
-options(warn = 2L)
+options(warn = Sys.getenv("R_OPTIONS_WARN", 2L))
 tar_option_set(
   packages = c("cli", "dplyr", "forcats", "fs", "purrr", "readr", "rlang", "stringr", "tibble", "tidyr", "vctrs"),
   format = "qs",
