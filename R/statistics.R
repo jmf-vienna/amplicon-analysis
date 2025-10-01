@@ -7,6 +7,42 @@ p_format <- function(x) {
     dplyr::na_if("p=NA")
 }
 
+single_test <- function(x, two_sample_test, variable, value) {
+  x <- dplyr::mutate(x, across(any_of(variable), droplevels))
+
+  test_formula <- as.formula(str_c(value, "~", variable))
+
+  if (identical(two_sample_test, "wilcox")) {
+    test_result <-
+      x |>
+      wilcox.test(test_formula, data = _) |>
+      # "cannot compute exact p-value with ties" warnings are ignored
+      suppressWarnings()
+  }
+
+  tibble(
+    .y. = value,
+    group1 = x |> pull(variable) |> levels() |> dplyr::first(),
+    group2 = x |> pull(variable) |> levels() |> dplyr::last(),
+    p = test_result |> chuck("p.value")
+  )
+}
+
+pairwise_test <- function(data, variable, value, two_sample_test, p_adjust_method) {
+  data |>
+    purrr::chuck(variable) |>
+    jmf::uniques() |>
+    utils::combn(2L, simplify = FALSE) |>
+    purrr::map(\(x) {
+      data |>
+        dplyr::filter(.data[[variable]] %in% x) |>
+        single_test(two_sample_test, variable, value)
+    }) |>
+    dplyr::bind_rows() |>
+    rstatix::adjust_pvalue(method = p_adjust_method) |>
+    rstatix::add_significance("p.adj")
+}
+
 finalize_tests_table <- function(data) {
   data |>
     dplyr::mutate(`p-value formatted` = `p-value` |> p_format(), .after = `p-value`)

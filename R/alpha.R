@@ -58,7 +58,7 @@ get_alpha_diversity <- function(se, variable, theme) {
     update_provenance(se, list(analysis = "alpha diversity"))
 }
 
-test_alpha_diversity <- function(alpha_diversity, variable, p_adjust_method) {
+test_alpha_diversity <- function(alpha_diversity, variable = "Group", two_sample_test = "wilcox", p_adjust_method = "fdr") {
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }
@@ -82,12 +82,12 @@ test_alpha_diversity <- function(alpha_diversity, variable, p_adjust_method) {
   results <-
     alpha_diversity |>
     dplyr::group_by(Index, Rarefaction) |>
-    rstatix::pairwise_wilcox_test(as.formula(str_c("Diversity ~ ", variable)), p.adjust.method = p_adjust_method)
+    dplyr::group_map(\(x, y) bind_cols(y, pairwise_test(x, variable, "Diversity", two_sample_test, p_adjust_method)))
 
   results |>
     update_provenance(alpha_diversity, list(
-      test = results |> chuck(attr_getter("args"), "method") |> str_replace_all(fixed("_"), " ") |> str_to_title(),
-      `p-value correction` = results |> chuck(attr_getter("args"), "p.adjust.method") |> str_to_title() |> str_replace("^Fdr$", "FDR"),
+      test = two_sample_test |> str_to_title() |> str_c(" Test"),
+      `p-value correction` = p_adjust_method |> str_to_title() |> str_replace("^Fdr$", "FDR"),
       `variable of interest` = variable
     ))
 }
@@ -100,17 +100,21 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
   alpha_diversity_test_raw |>
     provenance_as_tibble() |>
     add_column(.y. = "Diversity") |>
-    inner_join(alpha_diversity_test_raw, by = ".y.") |>
-    dplyr::select(!c(analysis, .y., statistic, p.adj.signif)) |>
+    inner_join(alpha_diversity_test_raw |> dplyr::bind_rows(), by = ".y.") |>
+    dplyr::select(!c(analysis, .y., p.adj.signif)) |>
     tibble::add_column(NAs = NA_character_, error = NA_character_) |>
+    dplyr::mutate(
+      p = round(p, 3L),
+      p.adj = round(p.adj, 3L)
+    ) |>
     dplyr::rename(metric = Index, rarefaction = Rarefaction, `p-value` = p.adj, `uncorrected p-value` = p) |>
     dplyr::relocate(rarefaction, metric, .before = "variable of interest") |>
     dplyr::relocate(group1, group2, NAs, test, `p-value correction`, `p-value`, .after = "variable of interest") |>
-    dplyr::relocate(`uncorrected p-value`, n1, n2, .after = last_col()) |>
+    dplyr::relocate(`uncorrected p-value`, .after = last_col()) |>
     update_provenance(alpha_diversity_test_raw)
 }
 
-plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest, theme) {
+plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest = "Group", theme) {
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }
@@ -158,21 +162,29 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
   ))
 
   # add p-values to the plot:
-  if (!vec_is_empty(alpha_diversity_test_raw)) {
+  alpha_diversity_test <- alpha_diversity_test_raw |> dplyr::bind_rows()
+  if (!vec_is_empty(alpha_diversity_test)) {
     ns_count <-
-      alpha_diversity_test_raw |>
+      alpha_diversity_test |>
       dplyr::filter(p.adj.signif == "ns") |>
       nrow()
 
+    attr(alpha_diversity_test, "args") <- list(
+      data = alpha_diversity,
+      formula = as.formula(str_c("Diversity ~ ", variable_of_interest))
+    )
+
     pvalue_data <-
-      alpha_diversity_test_raw |>
+      alpha_diversity_test |>
       dplyr::filter(p.adj.signif != "ns") |>
       rstatix::add_xy_position(x = variable_of_interest, step.increase = 0.4, scales = "free_y")
 
-    test <- alpha_diversity_test_raw |>
+    test <-
+      alpha_diversity_test_raw |>
       get_provenance() |>
       chuck("test")
-    correction <- alpha_diversity_test_raw |>
+    correction <-
+      alpha_diversity_test_raw |>
       get_provenance() |>
       chuck("p-value correction")
 
