@@ -169,15 +169,19 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       dplyr::filter(p.adj.signif == "ns") |>
       nrow()
 
-    attr(alpha_diversity_test, "args") <- list(
-      data = alpha_diversity,
-      formula = as.formula(str_c("Diversity ~ ", variable_of_interest))
-    )
-
     pvalue_data <-
-      alpha_diversity_test |>
-      dplyr::filter(p.adj.signif != "ns") |>
-      rstatix::add_xy_position(x = variable_of_interest, step.increase = 0.4, scales = "free_y")
+      alpha_diversity_test_raw |>
+      map(\(x) {
+        attr(x, "args") <- list(
+          data = x |> select(Index, Rarefaction) |> distinct() |> inner_join(alpha_diversity, by = join_by(Index, Rarefaction)),
+          formula = as.formula(str_c("Diversity ~ ", variable_of_interest))
+        )
+
+        x |>
+          dplyr::filter(p.adj.signif != "ns") |>
+          rstatix::add_xy_position(x = variable_of_interest, step.increase = 0.4, scales = "free_y")
+      }) |>
+      dplyr::bind_rows()
 
     test <-
       alpha_diversity_test_raw |>
