@@ -39,7 +39,7 @@ format_beta_diversity_test <- function(beta_diversity_test_raw) {
     dplyr::rename(metric = distance)
 }
 
-plot_ordination <- function(ps, variable, point_label, limits, theme) {
+plot_ordination <- function(ps, variable = "Group", point_label, limits, theme = ggplot_theme()) {
   if (is.null(ps)) {
     return(invisible())
   }
