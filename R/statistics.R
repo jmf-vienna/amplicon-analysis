@@ -1,7 +1,8 @@
 p_format <- function(x) {
-  withr::local_options(list(scipen = 999L))
+  withr::local_options(list(scipen = 9999L))
 
-  x |>
+  dplyr::if_else(x >= 0.1, round(x, 2L), x) |>
+    rstatix::p_round() |>
     rstatix::p_format(add.p = TRUE) |>
     rstatix::p_mark_significant() |>
     dplyr::na_if("p=NA")
@@ -43,9 +44,22 @@ pairwise_test <- function(data, variable, value, two_sample_test, p_adjust_metho
     rstatix::add_significance("p.adj")
 }
 
+p_trim <- function(x) {
+  dplyr::if_else(x < 1e-12, 0.0, x) |>
+    signif(4L) |>
+    prettyNum(scientific = FALSE) |>
+    str_remove("^NA$") |>
+    str_remove("^NaN$")
+}
+
 finalize_tests_table <- function(data) {
   data |>
-    dplyr::mutate(`p-value formatted` = `p-value` |> p_format(), .after = `p-value`)
+    dplyr::mutate(
+      `p-value formatted` = `p-value` |> p_format(),
+      `p-value` = p_trim(`p-value`),
+      `uncorrected p-value` = p_trim(`uncorrected p-value`)
+    ) |>
+    dplyr::relocate(`p-value formatted`, .after = `p-value`)
 }
 
 super_safely <- function(fun, ...) {
