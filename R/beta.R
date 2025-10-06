@@ -36,10 +36,11 @@ format_beta_diversity_test <- function(beta_diversity_test_raw) {
   }
 
   beta_diversity_test_raw |>
-    dplyr::rename(metric = distance)
+    dplyr::rename(metric = distance) |>
+    tibble::add_column(`uncorrected p-value` = NA_real_)
 }
 
-plot_ordination <- function(ps, variable = "Group", point_label, limits, theme = ggplot_theme()) {
+plot_ordination <- function(ps, variable = "Group", point_label = "Group", limits = list(variable_of_interest = 10L), theme = ggplot_theme()) {
   if (is.null(ps)) {
     return(invisible())
   }
