@@ -114,7 +114,7 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
     update_provenance(alpha_diversity_test_raw)
 }
 
-plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest = "Group", theme = ggplot2::theme_gray()) {
+plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest = "Group", theme = ggplot_theme()) {
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }
