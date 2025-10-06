@@ -54,9 +54,10 @@ list(
 
   ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
-  tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Category")),
+  tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Group")),
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
+  tar_target(two_sample_test, config |> pluck("analyze", "two sample test", .default = "wilcox")),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
 
   ## analysis ----
@@ -326,7 +327,7 @@ list(
   ## tests ----
   tar_target(
     alpha_diversity_test_raw,
-    test_alpha_diversity(alpha_diversity, variable_of_interest, p_adjust_method),
+    test_alpha_diversity(alpha_diversity, variable_of_interest, two_sample_test, p_adjust_method),
     pattern = cross(alpha_diversity, variable_of_interest)
   ),
   tar_target(
