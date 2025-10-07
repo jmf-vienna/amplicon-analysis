@@ -177,8 +177,8 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
         )
 
         x |>
-          dplyr::filter(p.adj.signif != "ns") |>
-          rstatix::add_xy_position(x = variable_of_interest, step.increase = 0.4, scales = "free_y")
+          rstatix::add_xy_position(x = variable_of_interest, step.increase = 0.4, scales = "free_y") |>
+          dplyr::filter(p.adj.signif != "ns")
       }) |>
       dplyr::bind_rows()
 
