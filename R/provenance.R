@@ -19,7 +19,7 @@ provenance_as_short_title <- function(x, collapse = "/") {
     get_provenance() |>
     unlist() |>
     tail(-2L) |>
-    str_c(collapse = collapse)
+    stringr::str_c(collapse = collapse)
 }
 
 provenance_as_tibble <- function(x) {
@@ -66,7 +66,7 @@ as_title <- function(x, collapse = " | ") {
     names() |>
     stringr::str_replace_all(stringr::fixed("."), ": ")
 
-  stringr::str_c(n, dplyr::if_else(str_length(n) > 0L, ": ", ""), x) |>
+  stringr::str_c(n, dplyr::if_else(stringr::str_length(n) > 0L, ": ", ""), x) |>
     stringr::str_replace("(≤|≥): ", "\\1") |>
     stringr::str_flatten(collapse)
 }
