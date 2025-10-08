@@ -262,7 +262,7 @@ write_flattened <- function(se, file, assay_name = "counts") {
     tibble::add_column(ID = ".col_sums", .before = 1L)
 
   features <-
-    (assay_matrix > 0L) |>
+    (assay_matrix != 0L) |>
     colSums() |>
     as.matrix() |>
     t() |>
@@ -302,7 +302,16 @@ write_flattened <- function(se, file, assay_name = "counts") {
 }
 
 export_flattened <- function(se, dir_name, assay_name = "counts") {
-  file <- fs::path(dir_name, se |> update_provenance(new = list(export = "flattened")) |> provenance_as_file_name(), ext = "tsv")
+  file <- fs::path(
+    dir_name,
+    stringr::str_c(
+      provenance_as_file_name(se),
+      "flattened",
+      if (!identical(assay_name, "counts")) assay_name,
+      sep = "_"
+    ),
+    ext = "tsv"
+  )
   prepare_export(file)
 
   cli::cli_alert("flattened data saved to {.file {file}}")

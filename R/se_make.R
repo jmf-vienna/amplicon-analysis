@@ -168,6 +168,8 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
       .Libraries = .data[[lib_id]] |> str_flatten(" ")
     )
 
+  # clr can not be agglomerated, so delete beforehand to avoid warnings
+  SummarizedExperiment::assay(se, "clr") <- NULL
   se <-
     mia::agglomerateByVariable(se, "cols", by) |>
     update_provenance(se, provenance)
@@ -180,6 +182,13 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
     S4Vectors::DataFrame(row.names = colnames(se))
 
   se
+}
+
+add_assays <- function(se, clr_pseudocount = 0.5) {
+  se |>
+    mia::transformAssay(method = "relabundance") |>
+    mia::transformAssay(method = "clr", pseudocount = clr_pseudocount) |>
+    update_provenance(se)
 }
 
 #### Overrides ####
@@ -227,11 +236,14 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
 
   rank_name <- ifelse(trim, str_c("only ", rank), rank)
 
+  # clr can not be agglomerated, so delete beforehand to avoid warnings, then re-add
+  SummarizedExperiment::assay(se, "clr") <- NULL
   res <-
     se |>
     mia::agglomerateByRank(rank, empty.rm = trim) |>
     update_provenance(se, list(rank = rank_name)) |>
-    tidy()
+    tidy() |>
+    add_assays()
 
   next_rank <- all_ranks[match(rank, all_ranks) + 1L]
   remove <-

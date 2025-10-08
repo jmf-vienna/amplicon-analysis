@@ -171,7 +171,8 @@ list(
     se_libs_clean |>
       remove_cols(failed_libraries) |>
       update_provenance(new = list(state = "pass")) |>
-      tidy()
+      tidy() |>
+      add_assays()
   ),
 
   ## sample SEs ----
@@ -184,12 +185,16 @@ list(
   )),
 
   ### refined ----
-  tar_target(se_refined, merge_cols(
-    se_libs_pass,
-    biosample_id_var,
-    samples |> names(),
-    list(resolution = "samples", state = "refined")
-  )),
+  tar_target(
+    se_refined,
+    merge_cols(
+      se_libs_pass,
+      biosample_id_var,
+      samples |> names(),
+      list(resolution = "samples", state = "refined")
+    ) |>
+      add_assays()
+  ),
 
   ### deep (filter samples) ----
   tar_target(
