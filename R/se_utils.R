@@ -218,12 +218,12 @@ write_flattened <- function(se, file, assay_name = "counts") {
     SummarizedExperiment::assay(assay_name) |>
     as.matrix()
 
-  if (any(rowSums(assay_matrix) == 0L)) {
-    empty <- rownames(assay_matrix)[rowSums(assay_matrix) == 0L]
+  if (any(rowSums(assay_matrix != 0L) == 0L)) {
+    empty <- rownames(assay_matrix)[rowSums(assay_matrix != 0L) == 0L]
     cli::cli_warn("rows with only zeros found in features {empty}")
   }
-  if (any(colSums(assay_matrix) == 0L)) {
-    empty <- colnames(assay_matrix)[colSums(assay_matrix) == 0L]
+  if (any(colSums(assay_matrix != 0L) == 0L)) {
+    empty <- colnames(assay_matrix)[colSums(assay_matrix != 0L) == 0L]
     cli::cli_warn("columns with only zeros found in samples {empty}")
   }
 
