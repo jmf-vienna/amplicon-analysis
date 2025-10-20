@@ -20,6 +20,11 @@ calulcate_ordination <- function(ps) {
     return(invisible())
   }
 
+  if (phyloseq::ntaxa(ps) < 3L) {
+    cli::cli_alert_warning("{.field {provenance_as_short_title(ps)}}: at least three features are required for ordination analysis")
+    return(invisible())
+  }
+
   ps_new <-
     ps |>
     microViz::ord_calc()
