@@ -184,7 +184,7 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
   se
 }
 
-add_assays <- function(se, clr_pseudocount = 0.5) {
+add_assays <- function(se, clr_pseudocount = TRUE) {
   se |>
     mia::transformAssay(method = "relabundance") |>
     mia::transformAssay(method = "clr", pseudocount = clr_pseudocount) |>
