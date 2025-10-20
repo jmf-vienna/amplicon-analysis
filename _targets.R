@@ -55,6 +55,7 @@ list(
   ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Group")),
+  # always include feature ID, as targets can not run with an empty pattern
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
   tar_target(two_sample_test, config |> pluck("analyze", "two sample test", .default = "wilcox")),
@@ -221,28 +222,29 @@ list(
 
   ## agglomerated SEs ----
   tar_target(
-    se_libs_ranks,
+    se_libs_ranks_raw,
     agglomerate_by_rank(se_libs_pass, ranks_of_interest, ranks_of_interest_trim),
     pattern = cross(ranks_of_interest, ranks_of_interest_trim)
   ),
+  # remove double feature ID SEs, as `ranks_of_interest_trim` has not effect here.
+  tar_target(se_libs_ranks, unique(se_libs_ranks_raw)),
   tar_target(
-    se_ranks,
+    se_ranks_raw,
     agglomerate_by_rank(se_deep, ranks_of_interest, ranks_of_interest_trim),
     pattern = cross(ranks_of_interest, ranks_of_interest_trim)
   ),
+  tar_target(se_ranks, unique(se_ranks_raw)),
 
   ## subset SEs ----
-  # this always includes se_deep without subsetting, as targets can not run with an empty pattern
-  tar_target(se_subsets, make_se_subsets(se_deep, subsets), pattern = map(subsets)),
+  tar_target(se_subsets, make_se_subsets(se_ranks, subsets), pattern = cross(se_ranks, subsets)),
 
   ## all SEs ----
   tar_target(lib_se, list_c(list(
-    list(se_libs_raw, se_libs_clean, se_libs_pass),
-    head(se_libs_ranks, -2L)
+    list(se_libs_raw, se_libs_clean),
+    se_libs_ranks
   ))),
   tar_target(sam_se, list_c(list(
     list(se_raw, se_refined),
-    head(se_ranks, -2L),
     se_subsets
   ))),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
