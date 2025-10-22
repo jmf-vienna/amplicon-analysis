@@ -29,11 +29,16 @@ single_test <- function(x, two_sample_test, variable, value) {
   )
 }
 
+get_pairs <- function(x) {
+  x |>
+    jmf::uniques() |>
+    utils::combn(2L, simplify = FALSE)
+}
+
 pairwise_test <- function(data, variable, value, two_sample_test, p_adjust_method) {
   data |>
     purrr::chuck(variable) |>
-    jmf::uniques() |>
-    utils::combn(2L, simplify = FALSE) |>
+    get_pairs() |>
     purrr::map(\(x) {
       data |>
         dplyr::filter(.data[[variable]] %in% x) |>
