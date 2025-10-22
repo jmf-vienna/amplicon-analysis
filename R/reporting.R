@@ -8,15 +8,27 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
 
   packages <- c(
     "base",
-    "targets", "tidyverse", "rstatix", "ggpubr",
-    "SummarizedExperiment", "SingleCellExperiment", "mia",
-    "vegan", "scuttle", "decontam",
-    "phyloseq", "microViz"
+    "targets",
+    "tidyverse",
+    "rstatix",
+    "ggpubr",
+    "SummarizedExperiment",
+    "SingleCellExperiment",
+    "mia",
+    "vegan",
+    "scuttle",
+    "decontam",
+    "phyloseq",
+    "microViz"
   )
 
   citations <- stringr::str_c(
-    "* `", packages, "` ",
-    "v", packages |> purrr::map(packageVersion) |> purrr::map(as.character) |> unlist(), ": ",
+    "* `",
+    packages,
+    "` ",
+    "v",
+    packages |> purrr::map(packageVersion) |> purrr::map(as.character) |> unlist(),
+    ": ",
     packages |> purrr::map(citation_text) |> unlist(),
     collapse = "\n"
   )

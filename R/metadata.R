@@ -21,23 +21,20 @@ variable_info <- function(x, label) {
     # more than one level:
     multiple_levels = nrow(counts) > 1L,
     # at least one group with at least two replicates each
-    duplicates =
-      counts |>
-        dplyr::filter(count >= 2L) |>
-        nrow()
-      >= 1L,
+    duplicates = counts |>
+      dplyr::filter(count >= 2L) |>
+      nrow() >=
+      1L,
     # at least two groups with at least two replicates each
-    testable =
-      counts |>
-        dplyr::filter(count >= 2L) |>
-        nrow()
-      >= 2L,
+    testable = counts |>
+      dplyr::filter(count >= 2L) |>
+      nrow() >=
+      2L,
     # all groups must have at least two replicates each (with at least two groups)
-    pairwise_testable =
-      counts |>
-        dplyr::filter(count >= 2L) |>
-        nrow()
-      == max(2L, nrow(counts))
+    pairwise_testable = counts |>
+      dplyr::filter(count >= 2L) |>
+      nrow() ==
+      max(2L, nrow(counts))
   )
   # nolint end
 }

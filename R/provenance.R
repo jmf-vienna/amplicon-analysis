@@ -47,7 +47,8 @@ as_file_name <- function(x) {
       stringr::str_c(
         names(x),
         x |> stringr::str_remove(" \\(.+\\)$"), # nolint: nonportable_path_linter.
-        sep = "_", collapse = "_"
+        sep = "_",
+        collapse = "_"
       )
     }) |>
     stringr::str_flatten("_") |>
@@ -83,12 +84,13 @@ plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subti
   # trim "project:" from the title
   names(provenance)[[1L]] <- ""
 
-  plot + ggplot2::labs(
-    title = provenance |> head(title_n) |> c(title) |> as_title(),
-    subtitle = c(
-      provenance |> tail(-title_n) |> c(subtitle) |> as_title(),
-      subtitles
-    ) |>
-      stringr::str_flatten("\n")
-  )
+  plot +
+    ggplot2::labs(
+      title = provenance |> head(title_n) |> c(title) |> as_title(),
+      subtitle = c(
+        provenance |> tail(-title_n) |> c(subtitle) |> as_title(),
+        subtitles
+      ) |>
+        stringr::str_flatten("\n")
+    )
 }

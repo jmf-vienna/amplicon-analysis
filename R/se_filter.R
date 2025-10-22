@@ -37,11 +37,16 @@ keep_desirable_features <- function(se, config) {
   valid_ranks <- intersect(taxonomy_ranks(se), names(config))
   config <- config[valid_ranks]
 
-  purrr::reduce2(names(config), config, \(se, rank, values) {
-    se_new <- se[SummarizedExperiment::rowData(se)[[rank]] %in% values]
-    se_new <- filtered_features_helper(se, se_new, rank)
-    se_new
-  }, .init = se)
+  purrr::reduce2(
+    names(config),
+    config,
+    \(se, rank, values) {
+      se_new <- se[SummarizedExperiment::rowData(se)[[rank]] %in% values]
+      se_new <- filtered_features_helper(se, se_new, rank)
+      se_new
+    },
+    .init = se
+  )
 }
 
 filter_undesirable_features <- function(se, config) {
@@ -55,11 +60,16 @@ filter_undesirable_features <- function(se, config) {
   valid_ranks <- intersect(taxonomy_ranks(se), names(config))
   config <- config[valid_ranks]
 
-  se <- purrr::reduce2(names(config), config, \(se, rank, values) {
-    se_new <- se[!SummarizedExperiment::rowData(se)[[rank]] %in% values]
-    se_new <- filtered_features_helper(se, se_new, rank)
-    se_new
-  }, .init = se)
+  se <- purrr::reduce2(
+    names(config),
+    config,
+    \(se, rank, values) {
+      se_new <- se[!SummarizedExperiment::rowData(se)[[rank]] %in% values]
+      se_new <- filtered_features_helper(se, se_new, rank)
+      se_new
+    },
+    .init = se
+  )
   se
 }
 

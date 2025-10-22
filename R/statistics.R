@@ -80,7 +80,8 @@ super_safely <- function(fun, ...) {
   res
 }
 
-test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cyclocomp_linter.
+# nolint start: cyclocomp_linter.
+test_distance <- function(ps_raw, variable, .filter_na = FALSE) {
   if (is.null(ps_raw)) {
     return(invisible())
   }
@@ -111,7 +112,8 @@ test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cycl
   bdisp_p_value <- NA_real_
   bdisp_error <- NULL
 
-  if (!vi[["testable"]]) { # nolint: if_not_else_linter.
+  # nolint start: if_not_else_linter.
+  if (!vi[["testable"]]) {
     permanova_error <- bdisp_error <- "must have at least two groups with at least two replicates each"
   } else {
     permanova <- super_safely(
@@ -157,6 +159,7 @@ test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cycl
       bdisp_error <- bdisp[["log"]]
     }
   }
+  # nolint end: if_not_else_linter.
 
   if (is.null(permanova_error)) {
     permanova_error <- ""
@@ -193,3 +196,4 @@ test_distance <- function(ps_raw, variable, .filter_na = FALSE) { # nolint: cycl
 
   res |> update_provenance(ps)
 }
+# nolint end: cyclocomp_linter.

@@ -85,11 +85,14 @@ test_alpha_diversity <- function(alpha_diversity, variable = "Group", two_sample
     dplyr::group_map(\(x, y) bind_cols(y, pairwise_test(x, variable, "Diversity", two_sample_test, p_adjust_method)))
 
   results |>
-    update_provenance(alpha_diversity, list(
-      test = two_sample_test |> str_to_title() |> str_c(" Test"),
-      `p-value correction` = p_adjust_method |> str_to_title() |> str_replace("^Fdr$", "FDR"),
-      `variable of interest` = variable
-    ))
+    update_provenance(
+      alpha_diversity,
+      list(
+        test = two_sample_test |> str_to_title() |> str_c(" Test"),
+        `p-value correction` = p_adjust_method |> str_to_title() |> str_replace("^Fdr$", "FDR"),
+        `variable of interest` = variable
+      )
+    )
 }
 
 format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
@@ -197,19 +200,24 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
         pvalue_data,
         color = "blue",
         tip.length = 0L
-      ) + labs(
+      ) +
+      labs(
         caption = pluralize(
           "{test}, {correction}-adjusted p-values: 0 **** 0.0001 *** 0.001 ** 0.01 * 0.05. {ns_count} non-significant comparison{?s} not shown."
         )
-      ) + theme(
+      ) +
+      theme(
         plot.caption = element_text(color = "blue")
       )
   }
 
   plot |>
-    update_provenance(alpha_diversity, list(
-      aesthetics = list(by = variable_of_interest)
-    )) |>
+    update_provenance(
+      alpha_diversity,
+      list(
+        aesthetics = list(by = variable_of_interest)
+      )
+    ) |>
     plot_titles(
       title = "alpha diversity analysis",
       analysis = zap()

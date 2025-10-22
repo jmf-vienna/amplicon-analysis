@@ -72,10 +72,13 @@ list(
   ),
 
   ## limits ----
-  tar_target(limits, list(
-    sample = config |> pluck("annotation", "sample", "limit", .default = 10L),
-    variable_of_interest = config |> pluck("annotation", "category", "limit", .default = 10L)
-  )),
+  tar_target(
+    limits,
+    list(
+      sample = config |> pluck("annotation", "sample", "limit", .default = 10L),
+      variable_of_interest = config |> pluck("annotation", "category", "limit", .default = 10L)
+    )
+  ),
 
   ## subsets ----
   tar_target(
@@ -178,12 +181,15 @@ list(
 
   ## sample SEs ----
   ### raw (not used later on) ----
-  tar_target(se_raw, merge_cols(
-    se_libs_raw,
-    biosample_id_var,
-    samples |> names(),
-    list(resolution = "samples")
-  )),
+  tar_target(
+    se_raw,
+    merge_cols(
+      se_libs_raw,
+      biosample_id_var,
+      samples |> names(),
+      list(resolution = "samples")
+    )
+  ),
 
   ### refined ----
   tar_target(
@@ -206,11 +212,14 @@ list(
   ),
 
   ## filtered samples table ----
-  tar_target(filtered_samples_table, make_filtered_samples_table(list(
-    list(se_libs_raw, se_libs_clean),
-    list(se_libs_clean, se_libs_pass),
-    list(se_refined, se_deep)
-  ))),
+  tar_target(
+    filtered_samples_table,
+    make_filtered_samples_table(list(
+      list(se_libs_raw, se_libs_clean),
+      list(se_libs_clean, se_libs_pass),
+      list(se_refined, se_deep)
+    ))
+  ),
   tar_target(
     filtered_samples_table_file,
     write_tsv(
@@ -239,21 +248,24 @@ list(
   tar_target(se_subsets, make_se_subsets(se_ranks, subsets), pattern = cross(se_ranks, subsets)),
 
   ## all SEs ----
-  tar_target(lib_se, list_c(list(
-    list(se_libs_raw, se_libs_clean),
-    se_libs_ranks
-  ))),
-  tar_target(sam_se, list_c(list(
-    list(se_raw, se_refined),
-    se_subsets
-  ))),
+  tar_target(
+    lib_se,
+    list_c(list(
+      list(se_libs_raw, se_libs_clean),
+      se_libs_ranks
+    ))
+  ),
+  tar_target(
+    sam_se,
+    list_c(list(
+      list(se_raw, se_refined),
+      se_subsets
+    ))
+  ),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
   # add alpha diversity ----
-  tar_target(se,
-    add_alpha_diversity(all_se, alpha_diversity_indexes, alpha_diversity_yield_threshold),
-    pattern = map(all_se)
-  ),
+  tar_target(se, add_alpha_diversity(all_se, alpha_diversity_indexes, alpha_diversity_yield_threshold), pattern = map(all_se)),
 
   # export SEs ----
   tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
@@ -344,7 +356,8 @@ list(
   ),
 
   ## plots ----
-  tar_target(alpha_diversity_plot,
+  tar_target(
+    alpha_diversity_plot,
     plot_alpha_diversity(alpha_diversity, alpha_diversity_test_raw, variable_of_interest, theme),
     pattern = map(cross(alpha_diversity, variable_of_interest), alpha_diversity_test_raw),
     packages = "ggplot2"
@@ -354,10 +367,7 @@ list(
   # beta diversity ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   ## tests ----
-  tar_target(permanova,
-    test_distance(ps_distance, variable_of_interest),
-    pattern = cross(ps_distance, variable_of_interest)
-  ),
+  tar_target(permanova, test_distance(ps_distance, variable_of_interest), pattern = cross(ps_distance, variable_of_interest)),
   tar_target(
     beta_diversity_test,
     format_beta_diversity_test(permanova),
@@ -366,14 +376,12 @@ list(
 
   ## ordination ----
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
-  tar_target(ordination_plot_raw,
+  tar_target(
+    ordination_plot_raw,
     plot_ordination(ps_ordination, variable_of_interest, sample_label_from, limits, theme),
     pattern = cross(ps_ordination, variable_of_interest)
   ),
-  tar_target(ordination_plot,
-    plot_ordination_with_tests(ordination_plot_raw, permanova),
-    pattern = map(ordination_plot_raw, permanova)
-  ),
+  tar_target(ordination_plot, plot_ordination_with_tests(ordination_plot_raw, permanova), pattern = map(ordination_plot_raw, permanova)),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot)),
 
   # tests summary table

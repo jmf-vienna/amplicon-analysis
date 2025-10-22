@@ -30,9 +30,12 @@ calulcate_ordination <- function(ps) {
     microViz::ord_calc()
 
   ps_new |>
-    update_provenance(ps, list(
-      ordination = microViz::info_get(ps_new)[["ord_info"]][["method"]]
-    ))
+    update_provenance(
+      ps,
+      list(
+        ordination = microViz::info_get(ps_new)[["ord_info"]][["method"]]
+      )
+    )
 }
 
 format_beta_diversity_test <- function(beta_diversity_test_raw) {
@@ -80,17 +83,21 @@ plot_ordination <- function(ps, variable = "Group", point_label = "Group", limit
       # NOTE: color and colour behave differently in microViz
       colour = variable,
       fill = variable
-    ) + ggplot2::labs(
+    ) +
+    ggplot2::labs(
       caption = NULL
-    ) + theme + ggplot2::theme(
+    ) +
+    theme +
+    ggplot2::theme(
       aspect.ratio = 1.0
     )
 
   if (vi[["testable"]]) {
-    plot <- plot + microViz::stat_chull(
-      mapping = ggplot2::aes(colour = .data[[variable]], fill = .data[[variable]]),
-      alpha = 0.1
-    )
+    plot <- plot +
+      microViz::stat_chull(
+        mapping = ggplot2::aes(colour = .data[[variable]], fill = .data[[variable]]),
+        alpha = 0.1
+      )
   }
 
   if (vi_label[["multiple_levels"]] && vi[[".length"]] <= limits[["sample"]]) {
@@ -107,9 +114,12 @@ plot_ordination <- function(ps, variable = "Group", point_label = "Group", limit
   }
 
   plot |>
-    update_provenance(ps, list(
-      aesthetics = list(color = variable)
-    ))
+    update_provenance(
+      ps,
+      list(
+        aesthetics = list(color = variable)
+      )
+    )
 }
 
 plot_ordination_with_tests <- function(plot, test_result) {
@@ -164,8 +174,10 @@ plot_ordination_with_tests <- function(plot, test_result) {
 
   title <- str_c(
     "beta diversity analysis (",
-    plot |> get_provenance() |> chuck("distance"), " ",
-    plot |> get_provenance() |> chuck("ordination"), ")"
+    plot |> get_provenance() |> chuck("distance"),
+    " ",
+    plot |> get_provenance() |> chuck("ordination"),
+    ")"
   )
 
   plot |>

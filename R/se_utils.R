@@ -153,7 +153,9 @@ summary_as_row <- function(se) {
   loadNamespace(class(se))
 
   sequence_length <- SummarizedExperiment::rowData(se)[["sequence_length"]]
-  if (vec_is_empty(sequence_length)) sequence_length <- NA_integer_
+  if (vec_is_empty(sequence_length)) {
+    sequence_length <- NA_integer_
+  }
 
   se |>
     provenance_as_tibble() |>
@@ -201,9 +203,12 @@ plot_metrics <- function(data, hline_at, theme) {
     theme
 
   plot |>
-    update_provenance(data, list(
-      aesthetics = "bar chart"
-    )) |>
+    update_provenance(
+      data,
+      list(
+        aesthetics = "bar chart"
+      )
+    ) |>
     plot_titles(
       title = "yield",
       summary = zap()
