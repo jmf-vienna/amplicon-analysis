@@ -184,11 +184,22 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
   se
 }
 
-add_assays <- function(se, clr_pseudocount = TRUE) {
+get_pseudocount <- function(se, assay = "clr") {
   se |>
+    SummarizedExperiment::assay(assay) |>
+    purrr::chuck(purrr::attr_getter("parameters"), "pseudocount")
+}
+
+add_assays <- function(se, clr_pseudocount = TRUE) {
+  se <-
+    se |>
     mia::transformAssay(method = "relabundance") |>
     mia::transformAssay(method = "clr", pseudocount = clr_pseudocount) |>
     update_provenance(se)
+
+  S4Vectors::metadata(se)[["clr_pseudocount"]] <- get_pseudocount(se)
+
+  se
 }
 
 #### Overrides ####
