@@ -16,6 +16,8 @@ if (interactive()) {
   require(tibble)
   require(tidyr)
   require(vctrs)
+
+  tar_load_globals()
 } else {
   cli::cli_abort("sourcing .Rprofile non-interactively")
 }
