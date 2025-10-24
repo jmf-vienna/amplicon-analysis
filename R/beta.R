@@ -80,16 +80,20 @@ plot_ordination <- function(ps, variable = "Group", point_label = "Group", limit
   plot <-
     ps |>
     microViz::ord_plot(
-      # NOTE: color and colour behave differently in microViz
       colour = variable,
       fill = variable
     ) +
+
     ggplot2::labs(
       caption = NULL
     ) +
     theme +
     ggplot2::theme(
-      aspect.ratio = 1.0
+      aspect.ratio = 1.0,
+      plot.title.position = "plot",
+      plot.title    = ggplot2::element_text(hjust = 0, margin = ggplot2::margin(b = 6)),
+      plot.subtitle = ggplot2::element_text(hjust = 0),
+      plot.margin   = ggplot2::margin(t = 10, l = 8)
     )
 
   if (vi[["testable"]]) {
