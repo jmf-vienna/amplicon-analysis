@@ -62,6 +62,32 @@ make_assay_data <- function(counts) {
     as.matrix()
 }
 
+add_lineage <- function(se, trim = TRUE) {
+  row_data <-
+    se |>
+    SummarizedExperiment::rowData() |>
+    tibble::as_tibble() |>
+    tidyr::unite("Lineage", all_of(taxonomy_ranks(se)), sep = " ‣ ", remove = FALSE) |>
+    dplyr::relocate(all_of(taxonomy_ranks(se, "initial")), .before = "Lineage") |>
+    dplyr::mutate(Lineage = str_replace_all(Lineage, "( ‣) NA", "\\1"))
+
+  if (trim) {
+    # trim DADA2-style multi species entries, if still on feature ID level
+    row_data <- dplyr::mutate(row_data, Lineage = str_replace(Lineage, "( ‣ [a-z]+/)([a-z]+/){2,}([a-z]+ ‣ )", "\\1…/\\3"))
+  }
+
+  # Assertion: Lineage must be unique.
+  row_data |>
+    pull(Lineage) |>
+    anyDuplicated() |>
+    identical(0L) |>
+    stopifnot()
+
+  SummarizedExperiment::rowData(se) <- row_data
+
+  se
+}
+
 make_se <- function(counts, col_data, row_data, ranks, provenance) {
   sample_id_var <- col_data |> first_id_name()
   feature_id_var <- ranks |> dplyr::last()
@@ -97,10 +123,14 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
     colData = col_data,
     rowData = row_data,
     metadata = list(
-      taxonomy_ranks = ranks
+      taxonomy_ranks = list(
+        initial = ranks,
+        current = ranks
+      )
     )
   ) |>
-    set_provenance(provenance)
+    set_provenance(provenance) |>
+    add_lineage()
 }
 
 get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min, failed_samples) {
@@ -243,7 +273,7 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
 
   loadNamespace(class(se))
 
-  all_ranks <- S4Vectors::metadata(se)[["taxonomy_ranks"]]
+  all_ranks <- taxonomy_ranks(se)
 
   rank_name <- ifelse(trim, str_c("only ", rank), rank)
 
@@ -265,6 +295,8 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
     names()
   SummarizedExperiment::rowData(res)[, remove] <- NA
 
+  res <- set_taxonomy_ranks(res, ranks = setdiff(all_ranks, remove))
+
   sorted_rownames <-
     res |>
     SummarizedExperiment::rowData() |>
@@ -272,5 +304,6 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
     arrange(across(all_of(all_ranks))) |>
     pull(Feature_ID)
 
-  res[sorted_rownames, ]
+  res[sorted_rownames, ] |>
+    add_lineage()
 }

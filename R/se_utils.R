@@ -2,10 +2,15 @@ tidy <- function(se) {
   se |> trim_empty()
 }
 
-taxonomy_ranks <- function(se) {
+taxonomy_ranks <- function(se, state = "current") {
   se |>
     S4Vectors::metadata() |>
-    chuck("taxonomy_ranks")
+    chuck("taxonomy_ranks", state)
+}
+
+set_taxonomy_ranks <- function(se, ranks, state = "current") {
+  S4Vectors::metadata(se)[["taxonomy_ranks"]][[state]] <- ranks
+  se
 }
 
 trim_empty <- function(x, verbose = TRUE) {
