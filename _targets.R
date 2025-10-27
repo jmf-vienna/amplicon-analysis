@@ -265,7 +265,10 @@ list(
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
   # add alpha diversity ----
-  tar_target(se, add_alpha_diversity(all_se, alpha_diversity_indexes, alpha_diversity_yield_threshold), pattern = map(all_se)),
+  tar_target(se_alpha_diversty, add_alpha_diversity(all_se, alpha_diversity_indexes, alpha_diversity_yield_threshold), pattern = map(all_se)),
+
+  # final SEs
+  tar_target(se, se_alpha_diversty),
 
   # export SEs ----
   tar_target(se_file, export_se(se, rd_dir_name), format = "file", pattern = map(se)),
