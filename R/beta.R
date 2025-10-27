@@ -89,11 +89,10 @@ plot_ordination <- function(ps, variable = "Group", point_label = "Group", limit
     ) +
     theme +
     ggplot2::theme(
-      aspect.ratio = 1.0,
-      plot.title.position = "plot",
-      plot.title    = ggplot2::element_text(hjust = 0, margin = ggplot2::margin(b = 6)),
-      plot.subtitle = ggplot2::element_text(hjust = 0),
-      plot.margin   = ggplot2::margin(t = 10, l = 8)
+      aspect.ratio = 1.0
+    ) +
+    ggplot2::labs(
+      caption = NULL
     )
 
   if (vi[["testable"]]) {

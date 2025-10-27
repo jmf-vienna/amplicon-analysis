@@ -92,9 +92,5 @@ plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subti
       subtitles
     ) |>
       stringr::str_flatten("\n")
-  ) + ggplot2::theme(
-    plot.title.position = "plot",
-    plot.title = ggplot2::element_text(hjust = 0, margin = ggplot2::margin(b = 6)),
-    plot.margin = ggplot2::margin(t = 10, l = 8)
   )
 }
