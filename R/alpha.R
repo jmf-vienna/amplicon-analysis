@@ -10,14 +10,14 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
 
     # rarefaction makes no sense if there is only one sample
     if (ncol(se) > 1L) {
-      set.seed(0L)
       se <-
         se |>
         mia::addAlpha(
           index = alpha_diversity_indexes,
           name = str_c(".alpha_diversity_at_", min, "_", alpha_diversity_indexes),
           sample = min,
-          niter = rarefaction_rounds
+          niter = rarefaction_rounds,
+          BPPARAM = BiocParallel::SerialParam(RNGseed = 0L)
         ) |>
         # suppress vegan::rrarefy warning message "function should be used for observed counts, but smallest count is %d"
         suppressWarnings()
