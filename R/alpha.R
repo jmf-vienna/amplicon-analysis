@@ -199,7 +199,8 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       ggpubr::stat_pvalue_manual(
         pvalue_data,
         color = "blue",
-        tip.length = 0L
+        tip.length = 0L,
+        family = font_family()
       ) +
       labs(
         caption = pluralize(
