@@ -176,7 +176,9 @@ add_decontam <- function(se, negative_controls, failed_libraries = character()) 
     p <- NA_real_
   }
 
-  SummarizedExperiment::rowData(se)[["decontam_p_value"]] <- p
+  # `signif` for reproducibility. Keeping six digits is already overkill for decontam anyway.
+  SummarizedExperiment::rowData(se)[["decontam_p_value"]] <- signif(p)
+
   se
 }
 
