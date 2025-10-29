@@ -432,5 +432,23 @@ list(
     summary_report_file,
     write_text(summary_report, path(results_dir_name, str_c(file_prefix, "summary", sep = "_"), ext = "md")),
     format = "file"
+  ),
+
+  # phony targets ----
+  tar_target(
+    essentials,
+    list(
+      filtered_features_file,
+      filtered_samples_table_file,
+      se_file,
+      se_flat_file,
+      ps_file,
+      library_metrics_file,
+      biosample_metrics_file,
+      metrics_summary_file,
+      metrics_plot_file,
+      alpha_diversity_file,
+      summary_report_file
+    )
   )
 )
