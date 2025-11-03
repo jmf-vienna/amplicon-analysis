@@ -19,6 +19,7 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
     "scuttle",
     "decontam",
     "phyloseq",
+    "microbiome",
     "microViz"
   )
 
