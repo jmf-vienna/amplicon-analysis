@@ -305,7 +305,12 @@ write_flattened <- function(se, file, assay_name = "counts") {
   ))
   res <- dplyr::bind_rows(col_data, res)
 
-  cat(stringr::str_c("# ", se |> get_provenance() |> as_title(), "\n"), file = file)
+  cat(stringr::str_c(
+    "# ",
+    se |> get_provenance() |> as_title(),
+    " [SE data structure version ", S4Vectors::metadata(se) |> purrr::pluck("version", .default = "unknown"), "]",
+    "\n"
+  ), file = file)
   readr::write_tsv(res, file, na = "", append = TRUE, col_names = TRUE)
 
   invisible(file)

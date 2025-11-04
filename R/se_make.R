@@ -123,6 +123,7 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
     colData = col_data,
     rowData = row_data,
     metadata = list(
+      version = get_se_version(),
       taxonomy_ranks = list(
         initial = ranks,
         current = ranks
