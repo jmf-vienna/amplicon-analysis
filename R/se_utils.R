@@ -144,8 +144,9 @@ make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_
       libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(.data[[library_id_var]], na.rm = TRUE),
       biosamples = dplyr::n_distinct(.data[[biosample_id_var]]),
       total_counts = sum(count),
-      min_sample_counts = min(count),
-      max_sample_counts = max(count),
+      # suppressWarnings required when there are zero rows
+      min_sample_counts = suppressWarnings(min(count)),
+      max_sample_counts = suppressWarnings(max(count)),
       median_sample_counts = median(count),
       .groups = "drop"
     ) |>
@@ -305,12 +306,17 @@ write_flattened <- function(se, file, assay_name = "counts") {
   ))
   res <- dplyr::bind_rows(col_data, res)
 
-  cat(stringr::str_c(
-    "# ",
-    se |> get_provenance() |> as_title(),
-    " [SE data structure version ", S4Vectors::metadata(se) |> purrr::pluck("version", .default = "unknown"), "]",
-    "\n"
-  ), file = file)
+  cat(
+    stringr::str_c(
+      "# ",
+      se |> get_provenance() |> as_title(),
+      " [SE data structure version ",
+      S4Vectors::metadata(se) |> purrr::pluck("version", .default = "unknown"),
+      "]",
+      "\n"
+    ),
+    file = file
+  )
   readr::write_tsv(res, file, na = "", append = TRUE, col_names = TRUE)
 
   invisible(file)

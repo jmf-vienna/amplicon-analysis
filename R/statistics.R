@@ -57,8 +57,12 @@ p_trim <- function(x) {
     str_remove("^NaN$")
 }
 
-finalize_tests_table <- function(data) {
-  data |>
+finalize_tests_table <- function(test_data) {
+  if (vec_is_empty(test_data)) {
+    return(test_data)
+  }
+
+  test_data |>
     dplyr::mutate(
       `p-value formatted` = `p-value` |> p_format(),
       `p-value` = p_trim(`p-value`),

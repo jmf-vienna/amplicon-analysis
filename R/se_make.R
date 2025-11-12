@@ -110,11 +110,11 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
   stopifnot(
     identical(
       col_data |> dplyr::pull(sample_id_var),
-      counts |> colnames()
+      if (ncol(counts) > 0L) colnames(counts) else character()
     ),
     identical(
       row_data |> dplyr::pull(feature_id_var),
-      counts |> rownames()
+      if (nrow(counts) > 0L) rownames(counts) else character()
     )
   )
 
@@ -174,7 +174,7 @@ add_decontam <- function(se, negative_controls, failed_libraries = character()) 
     p <- decontam_result[["p"]]
   } else {
     cli::cli_alert_warning("skipped decontam (less than 2 libraries)")
-    p <- NA_real_
+    p <- rep(NA_real_, nrow(se))
   }
 
   # `signif` for reproducibility. Keeping six digits is already overkill for decontam anyway.
@@ -220,15 +220,25 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
 get_pseudocount <- function(se, assay = "clr") {
   se |>
     SummarizedExperiment::assay(assay) |>
-    purrr::chuck(purrr::attr_getter("parameters"), "pseudocount")
+    purrr::pluck(purrr::attr_getter("parameters"), "pseudocount", .default = 0L)
 }
 
 add_assays <- function(se, clr_pseudocount = TRUE) {
+  se_orig <- se
+
+  if (nrow(se) > 0L) {
+    se <-
+      se |>
+      mia::transformAssay(method = "relabundance") |>
+      mia::transformAssay(method = "clr", pseudocount = clr_pseudocount)
+  } else {
+    SummarizedExperiment::assay(se, "relabundance") <- SummarizedExperiment::assay(se, "counts")
+    SummarizedExperiment::assay(se, "clr") <- SummarizedExperiment::assay(se, "counts")
+  }
+
   se <-
     se |>
-    mia::transformAssay(method = "relabundance") |>
-    mia::transformAssay(method = "clr", pseudocount = clr_pseudocount) |>
-    update_provenance(se)
+    update_provenance(se_orig)
 
   S4Vectors::metadata(se)[["clr_pseudocount"]] <- get_pseudocount(se)
 
