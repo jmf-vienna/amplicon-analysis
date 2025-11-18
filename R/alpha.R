@@ -1,4 +1,11 @@
 add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", threshold = 1000L, rarefaction_rounds = 10L) {
+  goodscov <-
+    se |>
+    SummarizedExperiment::assay() |>
+    get_goods_coverage()
+
+  SummarizedExperiment::colData(se)[".alpha_diversity_goods_coverage"] <- goodscov
+
   min <- min_col_sum(se)
   if (min >= threshold) {
     se <-
@@ -27,7 +34,12 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
       "{.field {provenance_as_short_title(se)}}: alpha diversity skipped (minimum sample size {.val {min}} is below threshold {.val {threshold}})"
     )
   }
+
   se
+}
+
+get_goods_coverage <- function(mat) {
+  colSums(mat == 1L) / colSums(mat)
 }
 
 get_alpha_diversity <- function(se, variable, theme) {
@@ -48,8 +60,15 @@ get_alpha_diversity <- function(se, variable, theme) {
       pivot_longer(starts_with(".alpha_diversity_"), names_to = "Index", values_to = "Diversity") |>
       dplyr::filter(!str_ends(Index, fixed("_se"))) |>
       mutate(
-        Rarefaction = Index |> str_extract("at_[0-9]+") |> str_replace(fixed("at_"), "rarefaction depth ") |> str_replace_na("no rarefaction"),
-        Index = Index |> str_remove("^[.]alpha_diversity_(at_[0-9]+_)?") |> str_replace(fixed("_"), "-") |> str_to_title()
+        Rarefaction = Index |>
+          str_extract("at_[0-9]+") |>
+          str_replace(fixed("at_"), "rarefaction depth ") |>
+          str_replace_na("no rarefaction"),
+        Index = Index |>
+          str_remove("^[.]alpha_diversity_(at_[0-9]+_)?") |>
+          str_replace(fixed("_"), " ") |>
+          str_replace(fixed("Goods"), "Good’s") |>
+          str_to_title()
       )
   }
 
@@ -114,6 +133,8 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
 }
 
 plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest = "Group", theme = ggplot_theme()) {
+  alpha_diversity <- alpha_diversity |> dplyr::filter(Index != "Good’s Coverage")
+
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }
