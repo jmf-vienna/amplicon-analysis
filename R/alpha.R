@@ -4,7 +4,7 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
     SummarizedExperiment::assay() |>
     get_goods_coverage()
 
-  SummarizedExperiment::colData(se)[".alpha_diversity_goods_coverage"] <- goodscov
+  SummarizedExperiment::colData(se)[".alpha_diversity_goods_coverage"] <- signif(goodscov)
 
   min <- min_col_sum(se)
   if (min >= threshold) {
@@ -39,38 +39,37 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
 }
 
 get_goods_coverage <- function(mat) {
-  colSums(mat == 1L) / colSums(mat)
+  1.0 - (colSums(mat == 1L) / colSums(mat))
 }
 
-get_alpha_diversity <- function(se, variable, theme) {
+get_alpha_diversity <- function(se) {
   res <-
     se |>
     SummarizedExperiment::colData() |>
     as_full_tibble("ID")
 
-  if (res |> select(starts_with(".alpha_diversity_")) |> ncol() |> identical(0L)) {
-    # return empty tibble if no alpha diversity indexes are present
-    res <-
+  res <-
+    if (res |> select(starts_with(".alpha_diversity_")) |> ncol() |> identical(0L)) {
+      # return empty tibble if no alpha diversity indexes are present
       res |>
-      add_column(Index = NA, Rarefaction = NA, Diversity = NA) |>
-      dplyr::filter(is.na(ID))
-  } else {
-    res <-
+        add_column(Index = NA, Rarefaction = NA, Diversity = NA) |>
+        dplyr::filter(is.na(ID))
+    } else {
       res |>
-      pivot_longer(starts_with(".alpha_diversity_"), names_to = "Index", values_to = "Diversity") |>
-      dplyr::filter(!str_ends(Index, fixed("_se"))) |>
-      mutate(
-        Rarefaction = Index |>
-          str_extract("at_[0-9]+") |>
-          str_replace(fixed("at_"), "rarefaction depth ") |>
-          str_replace_na("no rarefaction"),
-        Index = Index |>
-          str_remove("^[.]alpha_diversity_(at_[0-9]+_)?") |>
-          str_replace(fixed("_"), " ") |>
-          str_replace(fixed("Goods"), "Good’s") |>
-          str_to_title()
-      )
-  }
+        pivot_longer(starts_with(".alpha_diversity_"), names_to = "Index", values_to = "Diversity") |>
+        dplyr::filter(!str_ends(Index, fixed("_se"))) |>
+        mutate(
+          Rarefaction = Index |>
+            str_extract("at_[0-9]+") |>
+            str_replace(fixed("at_"), "rarefaction depth ") |>
+            str_replace_na("no rarefaction"),
+          Index = Index |>
+            str_remove("^[.]alpha_diversity_(at_[0-9]+_)?") |>
+            str_replace(fixed("_"), " ") |>
+            str_replace(fixed("goods"), "good’s") |>
+            str_to_title()
+        )
+    }
 
   res |>
     relocate(ID, Index, Rarefaction, Diversity) |>
@@ -133,8 +132,6 @@ format_alpha_diversity_test <- function(alpha_diversity_test_raw) {
 }
 
 plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, variable_of_interest = "Group", theme = ggplot_theme()) {
-  alpha_diversity <- alpha_diversity |> dplyr::filter(Index != "Good’s Coverage")
-
   if (nrow(alpha_diversity) == 0L) {
     return(invisible())
   }

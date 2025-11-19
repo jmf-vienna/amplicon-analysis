@@ -338,15 +338,20 @@ list(
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
   # alpha diversity ----
-  tar_target(alpha_diversity, get_alpha_diversity(se), pattern = map(se)),
+  tar_target(alpha_diversity_all, get_alpha_diversity(se), pattern = map(se)),
   tar_target(
     alpha_diversity_file,
-    write_tsv(alpha_diversity, path(results_dir_name, provenance_as_file_name(alpha_diversity), ext = "tsv")),
+    write_tsv(alpha_diversity_all, path(results_dir_name, provenance_as_file_name(alpha_diversity_all), ext = "tsv")),
     format = "file",
-    pattern = map(alpha_diversity)
+    pattern = map(alpha_diversity_all)
   ),
 
   ## tests ----
+  tar_target(
+    alpha_diversity,
+    dplyr::filter(alpha_diversity_all, Index != "Good’s Coverage"),
+    pattern = map(alpha_diversity_all)
+  ),
   tar_target(
     alpha_diversity_test_raw,
     test_alpha_diversity(alpha_diversity, variable_of_interest, two_sample_test, p_adjust_method),
