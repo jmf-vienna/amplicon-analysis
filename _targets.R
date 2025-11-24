@@ -455,5 +455,18 @@ list(
       alpha_diversity_file,
       summary_report_file
     )
+  ),
+
+  # inventory
+  tar_target(
+    inventory,
+    list(
+      essentials,
+      tests_file,
+      alpha_diversity_file,
+      alpha_diversity_plot_file,
+      ordination_plot_file
+    ) |>
+      unlist(use.names = FALSE)
   )
 )
