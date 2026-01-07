@@ -44,6 +44,7 @@ list(
   tar_target(negative_controls, config |> pluck("filter", "negative controls", .default = character())),
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
+  tar_target(goods_coverage_min, config |> pluck("filter", "goods coverage", "min", .default = 0.0)),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 1000L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
   tar_target(pass_libraries_yield_min, config |> pluck("filter", "pass", "yield", "min", .default = 0L)),
@@ -207,6 +208,7 @@ list(
   tar_target(
     se_deep,
     se_refined |>
+      filter_samples_by_goods_coverage(goods_coverage_min) |>
       filter_samples_by_sum(yield_min, yield_max) |>
       tidy()
   ),
@@ -427,7 +429,9 @@ list(
         ),
         desirables = desirables,
         undesirables = undesirables,
-        yield_min = yield_min
+        goods_coverage_min = goods_coverage_min,
+        yield_min = yield_min,
+        yield_max = yield_max
       ),
       config,
       se_summary

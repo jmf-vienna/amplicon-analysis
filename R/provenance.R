@@ -52,6 +52,7 @@ as_file_name <- function(x) {
       )
     }) |>
     stringr::str_flatten("_") |>
+    stringr::str_replace_all(stringr::fixed("Good’s Coverage ≥"), "min GC") |>
     stringr::str_replace_all(stringr::fixed("≤"), "lte") |>
     stringr::str_replace_all(stringr::fixed("≥"), "gte") |>
     force_valid_file_name()
@@ -65,7 +66,7 @@ as_title <- function(x, collapse = " | ") {
   n <-
     x |>
     names() |>
-    stringr::str_replace_all(stringr::fixed("."), ": ")
+    stringr::str_remove("^[^.]+[.]")
 
   stringr::str_c(n, dplyr::if_else(stringr::str_length(n) > 0L, ": ", ""), x) |>
     stringr::str_replace("(≤|≥): ", "\\1") |>

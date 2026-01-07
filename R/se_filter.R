@@ -138,6 +138,22 @@ filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   res
 }
 
+filter_samples_by_goods_coverage <- function(se, min = 0.0) {
+  goods_cov <-
+    se |>
+    SummarizedExperiment::assay() |>
+    get_goods_coverage()
+  keep <- names(goods_cov[goods_cov >= min])
+
+  res <- se[, keep]
+
+  if (min > 0.0) {
+    res <- res |> update_provenance(new = list("sample filter" = list("Good’s Coverage ≥" = min)))
+  }
+
+  res
+}
+
 make_filtered_samples_table <- function(se_pairs) {
   loadNamespace(class(se_pairs |> chuck(1L, 1L)))
 

@@ -2,6 +2,7 @@ linters: all_linters(
     indentation_linter = NULL,
     nested_pipe_linter = NULL,
     nrow_subset_linter = NULL,
+    object_length_linter = NULL,
     object_usage_linter = NULL,
     object_overwrite_linter = NULL,
     one_call_pipe_linter = NULL,
