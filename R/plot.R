@@ -1,12 +1,12 @@
 ggplot_theme <- function() {
-
-  ggplot2::theme_gray() + ggplot2::theme(
-    plot.background = ggplot2::element_blank(),
-    text = ggplot2::element_text(family = font_family()),
-    axis.text = ggplot2::element_text(colour = "black"),
-    axis.ticks = ggplot2::element_line(colour = "black"),
-    plot.title.position = "plot"
-  )
+  ggplot2::theme_gray() +
+    ggplot2::theme(
+      plot.background = ggplot2::element_blank(),
+      text = ggplot2::element_text(family = font_family()),
+      axis.text = ggplot2::element_text(colour = "black"),
+      axis.ticks = ggplot2::element_line(colour = "black"),
+      plot.title.position = "plot"
+    )
 }
 
 font_family <- function() {
