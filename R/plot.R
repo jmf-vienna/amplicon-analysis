@@ -4,7 +4,9 @@ ggplot_theme <- function() {
       plot.background = ggplot2::element_blank(),
       text = ggplot2::element_text(family = font_family()),
       axis.text = ggplot2::element_text(colour = "black"),
-      axis.ticks = ggplot2::element_line(colour = "black")
+      axis.ticks = ggplot2::element_line(colour = "black"),
+      plot.title.position = "plot",
+      plot.caption.position = "plot"
     )
 }
 
