@@ -50,6 +50,17 @@ write_tsv <- function(x, file, na = "invisible") {
   file
 }
 
+save_table <- function(x, dir_name, ...) {
+  if (is.null(x)) {
+    return(invisible())
+  }
+
+  file <- fs::path(dir_name, provenance_as_file_name(x), ext = "tsv")
+  prepare_export(file)
+
+  invisible(write_tsv(x, file, ...))
+}
+
 write_text <- function(x, file) {
   prepare_export(file)
   cat(x, file = file)
