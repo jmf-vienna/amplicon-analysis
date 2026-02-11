@@ -124,7 +124,7 @@ test_distance <- function(ps_raw, variable, .filter_na = FALSE) {
       microViz::dist_permanova,
       ps,
       variables = variable,
-      n_perms = 9999L,
+      n_perms = as.integer(Sys.getenv("R_PERMANOVA_PERMUTATIONS", "9999")),
       seed = 0L,
       verbose = FALSE
     )
