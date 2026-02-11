@@ -9,7 +9,7 @@ make_se_subsets <- function(se, subset) {
   values <- subset |> purrr::chuck("values")
 
   name <- subset |> purrr::pluck("name", .default = str_c(variable, ": ", values |> str_c(collapse = ", ")))
-  print(name)
+
   # in case of multiple subsetting
   name <-
     se |>

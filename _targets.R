@@ -52,6 +52,8 @@ list(
   tar_target(length_min, config |> pluck("filter", "length", "min", .default = 0L)),
   tar_target(length_max, config |> pluck("filter", "length", "max", .default = Inf)),
   tar_target(failed_samples, config |> pluck("filter", "failed samples", .default = character())),
+  tar_target(prevalence_filter, config |> pluck("filter", "prevalence", .default = 0.0)),
+  tar_target(ra_filter, config |> pluck("filter", "relative abundance", .default = 0.0)),
 
   ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
@@ -159,7 +161,7 @@ list(
   ),
 
   ### filtered features table ----
-  tar_target(filtered_features_table, make_filtered_features_table(se_libs_clean)),
+  tar_target(filtered_features_table, make_filtered_features_table(se_deep)),
   tar_target(
     filtered_features_file,
     write_tsv(
@@ -204,10 +206,18 @@ list(
       add_assays()
   ),
 
+  ### filtered (by prevalence and r.a.) ----
+  tar_target(
+    se_filtered,
+    se_refined |>
+      filter_prevalence_ra(prevalence_filter, ra_filter, negative_controls) |>
+      tidy()
+  ),
+
   ### deep (filter samples) ----
   tar_target(
     se_deep,
-    se_refined |>
+    se_filtered |>
       filter_samples_by_goods_coverage(goods_coverage_min) |>
       filter_samples_by_sum(yield_min, yield_max) |>
       tidy()
@@ -219,7 +229,8 @@ list(
     make_filtered_samples_table(list(
       list(se_libs_raw, se_libs_clean),
       list(se_libs_clean, se_libs_pass),
-      list(se_refined, se_deep)
+      list(se_refined, se_filtered),
+      list(se_filtered, se_deep)
     ))
   ),
   tar_target(
@@ -260,7 +271,9 @@ list(
   tar_target(
     sam_se,
     list_c(list(
-      list(se_raw, se_refined),
+      list(se_raw),
+      # only keep se_filtered if there were changes
+      list(se_refined, se_filtered) |> unique(),
       se_subsets
     ))
   ),
@@ -431,7 +444,9 @@ list(
         undesirables = undesirables,
         goods_coverage_min = goods_coverage_min,
         yield_min = yield_min,
-        yield_max = yield_max
+        yield_max = yield_max,
+        prevalence_filter = prevalence_filter,
+        ra_filter = ra_filter
       ),
       config,
       se_summary

@@ -52,6 +52,11 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
     "```yaml",
     "{yaml::as.yaml(settings$undesirables)}```",
     "",
+    ifelse(
+      isTRUE(all.equal(settings[["prevalence_filter"]], 0.0)) && isTRUE(all.equal(settings[["ra_filter"]], 0.0)),
+      "",
+      "Only features with a relative abundance of __more than {settings$ra_filter * 100} %__ in __more than {settings$prevalence_filter * 100} %__ of samples (excluding negative controls) were kept." # nolint
+    ),
     ifelse(settings[["goods_coverage_min"]] > 0.0, "Minimum required Good’s Coverage was __{settings$goods_coverage_min}__.", ""),
     ifelse(settings[["yield_min"]] > 0L, "All samples with __less than {settings$yield_min} counts__ were removed.", ""),
     ifelse(settings[["yield_max"]] < Inf, "All samples with __more than {settings$yield_max} counts__ were removed.", ""),

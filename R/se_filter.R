@@ -138,6 +138,30 @@ filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   res
 }
 
+filter_prevalence_ra <- function(se, prev = 0.0, ra = 0.0, negative_controls = character()) {
+  if (isTRUE(all.equal(prev, 0.0)) && isTRUE(all.equal(ra, 0.0))) {
+    return(se)
+  }
+
+  loadNamespace(class(se))
+
+  ready <- se[, !colnames(se) %in% negative_controls]
+
+  n_prev <- floor(ncol(ready) * prev)
+
+  above_ra <- rowSums(SummarizedExperiment::assay(ready, "relabundance") > ra)
+  sel <- above_ra > n_prev
+
+  new_se <-
+    se[sel] |>
+    update_provenance(new = list(state = "filtered"))
+
+  filter_name <- str_c("n_samples(relative abundance > ", ra * 100L, " %)")
+  SummarizedExperiment::rowData(se)[filter_name] <- above_ra
+
+  filtered_features_helper(se, new_se, filter_name)
+}
+
 filter_samples_by_goods_coverage <- function(se, min = 0.0) {
   goods_cov <-
     se |>
