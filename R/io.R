@@ -3,7 +3,7 @@ force_valid_file_name <- function(x) {
 }
 
 find_one_file <- function(path, glob = NULL, regexp = NULL, verbose = TRUE) {
-  res <- dir_ls(path, type = "file", glob = glob, regexp = regexp)
+  res <- dir_ls(path, type = c("file", "symlink"), glob = glob, regexp = regexp)
 
   if (!is_string(res)) {
     cli_abort("Expected exactly one file matching the pattern {.arg {glob}{regexp}} in {.path {path}}, but found {?/none/}{.file {res}} instead!")
