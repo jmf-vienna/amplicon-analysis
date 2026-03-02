@@ -208,7 +208,7 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
 
   SummarizedExperiment::assay(se, "counts") <-
     SummarizedExperiment::assay(se, "counts") |>
-    apply(c(1, 2), as.integer)
+    apply(c(1L, 2L), as.integer)
 
   SummarizedExperiment::colData(se) <-
     SummarizedExperiment::colData(se) |>
@@ -304,7 +304,7 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
 
   SummarizedExperiment::assay(res, "counts") <-
     SummarizedExperiment::assay(res, "counts") |>
-    apply(c(1, 2), as.integer)
+    apply(c(1L, 2L), as.integer)
 
   next_rank <- all_ranks[match(rank, all_ranks) + 1L]
   remove <-

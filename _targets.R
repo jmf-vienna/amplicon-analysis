@@ -421,6 +421,16 @@ list(
     format = "file"
   ),
 
+  # DESeq2 ----
+  tar_target(deseq_raw_results, deseq(se), pattern = map(se)),
+  tar_target(deseq_combined_results, collect_deseq_results(deseq_raw_results)),
+  tar_target(deseq_results, filter_deseq_results(deseq_combined_results)),
+  tar_target(
+    feature_tests_file,
+    write_tsv(deseq_results, path(results_dir_name, str_c(file_prefix, "feature_tests", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
+
   # summary report ----
   tar_target(
     summary_report,
