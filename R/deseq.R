@@ -69,7 +69,7 @@ collect_deseq_results <- function(deseq_raw_results) {
 
 filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0, p_value = 0.05) {
   deseq_combined_results |>
-    dplyr::filter(`log2 fold change` >= log2_fold_change, `p-value` <= p_value) |>
+    dplyr::filter(abs(`log2 fold change`) >= log2_fold_change, `p-value` <= p_value) |>
     # `signif` for reproducibility. Keeping six digits is already overkill.
     dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 }
