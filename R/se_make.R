@@ -44,7 +44,6 @@ make_row_data <- function(taxonomy, features_info, feature_annotation) {
 }
 
 make_assay_data <- function(counts) {
-  counts <- counts
   names <- counts |> names()
   feature_column <- names[[1L]]
   samples_column <- names[[2L]]
@@ -207,6 +206,10 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
     mia::agglomerateByVariable(se, "cols", by) |>
     update_provenance(se, provenance)
 
+  SummarizedExperiment::assay(se, "counts") <-
+    SummarizedExperiment::assay(se, "counts") |>
+    apply(c(1, 2), as.integer)
+
   SummarizedExperiment::colData(se) <-
     SummarizedExperiment::colData(se) |>
     as_full_tibble() |>
@@ -298,6 +301,10 @@ agglomerate_by_rank <- function(se, rank, trim = FALSE) {
     update_provenance(se, list(rank = rank_name)) |>
     tidy() |>
     add_assays()
+
+  SummarizedExperiment::assay(res, "counts") <-
+    SummarizedExperiment::assay(res, "counts") |>
+    apply(c(1, 2), as.integer)
 
   next_rank <- all_ranks[match(rank, all_ranks) + 1L]
   remove <-

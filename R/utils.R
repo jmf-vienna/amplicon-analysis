@@ -1,3 +1,7 @@
+auto_integer <- function(x) {
+  dplyr::mutate(x, across(where(rlang::is_integerish), as.integer))
+}
+
 fortify <- function(x) {
   withr::local_collate("en_US.UTF-8")
 

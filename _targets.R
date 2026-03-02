@@ -108,7 +108,7 @@ list(
 
   # assay data (counts) ----
   tar_target(counts_file, find_counts_file(data_dir_name, counts_file_pattern), format = "file"),
-  tar_target(counts, read_tsv(counts_file) |> tidy_counts()),
+  tar_target(counts, counts_file |> read_tsv() |> auto_integer() |> tidy_counts()),
   tar_target(assay_data, make_assay_data(counts)),
 
   # metrics from previous steps ----
