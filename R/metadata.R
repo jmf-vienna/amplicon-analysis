@@ -20,6 +20,8 @@ variable_info <- function(x, label) {
     multiple = length(x) > 1L,
     # more than one level:
     multiple_levels = nrow(counts) > 1L,
+    # exactly two levels:
+    two_levels = identical(nrow(counts), 2L),
     # at least one group with at least two replicates each
     duplicates = counts |>
       dplyr::filter(count >= 2L) |>
@@ -47,6 +49,13 @@ tibble_variable_info <- function(data, variable_name) {
   } else {
     variable_info(NULL, variable_name)
   }
+}
+
+se_variable_info <- function(se, variable_name) {
+  se |>
+    SummarizedExperiment::colData() |>
+    as_tibble() |>
+    tibble_variable_info(variable_name)
 }
 
 ps_variable_info <- function(ps, variable_name) {
