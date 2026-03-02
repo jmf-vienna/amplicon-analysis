@@ -424,7 +424,10 @@ list(
   # DESeq2 ----
   tar_target(deseq_raw_results, deseq(se), pattern = map(se)),
   tar_target(deseq_combined_results, collect_deseq_results(deseq_raw_results)),
-  tar_target(deseq_results, filter_deseq_results(deseq_combined_results)),
+  tar_target(
+    deseq_results,
+    deseq_combined_results |> filter_deseq_results() |> finalize_tests_table()
+  ),
   tar_target(
     feature_tests_file,
     write_tsv(deseq_results, path(results_dir_name, str_c(file_prefix, "feature_tests", sep = "_"), ext = "tsv")),
@@ -482,7 +485,8 @@ list(
       metrics_summary_file,
       metrics_plot_file,
       alpha_diversity_file,
-      summary_report_file
+      summary_report_file,
+      feature_tests_file
     )
   )
 )

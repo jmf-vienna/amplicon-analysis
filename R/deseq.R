@@ -45,7 +45,7 @@ run_deseq <- function(se, var, pseudocount = 1L, min_features = 3L, alpha = 0.05
   res <-
     DESeq2::results(deseq, alpha = alpha) |>
     as_full_tibble("Feature_ID") |>
-    dplyr::select(Feature_ID, `log2 fold change` = log2FoldChange, `p-value` = padj) |>
+    dplyr::select(Feature_ID, `log2 fold change` = log2FoldChange, `p-value` = padj, `uncorrected p-value` = pvalue) |>
     tibble::add_column(`variable of interest` = var, group1 = groups[[1L]], group2 = groups[[2L]], .before = "Feature_ID") |>
     bind_cols(x = provenance_as_tibble(se), y = _)
 }
@@ -59,7 +59,8 @@ collect_deseq_results <- function(deseq_raw_results) {
     res <- res |>
       dplyr::mutate(
         `log2 fold change` = NA_real_,
-        `p-value` = NA_real_
+        `p-value` = NA_real_,
+        `uncorrected p-value` = NA_real_
       )
   }
 
@@ -68,5 +69,7 @@ collect_deseq_results <- function(deseq_raw_results) {
 
 filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0, p_value = 0.05) {
   deseq_combined_results |>
-    dplyr::filter(`log2 fold change` >= log2_fold_change, `p-value` <= p_value)
+    dplyr::filter(`log2 fold change` >= log2_fold_change, `p-value` <= p_value) |>
+    # `signif` for reproducibility. Keeping six digits is already overkill.
+    dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 }
