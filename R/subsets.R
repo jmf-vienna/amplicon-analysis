@@ -18,7 +18,12 @@ make_se_subsets <- function(se, subset) {
     c(name) |>
     str_c(collapse = " & ")
 
-  se[, se[[variable]] %in% values] |>
+  res <-
+    se[, se[[variable]] %in% values] |>
     update_provenance(new = list(subset = name)) |>
     tidy()
+
+  attr(res, "analyze") <- purrr::pluck(subset, "analyze")
+
+  res
 }
