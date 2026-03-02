@@ -51,8 +51,19 @@ run_deseq <- function(se, var, pseudocount = 1L, min_features = 3L, alpha = 0.05
 }
 
 collect_deseq_results <- function(deseq_raw_results) {
-  deseq_raw_results |>
+  res <-
+    deseq_raw_results |>
     bind_rows()
+
+  if (vec_is_empty(res)) {
+    res <- res |>
+      dplyr::mutate(
+        `log2 fold change` = NA_real_,
+        `p-value` = NA_real_
+      )
+  }
+
+  res
 }
 
 filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0, p_value = 0.05) {
