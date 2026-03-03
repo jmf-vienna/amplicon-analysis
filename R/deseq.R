@@ -89,7 +89,7 @@ plot_deseq <- function(plot_data, theme) {
     ggplot(
       data = plot_data,
       mapping = aes(
-        x = str_c(subset, "\n", `variable of interest`, ":\n", group2, " vs ", group1),
+        x = str_c(`variable of interest`, ":\n", group2, "\nvs\n", group1),
         y = Feature_ID,
         size = abs(`log2 fold change`),
         fill = `log2 fold change` |> sign() |> factor(c("1", "-1")) |> fct_recode("↑" = "1", "↓" = "-1")
@@ -100,6 +100,11 @@ plot_deseq <- function(plot_data, theme) {
     ) +
     scale_fill_manual(
       values = c("↑" = "black", "↓" = "white")
+    ) +
+    facet_grid(
+      cols = vars(subset |> str_replace(fixed(": "), ":\n")),
+      scales = "free",
+      space = "free"
     ) +
     labs(
       x = NULL,
