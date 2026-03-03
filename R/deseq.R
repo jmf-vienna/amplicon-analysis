@@ -73,3 +73,43 @@ filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0,
     # `signif` for reproducibility. Keeping six digits is already overkill.
     dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 }
+
+split_tibble_by_rank <- function(x) {
+  x |>
+    group_by(rank) |>
+    dplyr::group_map(\(d, k) update_provenance(d, x, new = as.list(k)))
+}
+
+plot_deseq <- function(plot_data, theme) {
+  if (vec_is_empty(plot_data)) {
+    return(invisible())
+  }
+
+  p <-
+    ggplot(
+      data = plot_data,
+      mapping = aes(
+        x = str_c(subset, "\n", `variable of interest`, ":\n", group2, " vs ", group1),
+        y = Feature_ID,
+        size = abs(`log2 fold change`),
+        fill = `log2 fold change` |> sign() |> factor(c("1", "-1")) |> fct_recode("↑" = "1", "↓" = "-1")
+      )
+    ) +
+    geom_point(
+      shape = 21L
+    ) +
+    scale_fill_manual(
+      values = c("↑" = "black", "↓" = "white")
+    ) +
+    labs(
+      x = NULL,
+      y = NULL,
+      fill = "Change",
+      size = "log\u2082 FC"
+    ) +
+    theme
+
+  p |>
+    update_provenance(plot_data) |>
+    plot_titles(title = "DESeq2 differential abundance test", test = zap())
+}
