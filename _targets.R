@@ -351,7 +351,12 @@ list(
 
   # plot metrics ----
   tar_target(se_metrics, list_c(list(se_library_metrics, se_biosample_metrics))),
-  tar_target(metrics_plot, plot_metrics(se_metrics, main_category, c(yield_min, yield_max), theme), pattern = map(se_metrics), packages = "ggplot2"),
+  tar_target(
+    metrics_plot,
+    plot_metrics(se_metrics, main_category, c(yield_min, yield_max), theme),
+    pattern = map(se_metrics),
+    packages = c("ggplot2", "patchwork")
+  ),
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
   # alpha diversity ----
@@ -442,7 +447,7 @@ list(
     split_by_rank(deseq_results, se_ranks, provenance = list(test = "DESeq2")),
     pattern = map(se_ranks)
   ),
-  tar_target(deseq_plot, plot_deseq(deseq_plot_data, theme), pattern = map(deseq_plot_data), packages = "ggplot2"),
+  tar_target(deseq_plot, plot_deseq(deseq_plot_data, se_ranks, main_category, theme), pattern = map(deseq_plot_data, se_ranks), packages = "ggplot2"),
   tar_target(deseq_plot_file, save_plot(deseq_plot, plots_dir_name), pattern = map(deseq_plot), format = "file"),
 
   # summary report ----

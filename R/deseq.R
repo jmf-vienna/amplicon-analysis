@@ -95,7 +95,7 @@ split_by_rank <- function(data, se, provenance) {
   data |> update_provenance(se, new = provenance)
 }
 
-plot_deseq <- function(plot_data, theme) {
+plot_deseq <- function(plot_data, se, main_category, theme) {
   if (vec_is_empty(plot_data)) {
     return(invisible())
   }
@@ -106,11 +106,10 @@ plot_deseq <- function(plot_data, theme) {
     nrow(distinct(plot_data, subset, `variable of interest`, group1, group2, Lineage))
   ))
 
-  n_features <-
+  features <-
     plot_data |>
     pull(Feature_ID) |>
-    unique() |>
-    vec_size()
+    jmf::uniques()
 
   n_tests <-
     plot_data |>
@@ -160,9 +159,51 @@ plot_deseq <- function(plot_data, theme) {
     update_provenance(plot_data) |>
     plot_titles(title = "DESeq2 differential abundance test", test = zap())
 
+  height_per_feature <- 0.2
+
+  if (is_string(main_category)) {
+    loadNamespace("mia")
+
+    se_data <-
+      se[features] |>
+      mia::meltSE(assay.type = "relabundance", add.row = TRUE, add.col = TRUE) |>
+      dplyr::mutate(across(all_of(main_category), fct_rev))
+
+    p2 <-
+      ggplot(
+        data = se_data,
+        mapping = aes(
+          x = relabundance * 100L,
+          y = Lineage |> fct_rev(),
+          colour = .data[[main_category]]
+        )
+      ) +
+      geom_boxplot(
+        outlier.size = 0.5
+      ) +
+      labs(
+        x = "Relative abundance (%)",
+        y = NULL
+      ) +
+      guides(
+        colour = guide_legend(reverse = TRUE)
+      ) +
+      theme +
+      theme(
+        legend.position = "bottom",
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()
+      )
+
+    height_per_feature <- 0.5
+    p <-
+      (p + p2 + patchwork::plot_layout(widths = c(1L, 1L))) |>
+      update_provenance(p)
+  }
+
   attr(p, "output") <- list(
-    width = 0.06 * lin_len + 1.0 * max(n_tests, 1L),
-    height = 2.5 + 0.2 * max(n_features, 1L)
+    width = 0.06 * lin_len + 1.0 * max(n_tests, 1L) + vec_size(main_category) * 10.0,
+    height = 2.5 + height_per_feature * max(vec_size(features), 1L)
   )
 
   p
