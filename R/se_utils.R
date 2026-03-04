@@ -173,13 +173,13 @@ summary_as_row <- function(se) {
     )
 }
 
-plot_metrics <- function(data, hline_at, theme) {
+plot_metrics <- function(plot_data, hline_at, theme) {
   hline_at <- hline_at[hline_at > 0L & hline_at < Inf]
-  id <- data |> first_id_name()
+  id <- plot_data |> first_id_name()
 
-  plot <-
+  p <-
     ggplot(
-      data = data,
+      data = plot_data,
       mapping = aes(
         x = .data[[id]] |> fct_rev(),
         y = count,
@@ -208,9 +208,10 @@ plot_metrics <- function(data, hline_at, theme) {
     ) +
     theme
 
-  plot |>
+  p <-
+    p |>
     update_provenance(
-      data,
+      plot_data,
       list(
         aesthetics = "bar chart"
       )
@@ -219,6 +220,10 @@ plot_metrics <- function(data, hline_at, theme) {
       title = "yield",
       summary = zap()
     )
+
+  attr(p, "output") <- list(height = 1.0 + 0.2 * max(nrow(plot_data), 1L))
+
+  p
 }
 
 write_flattened <- function(se, file, assay_name = "counts") {

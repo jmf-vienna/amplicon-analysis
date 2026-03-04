@@ -14,7 +14,7 @@ font_family <- function() {
   "Noto Sans"
 }
 
-save_plot <- function(x, dir_name, ...) {
+save_plot <- function(x, dir_name) {
   if (is.null(x)) {
     return(invisible())
   }
@@ -25,7 +25,8 @@ save_plot <- function(x, dir_name, ...) {
   svglite::svglite(
     file,
     web_fonts = list("https://fonts.googleapis.com/css?family=Noto%20Sans"),
-    ...
+    width = purrr::pluck(x, attr_getter("output"), "width", .default = 10L),
+    height = purrr::pluck(x, attr_getter("output"), "height", .default = 8L)
   )
   print(x)
   dev.off()
