@@ -72,7 +72,7 @@ add_lineage <- function(se, trim = TRUE) {
 
   if (trim) {
     # trim DADA2-style multi species entries, if still on feature ID level
-    row_data <- dplyr::mutate(row_data, Lineage = str_replace(Lineage, "( ‣ [a-z]+/)([a-z]+/){2,}([a-z]+ ‣ )", "\\1…/\\3"))
+    row_data <- dplyr::mutate(row_data, Lineage = str_replace(Lineage, "( ‣ [a-z.]+/)([a-z.]+/){2,}([a-z.]+ ‣ )", "\\1…/\\3"))
   }
 
   # Assertion: Lineage must be unique.
