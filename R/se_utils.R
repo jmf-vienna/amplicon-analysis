@@ -98,7 +98,8 @@ make_metrics <- function(se) {
     as_full_tibble() |>
     dplyr::rename(sample_id = rowname, features = x)
 
-  se |>
+  res <-
+    se |>
     provenance_as_tibble() |>
     tibble::add_column(
       tool = "JADA4",
@@ -109,6 +110,13 @@ make_metrics <- function(se) {
     ) |>
     inner_join(features, by = "sample_id") |>
     update_provenance(se, list(summary = "metrics"))
+
+  attr(res, "col_data") <-
+    se |>
+    SummarizedExperiment::colData() |>
+    as_tibble()
+
+  res
 }
 
 make_library_metrics <- function(se, library_id_var) {
@@ -175,16 +183,27 @@ summary_as_row <- function(se) {
 
 plot_metrics <- function(plot_data, main_category, hline_at, theme) {
   hline_at <- hline_at[hline_at > 0L & hline_at < Inf]
+
   id <- plot_data |> first_id_name()
+
+  plot_data <- left_join(plot_data, attr(plot_data, "col_data"), by = id)
+
+  aes_map <- aes(
+    x = .data[[id]] |> fct_rev(),
+    y = count,
+    label = str_c(scales::number(count), " ")
+  )
+
+  if (is_string(main_category)) {
+    aes_map[["fill"]] <- aes(
+      fill = .data[[main_category]]
+    )[["fill"]]
+  }
 
   p <-
     ggplot(
       data = plot_data,
-      mapping = aes(
-        x = .data[[id]] |> fct_rev(),
-        y = count,
-        label = str_c(scales::number(count), " ")
-      )
+      mapping = aes_map
     ) +
     geom_col() +
     geom_text(
