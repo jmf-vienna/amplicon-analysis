@@ -81,14 +81,18 @@ filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0,
     dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 }
 
-split_tibble_by_rank <- function(x) {
-  if (vec_is_empty(x)) {
-    return(x)
+split_by_rank <- function(data, se, provenance) {
+  this_rank <-
+    se |>
+    get_provenance() |>
+    purrr::chuck("rank")
+
+  # if there is no rank column, the data is likely empty
+  if (rlang::has_name(data, "rank")) {
+    data <- data |> dplyr::filter(rank %in% this_rank)
   }
 
-  x |>
-    group_by(rank) |>
-    dplyr::group_map(\(d, k) update_provenance(d, x, new = as.list(k)))
+  data |> update_provenance(se, new = provenance)
 }
 
 plot_deseq <- function(plot_data, theme) {

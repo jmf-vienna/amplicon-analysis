@@ -437,7 +437,11 @@ list(
     write_tsv(deseq_results, path(results_dir_name, str_c(file_prefix, "feature_tests", sep = "_"), ext = "tsv")),
     format = "file"
   ),
-  tar_target(deseq_plot_data, deseq_results |> update_provenance(se_deep, list(test = "DESeq2")) |> split_tibble_by_rank()),
+  tar_target(
+    deseq_plot_data,
+    split_by_rank(deseq_results, se_ranks, provenance = list(test = "DESeq2")),
+    pattern = map(se_ranks)
+  ),
   tar_target(deseq_plot, plot_deseq(deseq_plot_data, theme), pattern = map(deseq_plot_data), packages = "ggplot2"),
   tar_target(deseq_plot_file, save_plot(deseq_plot, plots_dir_name), pattern = map(deseq_plot), format = "file"),
 
