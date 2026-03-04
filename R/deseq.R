@@ -85,7 +85,16 @@ plot_deseq <- function(plot_data, theme) {
     return(invisible())
   }
 
-  n_features <- plot_data |> pull(Feature_ID) |> unique() |> vec_size() |> print()
+  n_features <-
+    plot_data |>
+    pull(Feature_ID) |>
+    unique() |>
+    vec_size()
+
+  n_tests <-
+    plot_data |>
+    distinct(across(!Feature_ID:last_col())) |>
+    nrow()
 
   p <-
     ggplot(
@@ -94,14 +103,14 @@ plot_deseq <- function(plot_data, theme) {
         x = str_c(`variable of interest`, ":\n", group2, "\nvs\n", group1),
         y = Feature_ID,
         size = abs(`log2 fold change`),
-        fill = `log2 fold change` |> sign() |> factor(c("1", "-1")) |> fct_recode("↑" = "1", "↓" = "-1")
+        fill = `log2 fold change` |> sign() |> factor(c("-1", "1")) |> fct_recode("↓" = "-1", "↑" = "1")
       )
     ) +
     geom_point(
       shape = 21L
     ) +
     scale_fill_manual(
-      values = c("↑" = "black", "↓" = "white")
+      values = c("↓" = "white", "↑" = "black")
     ) +
     facet_grid(
       cols = vars(subset |> str_replace(fixed(": "), ":\n")),
@@ -112,15 +121,21 @@ plot_deseq <- function(plot_data, theme) {
       x = NULL,
       y = NULL,
       fill = "Change",
-      size = "log\u2082 FC"
+      size = "log\u2082FC"
     ) +
-    theme
+    theme +
+    theme(
+      legend.position = "bottom"
+    )
 
   p <- p |>
     update_provenance(plot_data) |>
     plot_titles(title = "DESeq2 differential abundance test", test = zap())
 
-  attr(p, "output") <- list(height = 2.0 + 0.2 * max(n_features, 1L))
+  attr(p, "output") <- list(
+    width = 6.0 + 1.0 * max(n_tests, 1L),
+    height = 2.5 + 0.2 * max(n_features, 1L)
+  )
 
   p
 }
