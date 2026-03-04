@@ -85,6 +85,8 @@ plot_deseq <- function(plot_data, theme) {
     return(invisible())
   }
 
+  n_features <- plot_data |> pull(Feature_ID) |> unique() |> vec_size() |> print()
+
   p <-
     ggplot(
       data = plot_data,
@@ -114,7 +116,11 @@ plot_deseq <- function(plot_data, theme) {
     ) +
     theme
 
-  p |>
+  p <- p |>
     update_provenance(plot_data) |>
     plot_titles(title = "DESeq2 differential abundance test", test = zap())
+
+  attr(p, "output") <- list(height = 2.0 + 0.2 * max(n_features, 1L))
+
+  p
 }
