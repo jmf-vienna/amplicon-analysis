@@ -71,7 +71,7 @@ add_lineage <- function(se, trim = TRUE) {
     dplyr::mutate(Lineage = str_replace_all(Lineage, "( ‣) NA", "\\1"))
 
   if (trim) {
-    # trim DADA2-style multi species entries, if still on feature ID level
+    # trim DADA2-style multi species entries (except on last rank)
     row_data <- dplyr::mutate(row_data, Lineage = str_replace(Lineage, "( ‣ [a-z.]+/)([a-z.]+/){2,}([a-z.]+ ‣ )", "\\1…/\\3"))
   }
 
