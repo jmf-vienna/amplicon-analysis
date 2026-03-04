@@ -82,6 +82,10 @@ filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0,
 }
 
 split_tibble_by_rank <- function(x) {
+  if (vec_is_empty(x)) {
+    return(x)
+  }
+
   x |>
     group_by(rank) |>
     dplyr::group_map(\(d, k) update_provenance(d, x, new = as.list(k)))
