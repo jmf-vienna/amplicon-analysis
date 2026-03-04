@@ -42,12 +42,19 @@ run_deseq <- function(se, var, pseudocount = 1L, min_features = 3L, alpha = 0.05
 
   groups <- levels(SummarizedExperiment::colData(se)[[var]])
 
+  row_data <-
+    se |>
+    SummarizedExperiment::rowData() |>
+    as_full_tibble("Feature_ID") |>
+    dplyr::select(Feature_ID, Lineage)
+
   res <-
     DESeq2::results(deseq, alpha = alpha) |>
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, `log2 fold change` = log2FoldChange, `p-value` = padj, `uncorrected p-value` = pvalue) |>
     tibble::add_column(`variable of interest` = var, group1 = groups[[1L]], group2 = groups[[2L]], .before = "Feature_ID") |>
-    bind_cols(x = provenance_as_tibble(se), y = _)
+    bind_cols(x = provenance_as_tibble(se), y = _) |>
+    dplyr::left_join(row_data, by = "Feature_ID")
 }
 
 collect_deseq_results <- function(deseq_raw_results) {
@@ -96,12 +103,19 @@ plot_deseq <- function(plot_data, theme) {
     distinct(across(!Feature_ID:last_col())) |>
     nrow()
 
+  lin_len <-
+    plot_data |>
+    pull(Lineage) |>
+    unique() |>
+    nchar() |>
+    max()
+
   p <-
     ggplot(
       data = plot_data,
       mapping = aes(
         x = str_c(`variable of interest`, ":\n", group2, "\nvs\n", group1),
-        y = Feature_ID,
+        y = Lineage |> fct_rev(),
         size = abs(`log2 fold change`),
         fill = `log2 fold change` |> sign() |> factor(c("-1", "1")) |> fct_recode("↓" = "-1", "↑" = "1")
       )
@@ -133,7 +147,7 @@ plot_deseq <- function(plot_data, theme) {
     plot_titles(title = "DESeq2 differential abundance test", test = zap())
 
   attr(p, "output") <- list(
-    width = 6.0 + 1.0 * max(n_tests, 1L),
+    width = 0.06 * lin_len + 1.0 * max(n_tests, 1L),
     height = 2.5 + 0.2 * max(n_features, 1L)
   )
 
