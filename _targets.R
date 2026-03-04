@@ -58,6 +58,8 @@ list(
   ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Group")),
+  # for visualization only:
+  tar_target(main_category, config |> pluck("annotation", "category", "main")),
   # always include feature ID, as targets can not run with an empty pattern
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
@@ -349,7 +351,7 @@ list(
 
   # plot metrics ----
   tar_target(se_metrics, list_c(list(se_library_metrics, se_biosample_metrics))),
-  tar_target(metrics_plot, plot_metrics(se_metrics, c(yield_min, yield_max), theme), pattern = map(se_metrics), packages = "ggplot2"),
+  tar_target(metrics_plot, plot_metrics(se_metrics, main_category, c(yield_min, yield_max), theme), pattern = map(se_metrics), packages = "ggplot2"),
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
   # alpha diversity ----

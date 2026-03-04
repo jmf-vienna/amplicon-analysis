@@ -173,7 +173,7 @@ summary_as_row <- function(se) {
     )
 }
 
-plot_metrics <- function(plot_data, hline_at, theme) {
+plot_metrics <- function(plot_data, main_category, hline_at, theme) {
   hline_at <- hline_at[hline_at > 0L & hline_at < Inf]
   id <- plot_data |> first_id_name()
 
