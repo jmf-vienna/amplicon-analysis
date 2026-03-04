@@ -92,6 +92,12 @@ plot_deseq <- function(plot_data, theme) {
     return(invisible())
   }
 
+  # Assertion: one data point per facet/x/y:
+  stopifnot(identical(
+    nrow(plot_data),
+    nrow(distinct(plot_data, subset, `variable of interest`, group1, group2, Lineage))
+  ))
+
   n_features <-
     plot_data |>
     pull(Feature_ID) |>
