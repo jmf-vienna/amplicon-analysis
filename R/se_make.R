@@ -202,6 +202,7 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
 
   # clr can not be agglomerated, so delete beforehand to avoid warnings
   SummarizedExperiment::assay(se, "clr") <- NULL
+
   se <-
     mia::agglomerateByVariable(se, "cols", by) |>
     update_provenance(se, provenance)
@@ -216,6 +217,9 @@ merge_cols <- function(se, by, keep_names, provenance = list()) {
     dplyr::select(all_of(keep_names)) |>
     dplyr::inner_join(lib_counts, by = by) |>
     S4Vectors::DataFrame(row.names = colnames(se))
+
+  # in case agglomeration does not happen (i.e., same ncol before and after), the colnames are not updated, so do this manually:
+  colnames(se) <- SummarizedExperiment::colData(se)[[by]]
 
   se
 }
