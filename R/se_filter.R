@@ -154,6 +154,7 @@ cap_yield <- function(se, cap = Inf) {
     return(se)
   }
 
+  set.seed(0L)
   new_assay <-
     se |>
     SummarizedExperiment::assay() |>
