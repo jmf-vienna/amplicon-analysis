@@ -138,6 +138,36 @@ filter_samples_by_sum <- function(se, min = 0L, max = Inf) {
   res
 }
 
+cap_yield <- function(se, cap = Inf) {
+  if (cap >= Inf) {
+    return(se)
+  }
+
+  col_sums <- col_sums(se)
+
+  max_yield <-
+    col_sums |>
+    dplyr::pull(count) |>
+    max()
+
+  if (cap >= max_yield) {
+    return(se)
+  }
+
+  new_assay <-
+    se |>
+    SummarizedExperiment::assay() |>
+    t() |>
+    vegan::rrarefy(cap) |>
+    suppressWarnings() |>
+    t()
+  SummarizedExperiment::assay(se) <- new_assay
+
+  se |>
+    add_assays() |>
+    update_provenance(new = list(yield = list(cap = cap)))
+}
+
 filter_prevalence_ra <- function(se, prev = 0.0, ra = 0.0, negative_controls = character()) {
   if (isTRUE(all.equal(prev, 0.0)) && isTRUE(all.equal(ra, 0.0))) {
     return(se)

@@ -47,6 +47,7 @@ list(
   tar_target(goods_coverage_min, config |> pluck("filter", "goods coverage", "min", .default = 0.0)),
   tar_target(yield_min, config |> pluck("filter", "yield", "min", .default = 1000L)),
   tar_target(yield_max, config |> pluck("filter", "yield", "max", .default = Inf)),
+  tar_target(yield_cap, config |> pluck("filter", "yield", "cap", .default = Inf)),
   tar_target(pass_libraries_yield_min, config |> pluck("filter", "pass", "yield", "min", .default = 0L)),
   tar_target(decontam_threshold, config |> pluck("filter", "decontam", .default = 0.0)),
   tar_target(length_min, config |> pluck("filter", "length", "min", .default = 0L)),
@@ -222,6 +223,7 @@ list(
     se_filtered |>
       filter_samples_by_goods_coverage(goods_coverage_min) |>
       filter_samples_by_sum(yield_min, yield_max) |>
+      cap_yield(yield_cap) |>
       tidy()
   ),
 
