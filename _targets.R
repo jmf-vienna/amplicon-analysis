@@ -164,7 +164,7 @@ list(
   ),
 
   ### filtered features table ----
-  tar_target(filtered_features_table, make_filtered_features_table(se_deep)),
+  tar_target(filtered_features_table, make_filtered_features_table(se_final)),
   tar_target(
     filtered_features_file,
     write_tsv(
@@ -223,6 +223,13 @@ list(
     se_filtered |>
       filter_samples_by_goods_coverage(goods_coverage_min) |>
       filter_samples_by_sum(yield_min, yield_max) |>
+      tidy()
+  ),
+
+  ### deep (filter samples) ----
+  tar_target(
+    se_final,
+    se_deep |>
       cap_yield(yield_cap) |>
       tidy()
   ),
@@ -234,7 +241,8 @@ list(
       list(se_libs_raw, se_libs_clean),
       list(se_libs_clean, se_libs_pass),
       list(se_refined, se_filtered),
-      list(se_filtered, se_deep)
+      list(se_filtered, se_deep),
+      list(se_deep, se_final)
     ))
   ),
   tar_target(
@@ -256,7 +264,7 @@ list(
   tar_target(se_libs_ranks, unique(se_libs_ranks_raw)),
   tar_target(
     se_ranks_raw,
-    agglomerate_by_rank(se_deep, ranks_of_interest, ranks_of_interest_trim),
+    agglomerate_by_rank(se_final, ranks_of_interest, ranks_of_interest_trim),
     pattern = cross(ranks_of_interest, ranks_of_interest_trim)
   ),
   tar_target(se_ranks, unique(se_ranks_raw)),
@@ -274,12 +282,19 @@ list(
   ),
   tar_target(
     sam_se,
-    list_c(list(
-      list(se_raw),
-      # only keep se_filtered if there were changes
-      list(se_refined, se_filtered) |> unique(),
+    list(
+      list(
+        se_raw,
+        se_refined,
+        # only keep se_filtered if there were changes compared to se_refined
+        se_filtered,
+        se_deep
+        # only keep se_final if there were changes compared to se_deep
+      ),
       se_subsets
-    ))
+    ) |>
+      list_c() |>
+      unique()
   ),
   tar_target(all_se, list_c(list(lib_se, sam_se))),
 
