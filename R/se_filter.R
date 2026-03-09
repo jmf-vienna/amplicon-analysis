@@ -224,5 +224,6 @@ make_filtered_samples_table <- function(se_pairs) {
   }) |>
     rev() |>
     dplyr::bind_rows() |>
-    dplyr::arrange(desc(dplyr::row_number()))
+    dplyr::arrange(desc(dplyr::row_number())) |>
+    dplyr::filter(removed != "")
 }
