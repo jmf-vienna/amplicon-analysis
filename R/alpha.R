@@ -29,6 +29,14 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
         # suppress vegan::rrarefy warning message "function should be used for observed counts, but smallest count is %d"
         suppressWarnings()
     }
+
+    # `signif` for reproducibility. Keeping six digits is already overkill for alpha diversity values.
+    SummarizedExperiment::colData(se) <-
+      se |>
+      SummarizedExperiment::colData() |>
+      as_tibble() |>
+      mutate(across(starts_with(".alpha_diversity_"), signif)) |>
+      S4Vectors::DataFrame(row.names = colnames(se))
   } else {
     cli::cli_alert_warning(
       "{.field {provenance_as_short_title(se)}}: alpha diversity skipped (minimum sample size {.val {min}} is below threshold {.val {threshold}})"
