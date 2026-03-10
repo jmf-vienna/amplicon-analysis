@@ -58,7 +58,8 @@ list(
 
   ## sample data column names ----
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
-  tar_target(variable_of_interest, config |> pluck("analyze", "category", .default = "Group")),
+  tar_target(discrete_variables_of_interest, config |> pluck("analyze", "category", .default = "Group")),
+  tar_target(continuous_variables_of_interest, config |> pluck("analyze", "continuous", .default = "dummy_continuous")),
   # for visualization only:
   tar_target(main_category, config |> pluck("annotation", "category", "main")),
   # always include feature ID, as targets can not run with an empty pattern
@@ -393,8 +394,8 @@ list(
   ),
   tar_target(
     alpha_diversity_test_raw,
-    test_alpha_diversity(alpha_diversity, variable_of_interest, two_sample_test, p_adjust_method),
-    pattern = cross(alpha_diversity, variable_of_interest)
+    test_alpha_diversity(alpha_diversity, discrete_variables_of_interest, two_sample_test, p_adjust_method),
+    pattern = cross(alpha_diversity, discrete_variables_of_interest)
   ),
   tar_target(
     alpha_diversity_test,
@@ -405,8 +406,8 @@ list(
   ## plots ----
   tar_target(
     alpha_diversity_plot,
-    plot_alpha_diversity(alpha_diversity, alpha_diversity_test_raw, variable_of_interest, theme),
-    pattern = map(cross(alpha_diversity, variable_of_interest), alpha_diversity_test_raw),
+    plot_alpha_diversity(alpha_diversity, alpha_diversity_test_raw, discrete_variables_of_interest, theme),
+    pattern = map(cross(alpha_diversity, discrete_variables_of_interest), alpha_diversity_test_raw),
     packages = "ggplot2"
   ),
   tar_target(alpha_diversity_plot_file, save_plot(alpha_diversity_plot, plots_dir_name), format = "file", pattern = map(alpha_diversity_plot)),
@@ -414,7 +415,7 @@ list(
   # beta diversity ----
   tar_target(ps_distance, calulcate_distance(ps), pattern = map(ps)),
   ## tests ----
-  tar_target(permanova, test_distance(ps_distance, variable_of_interest), pattern = cross(ps_distance, variable_of_interest)),
+  tar_target(permanova, test_distance(ps_distance, discrete_variables_of_interest), pattern = cross(ps_distance, discrete_variables_of_interest)),
   tar_target(
     beta_diversity_test,
     format_beta_diversity_test(permanova),
@@ -425,8 +426,8 @@ list(
   tar_target(ps_ordination, calulcate_ordination(ps_distance), pattern = map(ps_distance)),
   tar_target(
     ordination_plot_raw,
-    plot_ordination(ps_ordination, variable_of_interest, sample_label_from, limits, theme),
-    pattern = cross(ps_ordination, variable_of_interest)
+    plot_ordination(ps_ordination, discrete_variables_of_interest, sample_label_from, limits, theme),
+    pattern = cross(ps_ordination, discrete_variables_of_interest)
   ),
   tar_target(ordination_plot, plot_ordination_with_tests(ordination_plot_raw, permanova), pattern = map(ordination_plot_raw, permanova)),
   tar_target(ordination_plot_file, save_plot(ordination_plot, plots_dir_name), format = "file", pattern = map(ordination_plot)),
