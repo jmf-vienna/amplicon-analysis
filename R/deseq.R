@@ -1,7 +1,7 @@
-deseq <- function(se) {
+deseq <- function(se, ...) {
   se |>
     purrr::pluck(attr_getter("analyze"), "category") |>
-    purrr::map(\(x) run_deseq(se, x))
+    purrr::map(\(x) run_deseq(se, x, ...))
 }
 
 run_deseq <- function(se, var, pseudocount = 0L, min_features = 3L, alpha = 0.05) {
@@ -58,6 +58,7 @@ run_deseq <- function(se, var, pseudocount = 0L, min_features = 3L, alpha = 0.05
     bind_cols(x = provenance_as_tibble(se), y = _) |>
     dplyr::left_join(row_data, by = "Feature_ID")
 
+  attr(res, "pseudocount") <- pseudocount
   attr(res, "deseq") <- deseq
   attr(res, "results") <- results
 

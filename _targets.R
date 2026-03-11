@@ -68,6 +68,7 @@ list(
   tar_target(two_sample_test, config |> pluck("analyze", "two sample test", .default = "wilcox")),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
   tar_target(log2fc_threshold, config |> pluck("analyze", "log2FC threshold", .default = 2.0)),
+  tar_target(deseq_pseudocount, config |> pluck("analyze", "DESeq2 pseudocount", .default = 0L)),
 
   ## analysis ----
   tar_target(
@@ -448,7 +449,7 @@ list(
   ),
 
   # DESeq2 ----
-  tar_target(deseq_raw_results, deseq(se), pattern = map(se)),
+  tar_target(deseq_raw_results, deseq(se, pseudocount = deseq_pseudocount), pattern = map(se)),
   tar_target(deseq_combined_results, collect_deseq_results(deseq_raw_results)),
   tar_target(
     deseq_results,
@@ -469,6 +470,7 @@ list(
       provenance = list(
         test = "DESeq2",
         .DESeq2_filter = str_c(
+          ifelse(deseq_pseudocount > 0L, str_c("pseudocount=+", deseq_pseudocount, ", "), ""),
           "|log₂FC| ≥",
           attr(deseq_results, "log2_fold_change_filter"),
           ", p-value ≤",
