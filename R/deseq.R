@@ -48,13 +48,20 @@ run_deseq <- function(se, var, pseudocount = 0L, min_features = 3L, alpha = 0.05
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, Lineage)
 
+  results <- DESeq2::results(deseq, alpha = alpha)
+
   res <-
-    DESeq2::results(deseq, alpha = alpha) |>
+    results |>
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, `log2 fold change` = log2FoldChange, `p-value` = padj, `uncorrected p-value` = pvalue) |>
     tibble::add_column(`variable of interest` = var, group1 = groups[[1L]], group2 = groups[[2L]], .before = "Feature_ID") |>
     bind_cols(x = provenance_as_tibble(se), y = _) |>
     dplyr::left_join(row_data, by = "Feature_ID")
+
+  attr(res, "deseq") <- deseq
+  attr(res, "results") <- results
+
+  res
 }
 
 collect_deseq_results <- function(deseq_raw_results) {
