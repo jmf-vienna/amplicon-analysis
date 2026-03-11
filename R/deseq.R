@@ -149,6 +149,7 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
     geom_point(
       shape = 21L
     ) +
+    scale_size_area() +
     scale_fill_manual(
       values = c("↓" = "white", "↑" = "black")
     ) +
