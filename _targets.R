@@ -67,7 +67,7 @@ list(
   tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
   tar_target(two_sample_test, config |> pluck("analyze", "two sample test", .default = "wilcox")),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
-  tar_target(log2fc_threshold, config |> pluck("analyze", "log2FC threshold", .default = 2.0)),
+  tar_target(log2fc_threshold, config |> pluck("analyze", "log2FC threshold", .default = 0.0)),
   tar_target(deseq_pseudocount, config |> pluck("analyze", "DESeq2 pseudocount", .default = 0L)),
 
   ## analysis ----
@@ -449,12 +449,16 @@ list(
   ),
 
   # DESeq2 ----
-  tar_target(deseq_raw_results, deseq(se, pseudocount = deseq_pseudocount), pattern = map(se)),
+  tar_target(
+    deseq_raw_results,
+    deseq(se, log2fc_threshold = log2fc_threshold, pseudocount = deseq_pseudocount),
+    pattern = map(se)
+  ),
   tar_target(deseq_combined_results, collect_deseq_results(deseq_raw_results)),
   tar_target(
     deseq_results,
     deseq_combined_results |>
-      filter_deseq_results(log2fc_threshold) |>
+      filter_deseq_results() |>
       finalize_tests_table()
   ),
   tar_target(
@@ -471,8 +475,8 @@ list(
         test = "DESeq2",
         .DESeq2_filter = str_c(
           ifelse(deseq_pseudocount > 0L, str_c("pseudocount=+", deseq_pseudocount, ", "), ""),
-          "|log₂FC| ≥",
-          attr(deseq_results, "log2_fold_change_filter"),
+          "|log₂FC| >",
+          log2fc_threshold,
           ", p-value ≤",
           attr(deseq_results, "p_value_filter")
         )

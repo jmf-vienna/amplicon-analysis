@@ -4,7 +4,7 @@ deseq <- function(se, ...) {
     purrr::map(\(x) run_deseq(se, x, ...))
 }
 
-run_deseq <- function(se, var, pseudocount = 0L, min_features = 3L, alpha = 0.05) {
+run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_features = 3L, alpha = 0.05) {
   loadNamespace(class(se))
 
   if (nrow(se) < min_features) {
@@ -48,7 +48,7 @@ run_deseq <- function(se, var, pseudocount = 0L, min_features = 3L, alpha = 0.05
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, Lineage)
 
-  results <- DESeq2::results(deseq, alpha = alpha)
+  results <- DESeq2::results(deseq, lfcThreshold = log2fc_threshold, alpha = alpha)
 
   res <-
     results |>
@@ -82,14 +82,13 @@ collect_deseq_results <- function(deseq_raw_results) {
   res
 }
 
-filter_deseq_results <- function(deseq_combined_results, log2_fold_change = 2.0, p_value = 0.05) {
+filter_deseq_results <- function(deseq_combined_results, p_value = 0.05) {
   res <-
     deseq_combined_results |>
-    dplyr::filter(abs(`log2 fold change`) >= log2_fold_change, `p-value` <= p_value) |>
+    dplyr::filter(`p-value` <= p_value) |>
     # `signif` for reproducibility. Keeping six digits is already overkill.
     dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 
-  attr(res, "log2_fold_change_filter") <- log2_fold_change
   attr(res, "p_value_filter") <- p_value
 
   res
