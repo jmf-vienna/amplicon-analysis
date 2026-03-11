@@ -4,7 +4,7 @@ deseq <- function(se) {
     purrr::map(\(x) run_deseq(se, x))
 }
 
-run_deseq <- function(se, var, pseudocount = 1L, min_features = 3L, alpha = 0.05) {
+run_deseq <- function(se, var, pseudocount = 0L, min_features = 3L, alpha = 0.05) {
   loadNamespace(class(se))
 
   if (nrow(se) < min_features) {
