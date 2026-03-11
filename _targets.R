@@ -67,6 +67,7 @@ list(
   tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
   tar_target(two_sample_test, config |> pluck("analyze", "two sample test", .default = "wilcox")),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
+  tar_target(log2fc_threshold, config |> pluck("analyze", "log2FC threshold", .default = 2.0)),
 
   ## analysis ----
   tar_target(
@@ -452,7 +453,7 @@ list(
   tar_target(
     deseq_results,
     deseq_combined_results |>
-      filter_deseq_results() |>
+      filter_deseq_results(log2fc_threshold) |>
       finalize_tests_table()
   ),
   tar_target(
@@ -462,7 +463,19 @@ list(
   ),
   tar_target(
     deseq_plot_data,
-    split_by_rank(deseq_results, se_ranks, provenance = list(test = "DESeq2")),
+    split_by_rank(
+      deseq_results,
+      se_ranks,
+      provenance = list(
+        test = "DESeq2",
+        .DESeq2_filter = str_c(
+          "|log₂FC| ≥",
+          attr(deseq_results, "log2_fold_change_filter"),
+          ", p-value ≤",
+          attr(deseq_results, "p_value_filter")
+        )
+      )
+    ),
     pattern = map(se_ranks)
   ),
   tar_target(deseq_plot, plot_deseq(deseq_plot_data, se_ranks, main_category, theme), pattern = map(deseq_plot_data, se_ranks), packages = "ggplot2"),

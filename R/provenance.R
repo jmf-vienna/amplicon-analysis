@@ -38,6 +38,8 @@ get_trimmed_provenance <- function(x) {
 provenance_as_file_name <- function(x) {
   x |>
     get_trimmed_provenance() |>
+    # remove "hidden" names, e.g., .DESeq2_filter
+    purrr::discard_at(\(x) stringr::str_starts(x, stringr::fixed("."))) |>
     as_file_name()
 }
 
@@ -66,7 +68,9 @@ as_title <- function(x, collapse = " | ") {
   n <-
     x |>
     names() |>
-    stringr::str_remove("^[^.]+[.]")
+    stringr::str_remove("^[^.]+[.]") |>
+    # remove "hidden" names, e.g., .DESeq2_filter
+    stringr::str_remove("^[.].+")
 
   stringr::str_c(n, dplyr::if_else(stringr::str_length(n) > 0L, ": ", ""), x) |>
     stringr::str_replace("(≤|≥): ", "\\1") |>
