@@ -154,7 +154,7 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
       x = NULL,
       y = NULL,
       fill = "Change",
-      size = "log\u2082FC"
+      size = "|log\u2082FC|"
     ) +
     theme +
     theme(
