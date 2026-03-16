@@ -373,7 +373,7 @@ list(
   tar_target(se_metrics, list_c(list(se_library_metrics, se_biosample_metrics))),
   tar_target(
     metrics_plot,
-    plot_metrics(se_metrics, main_category, c(yield_min, yield_max), theme),
+    plot_metrics(se_metrics, sample_label_from, main_category, c(yield_min, yield_max), theme),
     pattern = map(se_metrics),
     packages = c("ggplot2", "patchwork")
   ),

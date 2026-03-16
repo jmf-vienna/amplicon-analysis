@@ -181,15 +181,18 @@ summary_as_row <- function(se) {
     )
 }
 
-plot_metrics <- function(plot_data, main_category, hline_at, theme) {
+plot_metrics <- function(plot_data, sample_label, main_category, hline_at, theme) {
   hline_at <- hline_at[hline_at > 0L & hline_at < Inf]
 
   id <- plot_data |> first_id_name()
 
-  plot_data <- left_join(plot_data, attr(plot_data, "col_data"), by = id)
+  plot_data <-
+    plot_data |>
+    dplyr::left_join(attr(plot_data, "col_data"), by = id) |>
+    dplyr::mutate(..label = str_c(.data[[sample_label]], " | ", .data[[id]]) |> fct_inorder())
 
   aes_map <- aes(
-    x = .data[[id]] |> fct_rev(),
+    x = fct_rev(..label),
     y = count,
     label = str_c(scales::number(count), " ")
   )
@@ -223,7 +226,7 @@ plot_metrics <- function(plot_data, main_category, hline_at, theme) {
     ) +
     coord_flip() +
     labs(
-      x = id
+      x = str_c(sample_label, " and ", id)
     ) +
     theme
 
