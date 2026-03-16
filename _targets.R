@@ -42,6 +42,7 @@ list(
 
   ## refinement ----
   tar_target(negative_controls, config |> pluck("filter", "negative controls", .default = character())),
+  tar_target(remove_negative_controls, !isFALSE(pluck(config, "filter", "remove", "negative controls"))),
   tar_target(desirables, config |> pluck("filter", "desirable", .default = list())),
   tar_target(undesirables, config |> pluck("filter", "undesirable", .default = list())),
   tar_target(goods_coverage_min, config |> pluck("filter", "goods coverage", "min", .default = 0.0)),
@@ -53,6 +54,7 @@ list(
   tar_target(length_min, config |> pluck("filter", "length", "min", .default = 0L)),
   tar_target(length_max, config |> pluck("filter", "length", "max", .default = Inf)),
   tar_target(failed_samples, config |> pluck("filter", "failed samples", .default = character())),
+  tar_target(remove_failed_samples, !isFALSE(pluck(config, "filter", "remove", "failed samples"))),
   tar_target(prevalence_filter, config |> pluck("filter", "prevalence", .default = 0.0)),
   tar_target(ra_filter, config |> pluck("filter", "relative abundance", .default = 0.0)),
 
@@ -182,7 +184,8 @@ list(
   tar_target(
     se_libs_pass,
     se_libs_clean |>
-      remove_cols(failed_libraries) |>
+      remove_cols(failed_libraries, remove_failed_samples) |>
+      remove_cols(negative_controls, remove_negative_controls) |>
       update_provenance(new = list(state = "pass")) |>
       tidy() |>
       add_assays()
@@ -212,7 +215,7 @@ list(
       add_assays()
   ),
 
-  ### filtered (by prevalence and r.a.) ----
+  ### filtered (filter features by prevalence and r.a.) ----
   tar_target(
     se_filtered,
     se_refined |>
@@ -229,7 +232,7 @@ list(
       tidy()
   ),
 
-  ### deep (filter samples) ----
+  ### final tweaks ----
   tar_target(
     se_final,
     se_deep |>

@@ -113,7 +113,11 @@ make_filtered_features_table <- function(se) {
     )
 }
 
-remove_cols <- function(se, cols) {
+remove_cols <- function(se, cols, doit = TRUE) {
+  if (isFALSE(doit)) {
+    return(se)
+  }
+
   loadNamespace(class(se))
   se[, !colnames(se) %in% cols]
 }
