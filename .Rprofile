@@ -1,7 +1,6 @@
-cli::cli_alert("sourcing .Rprofile")
-library(conflicted)
-
 if (interactive()) {
+  require(conflicted)
+
   require(targets)
 
   require(cli)
@@ -18,6 +17,4 @@ if (interactive()) {
   require(vctrs)
 
   tar_load_globals()
-} else {
-  cli::cli_abort("sourcing .Rprofile non-interactively")
 }
