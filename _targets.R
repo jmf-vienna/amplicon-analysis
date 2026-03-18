@@ -365,12 +365,24 @@ list(
   # summary rows ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(se_summary, se_summary_rows |> bind_rows()),
-  tar_target(metrics_summary, make_metrics_summary(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary)),
+  tar_target(
+    metrics_summary,
+    make_metrics_summary(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary) |>
+      set_provenance(base_provenance)
+  ),
   tar_target(
     metrics_summary_file,
     write_tsv(metrics_summary, path(results_dir_name, str_c(file_prefix, "summary", sep = "_"), ext = "tsv")),
     format = "file"
   ),
+
+  # summary plot ----
+  tar_target(
+    metrics_summary_plot,
+    plot_metrics_summary(metrics_summary, theme),
+    packages = c("ggplot2", "patchwork")
+  ),
+  tar_target(metrics_summary_plot_file, save_plot(metrics_summary_plot, plots_dir_name), format = "file"),
 
   # plot metrics ----
   tar_target(se_metrics, list_c(list(se_library_metrics, se_biosample_metrics))),
@@ -539,6 +551,7 @@ list(
       library_metrics_file,
       biosample_metrics_file,
       metrics_summary_file,
+      metrics_summary_plot_file,
       metrics_plot_file,
       alpha_diversity_file,
       summary_report_file,

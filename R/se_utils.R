@@ -181,6 +181,72 @@ summary_as_row <- function(se) {
     )
 }
 
+plot_metrics_summary <- function(metrics_summary, theme) {
+  first_rank <-
+    metrics_summary |>
+    dplyr::filter(!is.na(rank)) |>
+    dplyr::pull(rank) |>
+    dplyr::first()
+
+  plot_data <-
+    metrics_summary |>
+    dplyr::filter(
+      !(resolution == "samples" & state == "raw"),
+      is.na(rank) | rank == first_rank,
+      is.na(subset)
+    ) |>
+    dplyr::mutate(
+      tool = tool |> str_remove("/.+")
+    ) |>
+    tidyr::unite(step, !c(project, gene, libraries:last_col()), sep = "\n", remove = FALSE, na.rm = TRUE) |>
+    dplyr::mutate(
+      step = step |> stringr::str_replace_all(" ", "\n") |> fct_inorder()
+    )
+
+  p <-
+    ggplot(
+      data = plot_data,
+      mapping = aes(
+        x = step,
+        y = total_counts,
+        group = project
+      )
+    ) +
+    geom_line() +
+    geom_point() +
+    scale_y_continuous(
+      labels = scales::label_number(),
+      sec.axis = sec_axis(
+        transform = ~ . / (plot_data |> pull(total_counts) |> max()),
+        labels = scales::label_percent(),
+        breaks = (0L:20L) / 10L
+      )
+    ) +
+    expand_limits(
+      y = 0L
+    ) +
+    labs(
+      x = NULL,
+      y = "Total counts"
+    ) +
+    theme
+
+  p <-
+    p |>
+    update_provenance(
+      metrics_summary,
+      list(
+        plot_type = "summary"
+      )
+    ) |>
+    plot_titles(
+      title = "summary",
+      plot_type = zap()
+    )
+
+  p
+}
+
 plot_metrics <- function(plot_data, sample_label, main_category, hline_at, theme) {
   hline_at <- hline_at[hline_at > 0L & hline_at < Inf]
 
