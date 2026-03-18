@@ -17,4 +17,6 @@ if (interactive()) {
   require(vctrs)
 
   tar_load_globals()
+
+  options(warn = 1L)
 }
