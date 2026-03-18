@@ -143,7 +143,7 @@ make_biosample_metrics <- function(se, biosample_id_var) {
 
 make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_var, biosample_id_var, se_summary) {
   dplyr::bind_rows(
-    biosample_metrics |> dplyr::filter(resolution == "samples"),
+    biosample_metrics |> dplyr::filter(resolution %in% "samples"),
     library_metrics
   ) |>
     dplyr::filter(count > 0L) |>
@@ -197,11 +197,11 @@ plot_metrics_summary <- function(metrics_summary, theme) {
     tidyr::pivot_longer(libraries:last_col(), names_to = "metric") |>
     dplyr::mutate(
       step = step |> stringr::str_replace_all(" ", "\n") |> fct_inorder(),
-      col = stringr::str_c(resolution, " ", state) |> fct_inorder(),
+      col = stringr::str_c(str_replace_na(resolution), " ", str_replace_na(state)) |> fct_inorder(),
       metric = metric |> str_replace_all("_", " ") |> fct_inorder()
     ) |>
     dplyr::filter(
-      !(resolution == "samples" & state == "raw"),
+      !(resolution %in% "samples" & state %in% "raw"),
       is.na(rank) | rank == first_rank,
       !is.na(value)
     )

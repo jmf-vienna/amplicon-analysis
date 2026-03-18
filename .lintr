@@ -7,6 +7,7 @@ linters: all_linters(
     object_usage_linter = NULL,
     object_overwrite_linter = NULL,
     one_call_pipe_linter = NULL,
+    scalar_in_linter = NULL,
     undesirable_function_linter = NULL,
     unnecessary_nesting_linter = NULL,
     line_length_linter = line_length_linter(160)
