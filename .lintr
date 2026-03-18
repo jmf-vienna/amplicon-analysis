@@ -1,4 +1,5 @@
 linters: all_linters(
+    fixed_regex_linter = NULL,
     indentation_linter = NULL,
     nested_pipe_linter = NULL,
     nrow_subset_linter = NULL,

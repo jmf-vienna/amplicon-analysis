@@ -32,14 +32,14 @@ provenance_as_tibble <- function(x) {
 get_trimmed_provenance <- function(x) {
   x |>
     get_provenance() |>
-    purrr::discard(\(x) rlang::is_scalar_character(x) && stringr::str_ends(x, stringr::fixed("_ID")))
+    purrr::discard(\(x) rlang::is_scalar_character(x) && stringr::str_ends(x, "_ID"))
 }
 
 provenance_as_file_name <- function(x) {
   x |>
     get_trimmed_provenance() |>
     # remove "hidden" names, e.g., .DESeq2_filter
-    purrr::discard_at(\(x) stringr::str_starts(x, stringr::fixed("."))) |>
+    purrr::discard_at(\(x) stringr::str_starts(x, "[.]")) |>
     as_file_name()
 }
 
@@ -54,9 +54,9 @@ as_file_name <- function(x) {
       )
     }) |>
     stringr::str_flatten("_") |>
-    stringr::str_replace_all(stringr::fixed("Good’s Coverage ≥"), "min GC") |>
-    stringr::str_replace_all(stringr::fixed("≤"), "lte") |>
-    stringr::str_replace_all(stringr::fixed("≥"), "gte") |>
+    stringr::str_replace_all("Good’s Coverage ≥", "min GC") |>
+    stringr::str_replace_all("≤", "lte") |>
+    stringr::str_replace_all("≥", "gte") |>
     force_valid_file_name()
 }
 

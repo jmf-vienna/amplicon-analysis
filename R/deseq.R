@@ -154,7 +154,7 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
       values = c("↓" = "white", "↑" = "black")
     ) +
     facet_grid(
-      cols = vars(subset |> str_replace(fixed(": "), ":\n")),
+      cols = vars(subset |> str_replace(": ", ":\n")),
       scales = "free",
       space = "free"
     ) +

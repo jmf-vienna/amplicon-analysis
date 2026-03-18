@@ -65,16 +65,16 @@ get_alpha_diversity <- function(se) {
     } else {
       res |>
         pivot_longer(starts_with(".alpha_diversity_"), names_to = "Index", values_to = "Diversity") |>
-        dplyr::filter(!str_ends(Index, fixed("_se"))) |>
+        dplyr::filter(!str_ends(Index, "_se")) |>
         mutate(
           Rarefaction = Index |>
             str_extract("at_[0-9]+") |>
-            str_replace(fixed("at_"), "rarefaction depth ") |>
+            str_replace("at_", "rarefaction depth ") |>
             str_replace_na("no rarefaction"),
           Index = Index |>
             str_remove("^[.]alpha_diversity_(at_[0-9]+_)?") |>
-            str_replace(fixed("_"), " ") |>
-            str_replace(fixed("goods"), "good’s") |>
+            str_replace("_", " ") |>
+            str_replace("goods", "good’s") |>
             str_to_title()
         )
     }
