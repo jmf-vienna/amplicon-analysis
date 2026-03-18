@@ -89,13 +89,23 @@ plot_titles <- function(plot, title_n = 2L, title = NULL, subtitle = NULL, subti
   # trim "project:" from the title
   names(provenance)[[1L]] <- ""
 
-  plot +
-    ggplot2::labs(
-      title = provenance |> head(title_n) |> c(title) |> as_title(),
-      subtitle = c(
-        provenance |> tail(-title_n) |> c(subtitle) |> as_title(),
-        subtitles
-      ) |>
-        stringr::str_flatten("\n")
-    )
+  title_text <-
+    provenance |>
+    head(title_n) |>
+    c(title) |>
+    as_title()
+
+  subtitle_text <- c(
+    provenance |> tail(-title_n) |> c(subtitle) |> as_title(),
+    subtitles
+  ) |>
+    stringr::str_flatten("\n")
+
+  plot <- plot + ggplot2::labs(title = title_text)
+
+  if (stringr::str_length(subtitle_text) > 0L) {
+    plot <- plot + ggplot2::labs(subtitle = subtitle_text)
+  }
+
+  plot
 }
