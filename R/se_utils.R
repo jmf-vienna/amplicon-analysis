@@ -190,46 +190,64 @@ plot_metrics_summary <- function(metrics_summary, theme) {
 
   plot_data <-
     metrics_summary |>
-    dplyr::filter(
-      !(resolution == "samples" & state == "raw"),
-      is.na(rank) | rank == first_rank,
-      is.na(subset)
-    ) |>
     dplyr::mutate(
       tool = tool |> str_remove("/.+")
     ) |>
     tidyr::unite(step, !c(project, gene, libraries:last_col()), sep = "\n", remove = FALSE, na.rm = TRUE) |>
+    tidyr::pivot_longer(libraries:last_col(), names_to = "metric") |>
     dplyr::mutate(
-      step = step |> stringr::str_replace_all(" ", "\n") |> fct_inorder()
+      step = step |> stringr::str_replace_all(" ", "\n") |> fct_inorder(),
+      col = stringr::str_c(resolution, " ", state) |> fct_inorder(),
+      metric = metric |> str_replace_all("_", " ") |> fct_inorder()
+    ) |>
+    dplyr::filter(
+      !(resolution == "samples" & state == "raw"),
+      is.na(rank) | rank == first_rank,
+      !is.na(value)
     )
+
+  if (plot_data |> rlang::has_name("subset")) {
+    plot_data <- plot_data |> dplyr::filter(is.na(subset))
+  }
 
   p <-
     ggplot(
       data = plot_data,
       mapping = aes(
         x = step,
-        y = total_counts,
-        group = project
+        y = value,
+        group = metric
       )
     ) +
     geom_line() +
-    geom_point() +
-    scale_y_continuous(
-      labels = scales::label_number(),
-      sec.axis = sec_axis(
-        transform = ~ . / (plot_data |> pull(total_counts) |> max()),
-        labels = scales::label_percent(),
-        breaks = (0L:20L) / 10L
+    geom_point(
+      mapping = aes(
+        colour = col
       )
+    ) +
+    facet_wrap(
+      facets = vars(metric),
+      ncol = 1L,
+      scale = "free_y"
+    ) +
+    scale_y_continuous(
+      labels = scales::label_number()
     ) +
     expand_limits(
       y = 0L
     ) +
     labs(
       x = NULL,
-      y = "Total counts"
+      y = NULL,
+      colour = NULL
     ) +
-    theme
+    theme +
+    theme(
+      legend.position = "top"
+    ) +
+    guides(
+      colour = guide_legend(nrow = 1L)
+    )
 
   p <-
     p |>
@@ -243,6 +261,8 @@ plot_metrics_summary <- function(metrics_summary, theme) {
       title = "summary",
       plot_type = zap()
     )
+
+  attr(p, "output") <- list(height = 33.0)
 
   p
 }

@@ -380,7 +380,7 @@ list(
   tar_target(
     metrics_summary_plot,
     plot_metrics_summary(metrics_summary, theme),
-    packages = c("ggplot2", "patchwork")
+    packages = "ggplot2"
   ),
   tar_target(metrics_summary_plot_file, save_plot(metrics_summary_plot, plots_dir_name), format = "file"),
 
