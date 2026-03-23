@@ -66,7 +66,7 @@ list(
   tar_target(main_category, config |> pluck("annotation", "category", "main")),
   # always include feature ID, as targets can not run with an empty pattern
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
-  tar_target(ranks_of_interest_trim, c(FALSE, TRUE)),
+  tar_target(ranks_of_interest_trim, config |> pluck("analyze", "rank trimming", .default = c(FALSE, TRUE))),
   tar_target(two_sample_test, config |> pluck("analyze", "two sample test", .default = "wilcox")),
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
   tar_target(log2fc_threshold, config |> pluck("analyze", "log2FC threshold", .default = 0.0)),
