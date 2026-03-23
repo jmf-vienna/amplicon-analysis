@@ -1,4 +1,8 @@
 as_phyloseq <- function(se) {
+  if (is_too_large(se)) {
+    return()
+  }
+
   loadNamespace("mia")
 
   if (nrow(se) == 0L) {

@@ -334,6 +334,30 @@ plot_metrics <- function(plot_data, sample_label, main_category, hline_at, theme
   p
 }
 
+is_too_large <- function(se) {
+  limit <- Sys.getenv("SE_LARGE_LIMIT")
+
+  if (identical(limit, "")) {
+    return(FALSE)
+  }
+
+  limit <- as.integer(limit)
+
+  loadNamespace(class(se))
+  size <-
+    se |>
+    dim() |>
+    prod()
+
+  res <- size >= limit
+
+  if (res) {
+    cli::cli_alert_warning("{.field {provenance_as_short_title(se)}} is too large ({.val {size}} ≥ {.val {limit}}) and was skipped")
+  }
+
+  res
+}
+
 write_flattened <- function(se, file, assay_name = "counts") {
   loadNamespace(class(se))
 
@@ -436,6 +460,10 @@ write_flattened <- function(se, file, assay_name = "counts") {
 }
 
 export_flattened <- function(se, dir_name, assay_name = "counts") {
+  if (is_too_large(se)) {
+    return()
+  }
+
   file <- fs::path(
     dir_name,
     stringr::str_c(
@@ -453,6 +481,10 @@ export_flattened <- function(se, dir_name, assay_name = "counts") {
 }
 
 export_se <- function(se, dir_name) {
+  if (is_too_large(se)) {
+    return()
+  }
+
   # cleanup attributes used internally
   attr(se, "analyze") <- NULL
 
