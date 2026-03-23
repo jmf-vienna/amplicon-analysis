@@ -16,6 +16,17 @@ find_one_file <- function(path, glob = NULL, regexp = NULL, verbose = TRUE) {
   res
 }
 
+smart_read_tsv <- function(file, ...) {
+  res <- readr::read_tsv(file, ...)
+
+  if (vctrs::vec_is_empty(res)) {
+    cli::cli_alert_warning("{.file {file}} is empty")
+    return()
+  }
+
+  res
+}
+
 prepare_export <- function(file) {
   file |>
     fs::path_dir() |>
