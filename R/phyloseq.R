@@ -23,8 +23,6 @@ export_ps <- function(ps, dir_name) {
   }
 
   file <- fs::path(dir_name, ps |> update_provenance(new = list(export = "phyloseq")) |> provenance_as_file_name())
-  c(
-    write_rds(ps, fs::path(file, ext = "rds")),
-    write_qs2(ps, fs::path(file, ext = "qs2"))
-  )
+
+  write_rd(ps, file)
 }

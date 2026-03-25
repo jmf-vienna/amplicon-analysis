@@ -33,6 +33,19 @@ prepare_export <- function(file) {
     fs::dir_create(mode = Sys.getenv("DIR_CREATE_MODE", "u=rwx,go=rx"))
 }
 
+write_rd <- function(x, file) {
+  res <- write_qs2(x, fs::path(file, ext = "qs2"))
+
+  if (identical(Sys.getenv("EXPORT_RDS"), "yes")) {
+    res <- c(
+      res,
+      write_rds(x, fs::path(file, ext = "rds"))
+    )
+  }
+
+  res
+}
+
 write_rds <- function(x, file) {
   prepare_export(file)
   saveRDS(x, file)
