@@ -182,6 +182,11 @@ summary_as_row <- function(se) {
 }
 
 plot_metrics_summary <- function(metrics_summary, theme) {
+  if (vec_is_empty(metrics_summary)) {
+    cli::cli_alert_warning("summary table is empty")
+    return()
+  }
+
   first_rank <-
     metrics_summary |>
     dplyr::filter(!is.na(rank)) |>
