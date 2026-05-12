@@ -399,8 +399,8 @@ list(
   tar_target(
     bubble_plot_data,
     bubble_plot_se |>
-      mia::meltSE(add.row = TRUE, add.col = TRUE) |>
       fill_unclassified() |>
+      mia::meltSE(add.row = TRUE, add.col = TRUE) |>
       smart_agglomerate() |>
       update_provenance(bubble_plot_se, list(analysis = "bubble plot")),
     pattern = map(bubble_plot_se)

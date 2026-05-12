@@ -1,13 +1,5 @@
-fill_unclassified <- function(
-  data,
-  ranks = any_of(c("Domain", "Kingdom")):ASV_ID,
-  value = "unclassified",
-  species_value = "sp.",
-  parentheses = TRUE
-) {
-  rank_names <- data |>
-    dplyr::select({{ ranks }}) |>
-    names()
+fill_unclassified <- function(se, value = "unclassified", species_value = "sp.", parentheses = TRUE) {
+  loadNamespace(class(se))
 
   if (parentheses) {
     prefix <- "("
@@ -16,12 +8,14 @@ fill_unclassified <- function(
     prefix <- suffix <- ""
   }
 
+  row_data <- se |> SummarizedExperiment::rowData() |> as_full_tibble()
+
   prev_rank <- NA
-  for (rank in rank_names) {
+  for (rank in taxonomy_ranks(se)) {
     if (is.na(prev_rank)) {
-      data <- data |> mutate("{rank}" := .data[[rank]] |> replace_na(str_c(prefix, value, suffix)))
+      row_data <- row_data |> mutate("{rank}" := .data[[rank]] |> replace_na(str_c(prefix, value, suffix)))
     } else {
-      data <- data |>
+      row_data <- row_data |>
         mutate(
           "{rank}" := coalesce(
             .data[[rank]],
@@ -35,7 +29,7 @@ fill_unclassified <- function(
     }
 
     if (!isFALSE(species_value) && prev_rank == "Genus" && rank == "Species") {
-      data <- data |>
+      row_data <- row_data |>
         mutate(
           Species = if_else(
             # if: Genus IS NOT unclassified & Species IS unclassified
@@ -51,7 +45,10 @@ fill_unclassified <- function(
     prev_rank <- rank
   }
 
-  data
+  stopifnot(identical(row_data[["rowname"]], rownames(se)))
+  SummarizedExperiment::rowData(se) <- column_to_rownames(row_data)
+
+  se
 }
 
 smart_agglomerate <- function(
