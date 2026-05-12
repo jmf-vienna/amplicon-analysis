@@ -394,6 +394,22 @@ list(
   ),
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
+  # bubble plot ----
+  tar_target(
+    bubble_plot_data,
+    se_final |>
+      mia::meltSE(add.row = TRUE, add.col = TRUE) |>
+      dplyr::rename(
+        Count = counts,
+        Sequence_length = sequence_length
+      ) |>
+      dplyr::mutate(
+        Sample = str_c(SampleID, " ", User_sample_ID),
+        FeatureID = NULL
+      ) |>
+      fill_unclassified()
+  ),
+
   # alpha diversity ----
   tar_target(alpha_diversity_all, get_alpha_diversity(se), pattern = map(se)),
   tar_target(
