@@ -1,41 +1,51 @@
 fill_unclassified <- function(se, value = "unclassified", species_value = "sp.", parentheses = TRUE) {
   loadNamespace(class(se))
 
-  if (parentheses) {
+  if (isTRUE(parentheses)) {
     prefix <- "("
     suffix <- ")"
   } else {
-    prefix <- suffix <- ""
+    prefix <- ""
+    suffix <- ""
   }
 
-  row_data <- se |> SummarizedExperiment::rowData() |> as_full_tibble()
+  row_data <-
+    se |>
+    SummarizedExperiment::rowData() |>
+    as_full_tibble()
 
   prev_rank <- NA
   for (rank in taxonomy_ranks(se)) {
     if (is.na(prev_rank)) {
-      row_data <- row_data |> mutate("{rank}" := .data[[rank]] |> replace_na(str_c(prefix, value, suffix)))
+      row_data <-
+        row_data |>
+        dplyr::mutate(
+          "{rank}" := .data[[rank]] |> tidyr::replace_na(stringr::str_c(prefix, value, suffix))
+        )
     } else {
-      row_data <- row_data |>
+      row_data <-
+        row_data |>
         mutate(
-          "{rank}" := coalesce(
+          "{rank}" := dplyr::coalesce(
             .data[[rank]],
             if_else(
-              .data[[prev_rank]] |> str_detect(value),
+              stringr::str_detect(.data[[prev_rank]], value),
               .data[[prev_rank]],
-              .data[[prev_rank]] |> str_c(prefix, value, " ", prev_rank = _, suffix)
+              stringr::str_c(prefix, value, " ", .data[[prev_rank]], suffix)
             )
           )
         )
     }
 
-    if (!isFALSE(species_value) && prev_rank == "Genus" && rank == "Species") {
-      row_data <- row_data |>
+    if (rlang::is_string(species_value) && prev_rank == "Genus" && rank == "Species") {
+      row_data <-
+        row_data |>
         mutate(
           Species = if_else(
             # if: Genus IS NOT unclassified & Species IS unclassified
-            !str_detect(Genus, value) & str_detect(Species, value),
+            !stringr::str_detect(Genus, value) & stringr::str_detect(Species, value),
             # then: Genus sp.
-            Genus |> str_c(prefix, prev_rank = _, " ", species_value, suffix),
+            stringr::str_c(prefix, Genus, " ", species_value, suffix),
             # else: leave as is
             Species
           )
@@ -46,7 +56,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
   }
 
   stopifnot(identical(row_data[["rowname"]], rownames(se)))
-  SummarizedExperiment::rowData(se) <- column_to_rownames(row_data)
+  SummarizedExperiment::rowData(se) <- tibble::column_to_rownames(row_data)
 
   se
 }
@@ -429,9 +439,16 @@ smart_agglomerate_bubble_plot <- function(
 
   p <- update_provenance(p, orig_data)
 
-  n_samples <- data |> dplyr::pull(Sample) |> vec_unique_count()
-  n_features <- data |> dplyr::pull(Feature) |> vec_unique_count()
-  feature_names_width <- data |> dplyr::pull(Feature) |> nchar() |> max()
+  n_samples <- data |>
+    dplyr::pull(Sample) |>
+    vec_unique_count()
+  n_features <- data |>
+    dplyr::pull(Feature) |>
+    vec_unique_count()
+  feature_names_width <- data |>
+    dplyr::pull(Feature) |>
+    nchar() |>
+    max()
   attr(p, "output") <- list(height = 8.0 + 0.15 * n_features, width = 0.05 * feature_names_width + 0.5 * n_samples)
 
   p
