@@ -395,9 +395,10 @@ list(
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
   # bubble plot ----
+  tar_target(bubble_plot_se, list(se_libs_raw, se_final)),
   tar_target(
     bubble_plot_data,
-    se_final |>
+    bubble_plot_se |>
       mia::meltSE(add.row = TRUE, add.col = TRUE) |>
       dplyr::rename(
         Count = counts,
@@ -409,9 +410,10 @@ list(
       ) |>
       fill_unclassified() |>
       smart_agglomerate() |>
-      update_provenance(se_final, list(analysis = "bubble plot"))
+      update_provenance(bubble_plot_se, list(analysis = "bubble plot")),
+    pattern = map(bubble_plot_se)
   ),
-  tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), format = "file"),
+  tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), pattern = map(bubble_plot_data), format = "file"),
   tar_target(
     bubble_plot,
     bubble_plot_data |>
@@ -421,11 +423,11 @@ list(
         facets = ggplot2::vars(Environment_ID, Group),
         colour = Genus,
         verbose = FALSE
-      ) |>
-      update_provenance(se_final, list(analysis = "bubble plot")),
+      ),
+    pattern = map(bubble_plot_data),
     packages = "ggplot2"
   ),
-  tar_target(bubble_plot_file, save_plot(bubble_plot, plots_dir_name), format = "file"),
+  tar_target(bubble_plot_file, save_plot(bubble_plot, plots_dir_name), pattern = map(bubble_plot), format = "file"),
 
   # alpha diversity ----
   tar_target(alpha_diversity_all, get_alpha_diversity(se), pattern = map(se)),

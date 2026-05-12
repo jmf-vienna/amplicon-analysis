@@ -231,6 +231,8 @@ smart_agglomerate_bubble_plot <- function(
   trim_multi_taxa = FALSE,
   verbose = TRUE
 ) {
+  orig_data <- data
+
   require(patchwork)
 
   data <- data |>
@@ -422,6 +424,8 @@ smart_agglomerate_bubble_plot <- function(
     plot_annotation(
       caption = caption,
     )
+
+  p <- update_provenance(p, orig_data)
 
   n_samples <- data |> dplyr::pull(Sample) |> vec_unique_count()
   n_features <- data |> dplyr::pull(Feature) |> vec_unique_count()
