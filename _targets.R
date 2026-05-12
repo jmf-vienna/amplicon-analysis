@@ -407,7 +407,8 @@ list(
         Sample = str_c(SampleID, " ", User_sample_ID),
         FeatureID = NULL
       ) |>
-      fill_unclassified()
+      fill_unclassified() |>
+      smart_agglomerate()
   ),
 
   # alpha diversity ----

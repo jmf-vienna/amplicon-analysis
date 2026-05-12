@@ -8,7 +8,6 @@ fill_unclassified <- function(
 ) {
   rank_names <- data |>
     dplyr::select({{ ranks }}) |>
-    dplyr::select(where(~ is.character(.) || is.factor(.))) |>
     names()
 
   if (parentheses) {
@@ -63,10 +62,11 @@ smart_agglomerate <- function(
   remove_zeros = TRUE,
   ranks = any_of(c("Domain", "Kingdom")):ASV_ID,
   always_ranks = 2,
-  verbose = getOption("jmf.verbose", TRUE)
+  verbose = TRUE,
+  always_features = c()
 ) {
   rank_names <- data |>
-    select({{ ranks }}) |>
+    dplyr::select({{ ranks }}) |>
     names()
 
   rank_names_show_always <- rank_names |> head(always_ranks)
@@ -75,14 +75,14 @@ smart_agglomerate <- function(
   stopifnot(identical(
     data |>
       dplyr::count(.data[[rank_names |> tail(1)]], Sample) |>
-      filter(n > 1) |>
+      dplyr::filter(n > 1) |>
       nrow(),
     0L
   ))
 
   # zero count measurements slow things down and are not always required
   if (remove_zeros) {
-    data <- data |> filter(Count > 0)
+    data <- data |> dplyr::filter(Count > 0)
   }
 
   # relative abundance
@@ -91,7 +91,8 @@ smart_agglomerate <- function(
     mutate(Fraction = Count / sum(Count))
 
   # set NAs to unclassified, in case this was not dealt with beforehand
-  data <- data |> mutate(across(all_of(rank_names), ~ tidyr::replace_na(.x, "(unclassified)")))
+  data <- data |> mutate(across(all_of(rank_names), \(x) replace_na(x, "(unclassified)")))
+
   # the "smart" part:
   data <- data |> add_column(Feature = NA_character_)
   for (rank in rev(rank_names)) {
@@ -106,14 +107,19 @@ smart_agglomerate <- function(
         sort()
     } else {
       keep_linages <-
-        data |>
-        filter(is.na(Feature)) |>
-        group_by(.lineage, Sample) |>
-        summarise(Fraction = sum(Fraction), .groups = "drop_last") |>
-        filter(Fraction >= min_abundance) |>
-        dplyr::count() |>
-        filter(n >= min_prevalence) |>
-        pull(.lineage) |>
+        c(
+          data |>
+            dplyr::filter(is.na(Feature)) |>
+            group_by(.lineage, Sample) |>
+            summarise(Fraction = sum(Fraction), .groups = "drop_last") |>
+            dplyr::filter(Fraction >= min_abundance) |>
+            dplyr::count() |>
+            dplyr::filter(n >= min_prevalence) |>
+            pull(.lineage),
+          data |>
+            dplyr::filter(.data[[rank]] %in% always_features) |>
+            pull(.lineage)
+        ) |>
         sort()
     }
     # keep_linages |> cat(sep = "\n")
@@ -123,14 +129,7 @@ smart_agglomerate <- function(
     data <- data |> mutate(Feature = if_else(is.na(Feature) & .lineage %in% keep_linages, .lineage, Feature))
 
     # remove values from taxonomy column when feature is not kept:
-    data <- data |>
-      dplyr::mutate(
-        "{rank}" := dplyr::if_else(
-          is.na(Feature),
-          NA_character_, # character NA for taxonomy columns (including ASV)
-          .data[[rank]]
-        )
-      )
+    data <- data |> mutate("{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
 
     # remove current rank - needed for unite() to work
     rank_names <- head(rank_names, -1)
@@ -147,7 +146,7 @@ smart_agglomerate <- function(
   # prepare sample data (yield / total read pairs per sample)
   per_sample_data <-
     data |>
-    filter(Count > 0) |>
+    dplyr::filter(Count > 0) |>
     group_by(Sample) |>
     summarise(
       Sample_count = sum(Count),
@@ -157,7 +156,33 @@ smart_agglomerate <- function(
   # agglomerate based on selected lineages
   data <-
     data |>
-    group_by(across(c({{ ranks }}, Sample) | !c(Count, Fraction, Sequence_length))) |>
+    group_by(across(
+      c({{ ranks }}, Sample) |
+        !any_of(c(
+          "Count",
+          "Fraction",
+          "Sequence",
+          "Sequence_length",
+          "sequence",
+          "sequence_length",
+          "decontam_p_value",
+          "Orientation",
+          "quality_min_eepm",
+          "sha1",
+          "sha1base36",
+          "Lineage",
+          "bootstrap_Kingdom",
+          "bootstrap_Domain",
+          "bootstrap_Phylum",
+          "bootstrap_Class",
+          "bootstrap_Order",
+          "bootstrap_Family",
+          "bootstrap_Genus",
+          "bootstrap_Species",
+          "BLAST_percent_identity",
+          "Strain"
+        ))
+    )) |>
     summarise(Count = sum(Count), Fraction = sum(Fraction), .groups = "drop")
 
   # merge all data ans relocate columns
@@ -175,7 +200,7 @@ smart_agglomerate <- function(
   stopifnot(identical(
     data |>
       dplyr::count(Feature, Sample) |>
-      filter(n > 1) |>
+      dplyr::filter(n > 1) |>
       nrow(),
     0L
   ))
@@ -185,7 +210,7 @@ smart_agglomerate <- function(
     data |>
       group_by(Sample) |>
       summarise(Fraction = sum(Fraction)) |>
-      filter(round(Fraction, 10) != 1) |>
+      dplyr::filter(round(Fraction, 10) != 1) |>
       nrow(),
     0L
   ))
@@ -199,13 +224,15 @@ smart_agglomerate_bubble_plot <- function(
   subtitle = waiver(),
   caption = NA,
   colour = Phylum,
-  facets = ~Group,
+  facets = vars(Group),
   facet_labeller = label_wrap_gen(width = 10),
   max_size = 10,
   add_sequence_length = TRUE,
   trim_multi_taxa = FALSE,
   verbose = TRUE
 ) {
+  require(patchwork)
+
   data <- data |>
     arrange(Sample) |>
     mutate(
@@ -215,7 +242,7 @@ smart_agglomerate_bubble_plot <- function(
         str_replace("^( +)([^ ]+)", "\\2\\1") |>
         # Unicode 2009 is https://en.wikipedia.org/wiki/Thin_space
         # str_c("{", ASVs |> format(big.mark = "\u2009"), "} ", sample = _) |>
-        str_c("(", Sample_count |> format(big.mark = "\u2009", trim = TRUE), ") ", sample = _) |>
+        str_c("(", Sample_count |> format(big.mark = " ", trim = TRUE), ") ", sample = _) |>
         fct_inorder(),
       # RA (%)
       Fraction = Fraction * 100
@@ -239,7 +266,7 @@ smart_agglomerate_bubble_plot <- function(
     data <- data |>
       mutate(
         # for multi species trimming: "Genus many/different/possible/species/names" -> "Genus many/…/names"
-        Feature = Feature |> str_replace_all("/[a-z/]+/", "/…/")
+        Feature = Feature |> str_replace_all("/[a-z\\./]+/", "/…/")
       )
   }
 
@@ -280,7 +307,7 @@ smart_agglomerate_bubble_plot <- function(
       y = Feature |> fct_rev(),
       size = Fraction,
       fill = {{ colour }},
-      alpha = (!is.na(ASV)) |> as.integer()
+      alpha = (!is.na(ASV_ID)) |> as.integer()
     )
   ) +
     geom_point(
@@ -288,7 +315,7 @@ smart_agglomerate_bubble_plot <- function(
       colour = "black"
     ) +
     geom_text(
-      data = data |> filter(Fraction >= 1),
+      data = data |> dplyr::filter(Fraction >= 1),
       mapping = aes(label = round(Fraction)),
       size = 2,
       hjust = 0.35,
@@ -304,8 +331,8 @@ smart_agglomerate_bubble_plot <- function(
       guide = "none"
     ) +
     facet_grid(
-      facets = facets,
-      scale = "free",
+      cols = facets,
+      scales = "free",
       space = "free",
       labeller = facet_labeller
     ) +
@@ -318,6 +345,11 @@ smart_agglomerate_bubble_plot <- function(
     ) +
     guides(fill = guide_legend(ncol = 1)) +
     theme(
+      axis.text = ggplot2::element_text(colour = "black"),
+      axis.ticks = ggplot2::element_line(colour = "black"),
+      plot.title.position = "plot",
+      plot.caption.position = "plot",
+      plot.subtitle = element_text(colour = "blue"),
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, family = "monospace")
     )
 
@@ -351,8 +383,8 @@ smart_agglomerate_bubble_plot <- function(
       y = 0
     ) +
     facet_grid(
-      facets = facets,
-      scale = "free",
+      cols = facets,
+      scales = "free",
       space = "free"
     ) +
     theme(
