@@ -73,7 +73,7 @@ smart_agglomerate <- function(
   # Input assertion: exactly one value per sample and ASV/lowest rank
   stopifnot(identical(
     data |>
-      dplyr::count(.data[[rank_names |> tail(1)]], Sample) |>
+      dplyr::count(.data[[rank_names |> tail(1)]], SampleID) |>
       dplyr::filter(n > 1) |>
       nrow(),
     0L
@@ -86,7 +86,7 @@ smart_agglomerate <- function(
 
   # relative abundance
   data <- data |>
-    group_by(Sample) |>
+    group_by(SampleID) |>
     mutate(Fraction = counts / sum(counts))
 
   # set NAs to unclassified, in case this was not dealt with beforehand
@@ -109,7 +109,7 @@ smart_agglomerate <- function(
         c(
           data |>
             dplyr::filter(is.na(Feature)) |>
-            group_by(.lineage, Sample) |>
+            group_by(.lineage, SampleID) |>
             summarise(Fraction = sum(Fraction), .groups = "drop_last") |>
             dplyr::filter(Fraction >= min_abundance) |>
             dplyr::count() |>
@@ -146,7 +146,7 @@ smart_agglomerate <- function(
   per_sample_data <-
     data |>
     dplyr::filter(counts > 0) |>
-    group_by(Sample) |>
+    group_by(SampleID) |>
     summarise(
       Sample_count = sum(counts),
       ASVs = n()
@@ -156,12 +156,13 @@ smart_agglomerate <- function(
   data <-
     data |>
     group_by(across(
-      c({{ ranks }}, Sample) |
+      c({{ ranks }}, SampleID) |
         !any_of(c(
           "counts",
           "Fraction",
           "Sequence",
           "sequence_length",
+          "FeatureID",
           "sequence",
           "decontam_p_value",
           "Orientation",
@@ -187,8 +188,8 @@ smart_agglomerate <- function(
   data <-
     data |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
-    dplyr::left_join(per_sample_data, by = "Sample") |>
-    relocate(Feature, Sample, Group, counts, Fraction, {{ ranks }}, sequence_length)
+    dplyr::left_join(per_sample_data, by = "SampleID") |>
+    relocate(Feature, SampleID, Group, counts, Fraction, {{ ranks }}, sequence_length)
 
   # save some settings so it can be shown in plot caption
   attr(data, "min_abundance") <- min_abundance
@@ -197,7 +198,7 @@ smart_agglomerate <- function(
   # Output assertion: exactly one value per sample and feature
   stopifnot(identical(
     data |>
-      dplyr::count(Feature, Sample) |>
+      dplyr::count(Feature, SampleID) |>
       dplyr::filter(n > 1) |>
       nrow(),
     0L
@@ -206,7 +207,7 @@ smart_agglomerate <- function(
   # Output assertion: the sum of all fractions per sample should be 1
   stopifnot(identical(
     data |>
-      group_by(Sample) |>
+      group_by(SampleID) |>
       summarise(Fraction = sum(Fraction)) |>
       dplyr::filter(round(Fraction, 10) != 1) |>
       nrow(),
@@ -218,6 +219,7 @@ smart_agglomerate <- function(
 
 smart_agglomerate_bubble_plot <- function(
   data,
+  sample_label_from,
   title = waiver(),
   subtitle = waiver(),
   caption = NA,
@@ -231,7 +233,14 @@ smart_agglomerate_bubble_plot <- function(
 ) {
   orig_data <- data
 
-  data <- data |>
+  data <-
+    data |>
+    mutate(
+      Sample = str_c(SampleID, " ", .data[[sample_label_from]])
+    )
+
+  data <-
+    data |>
     arrange(Sample) |>
     mutate(
       # pad sample name, and move the spaces between ID and user sample name (or wherever the first space is) + add sample count

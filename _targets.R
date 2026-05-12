@@ -400,10 +400,6 @@ list(
     bubble_plot_data,
     bubble_plot_se |>
       mia::meltSE(add.row = TRUE, add.col = TRUE) |>
-      dplyr::mutate(
-        Sample = str_c(SampleID, " ", User_sample_ID),
-        FeatureID = NULL
-      ) |>
       fill_unclassified() |>
       smart_agglomerate() |>
       update_provenance(bubble_plot_se, list(analysis = "bubble plot")),
@@ -414,6 +410,7 @@ list(
     bubble_plot,
     bubble_plot_data |>
       smart_agglomerate_bubble_plot(
+        sample_label_from = sample_label_from,
         title = se_final |> get_provenance() |> as_title(),
         trim_multi_taxa = TRUE,
         facets = ggplot2::vars(Environment_ID, Group),
