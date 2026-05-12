@@ -61,47 +61,34 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
   se
 }
 
-smart_agglomerate <- function(
-  se,
-  min_abundance = 1e-2,
-  min_prevalence = 1,
-  remove_zeros = TRUE,
-  ranks = any_of(c("Domain", "Kingdom")):ASV_ID,
-  always_ranks = 2,
-  verbose = TRUE,
-  always_features = c()
-) {
+smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, remove_zeros = TRUE, always_ranks = 2L, always_features = c()) {
   loadNamespace("mia")
 
   data <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
 
-  rank_names <- data |>
-    dplyr::select({{ ranks }}) |>
-    names()
+  rank_names <- all_ranks <- taxonomy_ranks(se)
 
-  rank_names_show_always <- rank_names |> head(always_ranks)
+  rank_names_show_always <- all_ranks |> head(always_ranks)
 
   # Input assertion: exactly one value per sample and ASV/lowest rank
   stopifnot(identical(
     data |>
-      dplyr::count(.data[[rank_names |> tail(1)]], SampleID) |>
-      dplyr::filter(n > 1) |>
+      dplyr::count(.data[[all_ranks |> tail(1L)]], SampleID) |>
+      dplyr::filter(n > 1L) |>
       nrow(),
     0L
   ))
 
   # zero count measurements slow things down and are not always required
   if (remove_zeros) {
-    data <- data |> dplyr::filter(counts > 0)
+    data <- data |> dplyr::filter(counts > 0L)
   }
 
   # relative abundance
-  data <- data |>
+  data <-
+    data |>
     group_by(SampleID) |>
     mutate(Fraction = counts / sum(counts))
-
-  # set NAs to unclassified, in case this was not dealt with beforehand
-  data <- data |> mutate(across(all_of(rank_names), \(x) replace_na(x, "(unclassified)")))
 
   # the "smart" part:
   data <- data |> add_column(Feature = NA_character_)
@@ -167,7 +154,7 @@ smart_agglomerate <- function(
   data <-
     data |>
     group_by(across(
-      c({{ ranks }}, SampleID) |
+      c(all_of(all_ranks), SampleID) |
         !any_of(c(
           "counts",
           "Fraction",
@@ -200,7 +187,7 @@ smart_agglomerate <- function(
     data |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
     dplyr::left_join(per_sample_data, by = "SampleID") |>
-    relocate(Feature, SampleID, Group, counts, Fraction, {{ ranks }}, sequence_length)
+    relocate(Feature, SampleID, Group, counts, Fraction, all_of(all_ranks), sequence_length)
 
   # save some settings so it can be shown in plot caption
   attr(data, "min_abundance") <- min_abundance
@@ -228,7 +215,7 @@ smart_agglomerate <- function(
   data |> update_provenance(se, list(analysis = "bubble plot"))
 }
 
-smart_agglomerate_bubble_plot <- function(
+smart_bubble_plot <- function(
   data,
   sample_label_from,
   title = waiver(),
@@ -239,8 +226,7 @@ smart_agglomerate_bubble_plot <- function(
   facet_labeller = label_wrap_gen(width = 10),
   max_size = 10,
   add_sequence_length = TRUE,
-  trim_multi_taxa = FALSE,
-  verbose = TRUE
+  trim_multi_taxa = FALSE
 ) {
   orig_data <- data
 
@@ -305,18 +291,6 @@ smart_agglomerate_bubble_plot <- function(
     if_else(add_sequence_length, str_c("\n", "Basepair numbers in brackets are (mean) ASV nucleic acid sequence lengths."), ""),
     str_replace_na(str_c("\n", caption), "")
   )
-
-  if (verbose) {
-    message("Caption:")
-    cat(caption)
-
-    message("Features:")
-    data |>
-      pull(Feature) |>
-      unique() |>
-      sort() |>
-      cat(sep = "\n")
-  }
 
   main_plot <- ggplot(
     data = data,
