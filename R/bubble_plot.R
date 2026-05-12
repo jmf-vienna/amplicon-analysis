@@ -62,7 +62,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
 }
 
 smart_agglomerate <- function(
-  data,
+  se,
   min_abundance = 1e-2,
   min_prevalence = 1,
   remove_zeros = TRUE,
@@ -71,6 +71,10 @@ smart_agglomerate <- function(
   verbose = TRUE,
   always_features = c()
 ) {
+  loadNamespace("mia")
+
+  data <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
+
   rank_names <- data |>
     dplyr::select({{ ranks }}) |>
     names()
@@ -221,7 +225,7 @@ smart_agglomerate <- function(
     0L
   ))
 
-  data
+  data |> update_provenance(se, list(analysis = "bubble plot"))
 }
 
 smart_agglomerate_bubble_plot <- function(

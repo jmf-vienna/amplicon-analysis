@@ -396,15 +396,7 @@ list(
 
   # bubble plot ----
   tar_target(bubble_plot_se, list(se_libs_raw, se_final)),
-  tar_target(
-    bubble_plot_data,
-    bubble_plot_se |>
-      fill_unclassified() |>
-      mia::meltSE(add.row = TRUE, add.col = TRUE) |>
-      smart_agglomerate() |>
-      update_provenance(bubble_plot_se, list(analysis = "bubble plot")),
-    pattern = map(bubble_plot_se)
-  ),
+  tar_target(bubble_plot_data, bubble_plot_se |> fill_unclassified() |> smart_agglomerate(), pattern = map(bubble_plot_se)),
   tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), pattern = map(bubble_plot_data), format = "file"),
   tar_target(
     bubble_plot,
