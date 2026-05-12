@@ -408,8 +408,10 @@ list(
         FeatureID = NULL
       ) |>
       fill_unclassified() |>
-      smart_agglomerate()
+      smart_agglomerate() |>
+      update_provenance(se_final, list(analysis = "bubble plot"))
   ),
+  tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), format = "file"),
 
   # alpha diversity ----
   tar_target(alpha_diversity_all, get_alpha_diversity(se), pattern = map(se)),
