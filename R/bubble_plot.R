@@ -3,8 +3,7 @@ fill_unclassified <- function(
   ranks = any_of(c("Domain", "Kingdom")):ASV_ID,
   value = "unclassified",
   species_value = "sp.",
-  parentheses = TRUE,
-  verbose = TRUE
+  parentheses = TRUE
 ) {
   rank_names <- data |>
     dplyr::select({{ ranks }}) |>
@@ -82,13 +81,13 @@ smart_agglomerate <- function(
 
   # zero count measurements slow things down and are not always required
   if (remove_zeros) {
-    data <- data |> dplyr::filter(Count > 0)
+    data <- data |> dplyr::filter(counts > 0)
   }
 
   # relative abundance
   data <- data |>
     group_by(Sample) |>
-    mutate(Fraction = Count / sum(Count))
+    mutate(Fraction = counts / sum(counts))
 
   # set NAs to unclassified, in case this was not dealt with beforehand
   data <- data |> mutate(across(all_of(rank_names), \(x) replace_na(x, "(unclassified)")))
@@ -141,15 +140,15 @@ smart_agglomerate <- function(
   per_feature_data <-
     data |>
     group_by(Feature) |>
-    summarise(Sequence_length = Sequence_length |> mean())
+    summarise(sequence_length = sequence_length |> mean())
 
   # prepare sample data (yield / total read pairs per sample)
   per_sample_data <-
     data |>
-    dplyr::filter(Count > 0) |>
+    dplyr::filter(counts > 0) |>
     group_by(Sample) |>
     summarise(
-      Sample_count = sum(Count),
+      Sample_count = sum(counts),
       ASVs = n()
     )
 
@@ -159,12 +158,11 @@ smart_agglomerate <- function(
     group_by(across(
       c({{ ranks }}, Sample) |
         !any_of(c(
-          "Count",
+          "counts",
           "Fraction",
           "Sequence",
-          "Sequence_length",
-          "sequence",
           "sequence_length",
+          "sequence",
           "decontam_p_value",
           "Orientation",
           "quality_min_eepm",
@@ -183,14 +181,14 @@ smart_agglomerate <- function(
           "Strain"
         ))
     )) |>
-    summarise(Count = sum(Count), Fraction = sum(Fraction), .groups = "drop")
+    summarise(counts = sum(counts), Fraction = sum(Fraction), .groups = "drop")
 
   # merge all data ans relocate columns
   data <-
     data |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
     dplyr::left_join(per_sample_data, by = "Sample") |>
-    relocate(Feature, Sample, Group, Count, Fraction, {{ ranks }}, Sequence_length)
+    relocate(Feature, Sample, Group, counts, Fraction, {{ ranks }}, sequence_length)
 
   # save some settings so it can be shown in plot caption
   attr(data, "min_abundance") <- min_abundance
@@ -233,8 +231,6 @@ smart_agglomerate_bubble_plot <- function(
 ) {
   orig_data <- data
 
-  require(patchwork)
-
   data <- data |>
     arrange(Sample) |>
     mutate(
@@ -253,7 +249,7 @@ smart_agglomerate_bubble_plot <- function(
   if (add_sequence_length) {
     data <- data |>
       mutate(
-        Feature = str_c(Feature, str_replace_na(str_c(" [", Sequence_length |> round(1), " bp]"), ""))
+        Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1), " bp]"), ""))
       )
   }
 

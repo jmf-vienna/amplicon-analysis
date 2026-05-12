@@ -400,10 +400,6 @@ list(
     bubble_plot_data,
     bubble_plot_se |>
       mia::meltSE(add.row = TRUE, add.col = TRUE) |>
-      dplyr::rename(
-        Count = counts,
-        Sequence_length = sequence_length
-      ) |>
       dplyr::mutate(
         Sample = str_c(SampleID, " ", User_sample_ID),
         FeatureID = NULL
@@ -425,7 +421,7 @@ list(
         verbose = FALSE
       ),
     pattern = map(bubble_plot_data),
-    packages = "ggplot2"
+    packages = c("ggplot2", "patchwork")
   ),
   tar_target(bubble_plot_file, save_plot(bubble_plot, plots_dir_name), pattern = map(bubble_plot), format = "file"),
 
@@ -588,6 +584,8 @@ list(
       metrics_summary_file,
       metrics_summary_plot_file,
       metrics_plot_file,
+      bubble_plot_data_file,
+      bubble_plot_file,
       alpha_diversity_file,
       summary_report_file,
       feature_tests_file,
