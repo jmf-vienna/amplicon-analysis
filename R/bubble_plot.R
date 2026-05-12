@@ -413,7 +413,8 @@ smart_agglomerate_bubble_plot <- function(
       )
   }
 
-  main_plot /
+  p <-
+    main_plot /
     yield_plot +
     plot_layout(
       heights = c(42, 1)
@@ -421,4 +422,11 @@ smart_agglomerate_bubble_plot <- function(
     plot_annotation(
       caption = caption,
     )
+
+  n_samples <- data |> dplyr::pull(Sample) |> vec_unique_count()
+  n_features <- data |> dplyr::pull(Feature) |> vec_unique_count()
+  feature_names_width <- data |> dplyr::pull(Feature) |> nchar() |> max()
+  attr(p, "output") <- list(height = 8.0 + 0.15 * n_features, width = 0.05 * feature_names_width + 0.5 * n_samples)
+
+  p
 }
