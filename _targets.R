@@ -403,9 +403,8 @@ list(
     bubble_plot_data |>
       smart_bubble_plot(
         sample_label_from = sample_label_from,
-        title = se_final |> get_provenance() |> as_title(),
-        facets = ggplot2::vars(Environment_ID, Group),
-        colour = Genus
+        facet_cols = ggplot2::vars(Environment_ID, Group),
+        theme = theme
       ),
     pattern = map(bubble_plot_data),
     packages = c("ggplot2", "patchwork")

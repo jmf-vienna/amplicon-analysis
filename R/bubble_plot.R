@@ -206,18 +206,14 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 smart_bubble_plot <- function(
   orig_data,
   sample_label_from,
-  title = waiver(),
-  subtitle = waiver(),
-  colour = Phylum,
-  facets = vars(Group),
-  facet_labeller = label_wrap_gen(width = 10L),
+  facet_cols,
+  theme,
   max_size = 10L
 ) {
   plot_data <-
     orig_data |>
     arrange(.data[[sample_label_from]], SampleID) |>
     mutate(
-      # pad sample name, and move the spaces between ID and user sample name (or wherever the first space is) + add sample count
       Sample = str_c(
         "(",
         sample_count |> format(big.mark = " ", trim = TRUE),
@@ -233,8 +229,7 @@ smart_bubble_plot <- function(
           str_replace_na(str_c(" [", round(sequence_length, 1L), " bp]"), ""),
           if_else(!is.na(decontam_p_value), str_c(" {d=", sprintf("%.2f", decontam_p_value), "}"), "")
         ),
-      # RA (%)
-      fraction = fraction * 100.0
+      fraction = fraction * 100.0 # RA (%)
     )
 
   caption <- str_c(
@@ -254,19 +249,20 @@ smart_bubble_plot <- function(
     "\n",
     "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths.",
     "\n",
-    "d-values are decontam results."
+    "d-values are (mean) decontam results. Lower mean more likely a contamint."
   )
 
-  main_plot <- ggplot(
-    data = plot_data,
-    mapping = aes(
-      x = Sample,
-      y = Feature |> fct_rev(),
-      size = fraction,
-      fill = {{ colour }},
-      alpha = (!is.na(ASV_ID)) |> as.integer()
-    )
-  ) +
+  main_plot <-
+    ggplot(
+      data = plot_data,
+      mapping = aes(
+        x = Sample,
+        y = fct_rev(Feature),
+        size = fraction,
+        fill = Phylum,
+        alpha = (!is.na(ASV_ID)) |> as.integer()
+      )
+    ) +
     geom_point(
       shape = 21L,
       colour = "black"
@@ -288,27 +284,26 @@ smart_bubble_plot <- function(
       guide = "none"
     ) +
     facet_grid(
-      cols = facets,
+      cols = facet_cols,
       scales = "free",
       space = "free",
-      labeller = facet_labeller
+      labeller = label_wrap_gen(width = 10L)
     ) +
     labs(
-      title = title,
-      subtitle = subtitle,
       x = NULL,
       y = NULL,
       size = "RA (%)"
     ) +
     guides(fill = guide_legend(ncol = 1L)) +
+    theme +
     theme(
-      axis.text = ggplot2::element_text(colour = "black"),
-      axis.ticks = ggplot2::element_line(colour = "black"),
-      plot.title.position = "plot",
-      plot.caption.position = "plot",
-      plot.subtitle = element_text(colour = "blue"),
       axis.text.x = element_text(angle = 90.0, hjust = 1.0, vjust = 0.5, family = "monospace")
     )
+
+  main_plot <-
+    main_plot |>
+    update_provenance(orig_data) |>
+    plot_titles()
 
   yield_data <-
     plot_data |>
@@ -340,7 +335,7 @@ smart_bubble_plot <- function(
       y = 0.0
     ) +
     facet_grid(
-      cols = facets,
+      cols = facet_cols,
       scales = "free",
       space = "free"
     ) +
