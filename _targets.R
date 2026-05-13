@@ -404,7 +404,6 @@ list(
       smart_bubble_plot(
         sample_label_from = sample_label_from,
         title = se_final |> get_provenance() |> as_title(),
-        trim_multi_taxa = TRUE,
         facets = ggplot2::vars(Environment_ID, Group),
         colour = Genus
       ),

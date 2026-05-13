@@ -81,7 +81,7 @@ add_lineage <- function(se, trim = TRUE) {
 
   if (trim) {
     # trim DADA2-style multi species entries (except on last rank)
-    row_data <- dplyr::mutate(row_data, Lineage = str_replace(Lineage, "( ‣ [a-z.]+/)([a-z.]+/){2,}([a-z.]+ ‣ )", "\\1…/\\3"))
+    row_data <- dplyr::mutate(row_data, Lineage = multi_taxa_trim(Lineage))
   }
 
   # Assertion: Lineage must be unique.
@@ -94,6 +94,10 @@ add_lineage <- function(se, trim = TRUE) {
   SummarizedExperiment::rowData(se) <- row_data
 
   se
+}
+
+multi_taxa_trim <- function(x) {
+  str_replace(x, "( ‣ [a-z.]+/)([a-z.]+/){2,}([a-z.]+ ‣ )", "\\1…/\\3")
 }
 
 make_se <- function(counts, col_data, row_data, ranks, provenance) {

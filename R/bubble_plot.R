@@ -208,8 +208,7 @@ smart_bubble_plot <- function(
   colour = Phylum,
   facets = vars(Group),
   facet_labeller = label_wrap_gen(width = 10L),
-  max_size = 10L,
-  trim_multi_taxa = FALSE
+  max_size = 10L
 ) {
   plot_data <-
     orig_data |>
@@ -225,18 +224,10 @@ smart_bubble_plot <- function(
         str_pad(.data[[sample_label_from]], width = .data[[sample_label_from]] |> nchar() |> max(), pad = " ")
       ) |>
         fct_inorder(),
-      Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), "")),
+      Feature = Feature |> multi_taxa_trim() |> str_c(str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), "")),
       # RA (%)
       fraction = fraction * 100.0
     )
-
-  if (trim_multi_taxa) {
-    plot_data <- plot_data |>
-      mutate(
-        # for multi species trimming: "Genus many/different/possible/species/names" -> "Genus many/…/names"
-        Feature = Feature |> str_replace_all("/[a-z\\./]+/", "/…/")
-      )
-  }
 
   caption <- str_c(
     "RA (relative abundance) shown for higher taxonomic ranks are exclusive of the RA for separately shown lower taxonomic ranks.",
