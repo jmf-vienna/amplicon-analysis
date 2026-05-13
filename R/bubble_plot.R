@@ -341,8 +341,12 @@ smart_bubble_plot <- function(
       scales = "free",
       space = "free"
     ) +
+    labs(
+      caption = caption
+    ) +
     theme +
     theme(
+      plot.caption = element_text(hjust = 0.5),
       strip.background.x = element_blank(),
       strip.text.x = element_blank(),
       panel.background = element_blank(),
@@ -356,9 +360,6 @@ smart_bubble_plot <- function(
     yield_plot +
     plot_layout(
       heights = c(42.0, 1.0)
-    ) +
-    plot_annotation(
-      caption = caption
     )
 
   p <- update_provenance(p, orig_data)
