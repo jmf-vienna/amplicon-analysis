@@ -267,9 +267,9 @@ smart_bubble_plot <- function(
     " ",
     "Bar chart is depth (filled bars) and number of features (open bars).",
     "\n",
-    "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths.",
+    "Basepair numbers in square brackets are (mean) feature nucleic acid sequence lengths.",
     "\n",
-    "d-values are (mean) decontam results: low values = likely a contaminant, high values = likely NOT a contaminant."
+    "d-values in curly braces are (mean) decontam results: low values = likely a contaminant, high values = likely NOT a contaminant."
   ))
 
   facet_cols <- ggplot2::vars(!!!syms(facet_cols))
@@ -330,6 +330,7 @@ smart_bubble_plot <- function(
     main_plot |>
     update_provenance(orig_data) |>
     plot_titles(
+      title = "smart bubble plot",
       analysis = zap()
     )
 
