@@ -103,21 +103,21 @@ list(
 
   # column data > samples ----
   tar_target(samples_file, "Samples.tsv", format = "file"),
-  tar_target(samples, read_tsv(samples_file) |> tidy_samples()),
+  tar_target(samples, smart_read_tsv(samples_file) |> tidy_samples()),
   tar_target(samples_col_data, make_col_data(list(samples))),
 
   # column data > sublibraries ----
   tar_target(sublibraries_file, "Sublibraries.tsv", format = "file"),
-  tar_target(sublibraries, read_tsv(sublibraries_file) |> tidy_sublibraries()),
+  tar_target(sublibraries, smart_read_tsv(sublibraries_file) |> tidy_sublibraries()),
 
   # column data > libraries ----
   tar_target(libraries_file, "Libraries.tsv", format = "file"),
-  tar_target(libraries, read_tsv(libraries_file) |> tidy_libraries()),
+  tar_target(libraries, smart_read_tsv(libraries_file) |> tidy_libraries()),
   tar_target(libraries_col_data, make_col_data(list(sublibraries, libraries, samples))),
 
   # assay data (counts) ----
   tar_target(counts_file, find_counts_file(data_dir_name, counts_file_pattern), format = "file"),
-  tar_target(counts, counts_file |> read_tsv() |> auto_integer() |> tidy_counts()),
+  tar_target(counts, counts_file |> smart_read_tsv() |> auto_integer() |> tidy_counts()),
   tar_target(assay_data, make_assay_data(counts)),
 
   # metrics from previous steps ----
@@ -125,7 +125,7 @@ list(
   tar_target(
     prior_library_metrics,
     prior_library_metrics_file |>
-      read_tsv() |>
+      smart_read_tsv() |>
       tidy_prior_metrics() |>
       bind_cols(base_provenance |> as_tibble(), second_argument = _)
   ),
@@ -133,13 +133,13 @@ list(
   # row data ----
   ## features annotation ----
   tar_target(features_annotation_file, "Features.tsv", format = "file"),
-  tar_target(features_annotation, smart_read_tsv(features_annotation_file)),
+  tar_target(features_annotation, smart_read_tsv(features_annotation_file, skip_empty = TRUE)),
   ## features info ----
   tar_target(features_info_file, find_features_info_file(data_dir_name), format = "file"),
-  tar_target(features_info, read_tsv(features_info_file) |> tidy_features_info()),
+  tar_target(features_info, smart_read_tsv(features_info_file) |> tidy_features_info()),
   ## taxonomy ----
   tar_target(taxonomy_file, find_taxonomy_file(data_dir_name, config |> pluck("taxonomy")), format = "file"),
-  tar_target(taxonomy, read_tsv(taxonomy_file, guess_max = Inf) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
+  tar_target(taxonomy, smart_read_tsv(taxonomy_file, guess_max = Inf) |> tidy_taxonomy() |> taxonomy_fallback(features_info)),
   tar_target(ranks, detect_taxonomy_ranks(taxonomy)),
   ## merge ----
   tar_target(row_data, make_row_data(taxonomy, features_info, features_annotation)),

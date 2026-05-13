@@ -16,12 +16,16 @@ find_one_file <- function(path, glob = NULL, regexp = NULL, verbose = TRUE) {
   res
 }
 
-smart_read_tsv <- function(file, ...) {
+smart_read_tsv <- function(file, ..., bool = "character", skip_empty = FALSE) {
   res <- readr::read_tsv(file, ...)
 
-  if (vctrs::vec_is_empty(res)) {
+  if (skip_empty && vctrs::vec_is_empty(res)) {
     cli::cli_alert_warning("{.file {file}} is empty")
     return()
+  }
+
+  if (identical(bool, "character")) {
+    res <- dplyr::mutate(res, across(where(is.logical), as.character))
   }
 
   res
