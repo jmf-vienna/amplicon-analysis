@@ -139,7 +139,10 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   per_feature_data <-
     res |>
     group_by(Feature) |>
-    summarise(sequence_length = mean(sequence_length))
+    summarise(
+      sequence_length = sequence_length |> mean() |> signif(),
+      decontam_p_value = decontam_p_value |> mean() |> signif()
+    )
 
   # prepare sample data (yield / total read pairs per sample)
   per_sample_data <-
@@ -224,7 +227,12 @@ smart_bubble_plot <- function(
         str_pad(.data[[sample_label_from]], width = .data[[sample_label_from]] |> nchar() |> max(), pad = " ")
       ) |>
         fct_inorder(),
-      Feature = Feature |> multi_taxa_trim() |> str_c(str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), "")),
+      Feature = Feature |>
+        multi_taxa_trim() |>
+        str_c(
+          str_replace_na(str_c(" [", round(sequence_length, 1L), " bp]"), ""),
+          if_else(!is.na(decontam_p_value), str_c(" {d=", sprintf("%.2f", decontam_p_value), "}"), "")
+        ),
       # RA (%)
       fraction = fraction * 100.0
     )
@@ -244,7 +252,9 @@ smart_bubble_plot <- function(
     " ",
     "Bar chart is depth (filled bars) and number of features (open bars).",
     "\n",
-    "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths."
+    "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths.",
+    "\n",
+    "d-values are decontam results."
   )
 
   main_plot <- ggplot(
