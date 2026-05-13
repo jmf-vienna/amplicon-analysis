@@ -97,7 +97,7 @@ add_lineage <- function(se, trim = TRUE) {
 }
 
 multi_taxa_trim <- function(x) {
-  str_replace(x, "( ‣ [a-zA-Z.]+/)([a-zA-Z.]+/){2,}([a-zA-Z.]+ ‣ )", "\\1…/\\3")
+  str_replace(x, "( ‣ [a-zA-Z.-]+/)([a-zA-Z.-]+/){2,}([a-zA-Z.-]+ ‣ )", "\\1…/\\3")
 }
 
 make_se <- function(counts, col_data, row_data, ranks, provenance) {
