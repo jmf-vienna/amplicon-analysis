@@ -64,7 +64,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
 smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, remove_zeros = TRUE, always_ranks = 2L, always_features = NULL) {
   loadNamespace("mia")
 
-  data <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
+  res <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
 
   rank_names <- all_ranks <- taxonomy_ranks(se)
 
@@ -72,7 +72,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 
   # Input assertion: exactly one value per sample and ASV/lowest rank
   stopifnot(identical(
-    data |>
+    res |>
       dplyr::count(.data[[tail(all_ranks, 1L)]], SampleID) |>
       dplyr::filter(n > 1L) |>
       nrow(),
@@ -81,31 +81,31 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 
   # zero count measurements slow things down and are not always required
   if (remove_zeros) {
-    data <- data |> dplyr::filter(counts > 0L)
+    res <- res |> dplyr::filter(counts > 0L)
   }
 
   # relative abundance
-  data <-
-    data |>
+  res <-
+    res |>
     group_by(SampleID) |>
     mutate(Fraction = counts / sum(counts))
 
   # the "smart" part:
-  data <- data |> add_column(Feature = NA_character_)
+  res <- res |> add_column(Feature = NA_character_)
   for (rank in rev(rank_names)) {
-    data <- data |> tidyr::unite(".lineage", all_of(rank_names), sep = " > ", remove = FALSE)
+    res <- res |> tidyr::unite(".lineage", all_of(rank_names), sep = " > ", remove = FALSE)
 
     # find which lineages at current rank to still keep:
     if (rank %in% rank_names_show_always) {
       keep_linages <-
-        data |>
+        res |>
         pull(.lineage) |>
         unique() |>
         sort()
     } else {
       keep_linages <-
         c(
-          data |>
+          res |>
             dplyr::filter(is.na(Feature)) |>
             group_by(.lineage, SampleID) |>
             summarise(Fraction = sum(Fraction), .groups = "drop_last") |>
@@ -113,7 +113,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
             dplyr::count() |>
             dplyr::filter(n >= min_prevalence) |>
             pull(.lineage),
-          data |>
+          res |>
             dplyr::filter(.data[[rank]] %in% always_features) |>
             pull(.lineage)
         ) |>
@@ -122,26 +122,26 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 
     # set Feature column for all lineages to keep (which will be later used to agglomerate the data)
     # if the Feature column was already set, this means a previous rank already selected it and has priority
-    data <- data |> mutate(Feature = if_else(is.na(Feature) & .lineage %in% keep_linages, .lineage, Feature))
+    res <- res |> mutate(Feature = if_else(is.na(Feature) & .lineage %in% keep_linages, .lineage, Feature))
 
     # remove values from taxonomy column when feature is not kept:
-    data <- data |> mutate("{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
+    res <- res |> mutate("{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
 
     # remove current rank - needed for unite() to work
     rank_names <- head(rank_names, -1L)
   }
   # clean up temporary column
-  data <- data |> mutate(.lineage = NULL)
+  res <- res |> mutate(.lineage = NULL)
 
   # prepare feature data (average sequence length per feature)
   per_feature_data <-
-    data |>
+    res |>
     group_by(Feature) |>
     summarise(sequence_length = sequence_length |> mean())
 
   # prepare sample data (yield / total read pairs per sample)
   per_sample_data <-
-    data |>
+    res |>
     dplyr::filter(counts > 0L) |>
     group_by(SampleID) |>
     summarise(
@@ -150,8 +150,8 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
     )
 
   # agglomerate based on selected lineages
-  data <-
-    data |>
+  res <-
+    res |>
     group_by(across(
       c(all_of(all_ranks), SampleID) |
         !any_of(c(
@@ -182,19 +182,19 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
     summarise(counts = sum(counts), Fraction = sum(Fraction), .groups = "drop")
 
   # merge all data ans relocate columns
-  data <-
-    data |>
+  res <-
+    res |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
     dplyr::left_join(per_sample_data, by = "SampleID") |>
     relocate(Feature, SampleID, Group, counts, Fraction, all_of(all_ranks), sequence_length)
 
   # save some settings so it can be shown in plot caption
-  attr(data, "min_abundance") <- min_abundance
-  attr(data, "min_prevalence") <- min_prevalence
+  attr(res, "min_abundance") <- min_abundance
+  attr(res, "min_prevalence") <- min_prevalence
 
   # Output assertion: exactly one value per sample and feature
   stopifnot(identical(
-    data |>
+    res |>
       dplyr::count(Feature, SampleID) |>
       dplyr::filter(n > 1L) |>
       nrow(),
@@ -203,7 +203,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 
   # Output assertion: the sum of all fractions per sample should be 1
   stopifnot(identical(
-    data |>
+    res |>
       group_by(SampleID) |>
       summarise(Fraction = sum(Fraction)) |>
       dplyr::filter(round(Fraction, 10L) != 1L) |>
@@ -211,7 +211,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
     0L
   ))
 
-  data |> update_provenance(se, list(analysis = "bubble plot"))
+  res |> update_provenance(se, list(analysis = "bubble plot"))
 }
 
 smart_bubble_plot <- function(
@@ -229,19 +229,19 @@ smart_bubble_plot <- function(
 ) {
   orig_data <- data
 
-  data <-
+  plot_data <-
     data |>
     mutate(
       Sample = str_c(SampleID, " ", .data[[sample_label_from]])
     )
 
-  data <-
-    data |>
+  plot_data <-
+    plot_data |>
     arrange(Sample) |>
     mutate(
       # pad sample name, and move the spaces between ID and user sample name (or wherever the first space is) + add sample count
       Sample = Sample |>
-        str_pad(data |> pull(Sample) |> nchar() |> max(), pad = " ") |>
+        str_pad(plot_data |> pull(Sample) |> nchar() |> max(), pad = " ") |>
         str_replace("^( +)([^ ]+)", "\\2\\1") |>
         # Unicode 2009 is https://en.wikipedia.org/wiki/Thin_space
         # str_c("{", ASVs |> format(big.mark = "\u2009"), "} ", sample = _) |>
@@ -252,21 +252,21 @@ smart_bubble_plot <- function(
     )
 
   if (add_sequence_length) {
-    data <- data |>
+    plot_data <- plot_data |>
       mutate(
         Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), ""))
       )
   }
 
-  if (data |> has_name("Feature_notes")) {
-    data <- data |>
+  if (plot_data |> has_name("Feature_notes")) {
+    plot_data <- plot_data |>
       mutate(
         Feature = str_c(Feature, str_replace_na(str_c(" {", Feature_notes, "}"), ""))
       )
   }
 
   if (trim_multi_taxa) {
-    data <- data |>
+    plot_data <- plot_data |>
       mutate(
         # for multi species trimming: "Genus many/different/possible/species/names" -> "Genus many/…/names"
         Feature = Feature |> str_replace_all("/[a-z\\./]+/", "/…/")
@@ -277,9 +277,9 @@ smart_bubble_plot <- function(
     "RA (relative abundance) shown for higher taxonomic ranks are exclusive of the RA for separately shown lower taxonomic ranks.",
     "\n",
     "Taxa are NOT collapsed if RA ≥ ",
-    attr(data, "min_abundance") * 100.0,
+    attr(plot_data, "min_abundance") * 100.0,
     "% in at least ",
-    attr(data, "min_prevalence"),
+    attr(plot_data, "min_prevalence"),
     " sample(s).",
     " ",
     "The highest rank(s) are never collapsed.",
@@ -292,7 +292,7 @@ smart_bubble_plot <- function(
   )
 
   main_plot <- ggplot(
-    data = data,
+    data = plot_data,
     mapping = aes(
       x = Sample,
       y = Feature |> fct_rev(),
@@ -306,7 +306,7 @@ smart_bubble_plot <- function(
       colour = "black"
     ) +
     geom_text(
-      data = data |> dplyr::filter(Fraction >= 1.0),
+      data = plot_data |> dplyr::filter(Fraction >= 1.0),
       mapping = aes(label = round(Fraction)),
       size = 2.0,
       hjust = 0.35,
@@ -345,11 +345,11 @@ smart_bubble_plot <- function(
     )
 
   yield_data <-
-    data |>
+    plot_data |>
     distinct(Sample, .keep_all = TRUE) |>
     pivot_longer(c(Sample_count, ASVs))
 
-  scale_asv_count_by <- max(data$Sample_count) / max(data$ASVs)
+  scale_asv_count_by <- max(plot_data$Sample_count) / max(plot_data$ASVs)
   yield_data <- yield_data |> mutate(value = if_else(name == "ASVs", value * scale_asv_count_by, value))
 
   yield_plot <-
@@ -416,13 +416,13 @@ smart_bubble_plot <- function(
 
   p <- update_provenance(p, orig_data)
 
-  n_samples <- data |>
+  n_samples <- plot_data |>
     dplyr::pull(Sample) |>
     vec_unique_count()
-  n_features <- data |>
+  n_features <- plot_data |>
     dplyr::pull(Feature) |>
     vec_unique_count()
-  feature_names_width <- data |>
+  feature_names_width <- plot_data |>
     dplyr::pull(Feature) |>
     nchar() |>
     max()
