@@ -80,7 +80,6 @@ smart_agglomerate <- function(
   all_ranks <- taxonomy_ranks(se)
 
   rank_names_show_always <- head(all_ranks, always_ranks)
-  lowest_rank <- dplyr::last(all_ranks)
 
   # input assertion: exactly one value per sample and taxonomy
   stopifnot(identical(
@@ -138,6 +137,10 @@ smart_agglomerate <- function(
     # if the Feature column was already set, this means a previous rank already selected it and has priority
     res <- mutate(res, Feature = if_else(is.na(Feature) & .lineage %in% keep_linages, .lineage, Feature))
 
+    if (!rlang::has_name(res, "lowest_rank")) {
+      res <- mutate(res, lowest_rank = !is.na(Feature))
+    }
+
     # remove values from taxonomy column when feature is not kept:
     res <- mutate(res, "{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
 
@@ -172,6 +175,7 @@ smart_agglomerate <- function(
     group_by(across(all_of(c(
       all_ranks,
       "Feature",
+      "lowest_rank",
       "SampleID",
       names(SummarizedExperiment::colData(se))
     )))) |>
@@ -182,7 +186,7 @@ smart_agglomerate <- function(
     res |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
     dplyr::left_join(per_sample_data, by = "SampleID") |>
-    relocate(Feature, SampleID, counts, fraction, all_of(all_ranks), all_of(names(per_feature_data)), all_of(names(per_sample_data)))
+    relocate(Feature, SampleID, counts, fraction, all_of(all_ranks), lowest_rank, all_of(names(per_feature_data)), all_of(names(per_sample_data)))
 
   res <- update_provenance(res, se, list(analysis = "bubble plot"))
 
@@ -192,7 +196,6 @@ smart_agglomerate <- function(
   attr(res, "remove_zeros") <- remove_zeros
   attr(res, "always_ranks") <- rank_names_show_always
   attr(res, "always_features") <- always_features
-  attr(res, "lowest_rank") <- lowest_rank
 
   # output assertions
   stopifnot(
@@ -279,7 +282,7 @@ smart_bubble_plot <- function(
         y = fct_rev(Feature),
         size = fraction,
         fill = .data[[color_by]],
-        alpha = as.integer(!is.na(.data[[attr(plot_data, "lowest_rank")]]))
+        alpha = as.integer(lowest_rank)
       )
     ) +
     geom_point(
