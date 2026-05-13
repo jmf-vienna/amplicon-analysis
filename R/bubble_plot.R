@@ -201,55 +201,34 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 }
 
 smart_bubble_plot <- function(
-  data,
+  orig_data,
   sample_label_from,
   title = waiver(),
   subtitle = waiver(),
-  caption = NA,
   colour = Phylum,
   facets = vars(Group),
   facet_labeller = label_wrap_gen(width = 10L),
   max_size = 10L,
-  add_sequence_length = TRUE,
   trim_multi_taxa = FALSE
 ) {
-  orig_data <- data
-
   plot_data <-
-    data |>
-    mutate(
-      Sample = str_c(SampleID, " ", .data[[sample_label_from]])
-    )
-
-  plot_data <-
-    plot_data |>
-    arrange(Sample) |>
+    orig_data |>
+    arrange(.data[[sample_label_from]], SampleID) |>
     mutate(
       # pad sample name, and move the spaces between ID and user sample name (or wherever the first space is) + add sample count
-      Sample = Sample |>
-        str_pad(plot_data |> pull(Sample) |> nchar() |> max(), pad = " ") |>
-        str_replace("^( +)([^ ]+)", "\\2\\1") |>
-        # Unicode 2009 is https://en.wikipedia.org/wiki/Thin_space
-        # str_c("{", n_features |> format(big.mark = "\u2009"), "} ", sample = _) |>
-        str_c("(", sample_count |> format(big.mark = " ", trim = TRUE), ") ", sample = _) |>
+      Sample = str_c(
+        "(",
+        sample_count |> format(big.mark = " ", trim = TRUE),
+        ") ",
+        str_pad(SampleID, width = SampleID |> as.character() |> nchar() |> max(), side = "right", pad = " "),
+        " ",
+        str_pad(.data[[sample_label_from]], width = .data[[sample_label_from]] |> nchar() |> max(), pad = " ")
+      ) |>
         fct_inorder(),
+      Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), "")),
       # RA (%)
       fraction = fraction * 100.0
     )
-
-  if (add_sequence_length) {
-    plot_data <- plot_data |>
-      mutate(
-        Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), ""))
-      )
-  }
-
-  if (plot_data |> has_name("Feature_notes")) {
-    plot_data <- plot_data |>
-      mutate(
-        Feature = str_c(Feature, str_replace_na(str_c(" {", Feature_notes, "}"), ""))
-      )
-  }
 
   if (trim_multi_taxa) {
     plot_data <- plot_data |>
@@ -273,8 +252,8 @@ smart_bubble_plot <- function(
     "Numbers in parentheses are total read pair counts (depth) per sample/library.",
     " ",
     "Bar chart is depth (filled bars) and number of features (open bars).",
-    if_else(add_sequence_length, str_c("\n", "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths."), ""),
-    str_replace_na(str_c("\n", caption), "")
+    "\n",
+    "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths."
   )
 
   main_plot <- ggplot(
