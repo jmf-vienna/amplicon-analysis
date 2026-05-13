@@ -61,7 +61,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
   se
 }
 
-smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, remove_zeros = TRUE, always_ranks = 2L, always_features = NULL) {
+smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, remove_zeros = TRUE, always_ranks = 2L, always_features = NULL) {
   loadNamespace("mia")
 
   data <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
