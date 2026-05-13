@@ -154,33 +154,12 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   # agglomerate based on selected lineages
   res <-
     res |>
-    group_by(across(
-      c(all_of(all_ranks), SampleID) |
-        !any_of(c(
-          "counts",
-          "fraction",
-          "Sequence",
-          "sequence_length",
-          "FeatureID",
-          "sequence",
-          "decontam_p_value",
-          "Orientation",
-          "quality_min_eepm",
-          "sha1",
-          "sha1base36",
-          "Lineage",
-          "bootstrap_Kingdom",
-          "bootstrap_Domain",
-          "bootstrap_Phylum",
-          "bootstrap_Class",
-          "bootstrap_Order",
-          "bootstrap_Family",
-          "bootstrap_Genus",
-          "bootstrap_Species",
-          "BLAST_percent_identity",
-          "Strain"
-        ))
-    )) |>
+    group_by(across(all_of(c(
+      all_ranks,
+      "Feature",
+      "SampleID",
+      names(SummarizedExperiment::colData(se))
+    )))) |>
     summarise(counts = sum(counts), fraction = sum(fraction), .groups = "drop")
 
   # merge all data ans relocate columns
