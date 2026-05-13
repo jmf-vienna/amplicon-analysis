@@ -64,6 +64,7 @@ list(
   tar_target(continuous_variables_of_interest, config |> pluck("analyze", "continuous", .default = "dummy_continuous")),
   # for visualization only:
   tar_target(main_category, config |> pluck("annotation", "category", "main")),
+  tar_target(facet_categories, config |> pluck("annotation", "category", "facets", .default = main_category)),
   # always include feature ID, as targets can not run with an empty pattern
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(ranks_of_interest_trim, config |> pluck("analyze", "rank trimming", .default = c(FALSE, TRUE))),
@@ -403,7 +404,7 @@ list(
     bubble_plot_data |>
       smart_bubble_plot(
         sample_label_from = sample_label_from,
-        facet_cols = ggplot2::vars(Environment_ID, Group),
+        facet_cols = facet_categories,
         theme = theme
       ),
     pattern = map(bubble_plot_data),

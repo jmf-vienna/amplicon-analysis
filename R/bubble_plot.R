@@ -205,10 +205,10 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
 
 smart_bubble_plot <- function(
   orig_data,
-  sample_label_from,
-  facet_cols,
-  theme,
-  max_size = 10L
+  sample_label_from = "SampleID",
+  facet_cols = "Group",
+  max_size = 10L,
+  theme = ggplot2::theme_gray()
 ) {
   plot_data <-
     orig_data |>
@@ -251,6 +251,8 @@ smart_bubble_plot <- function(
     "\n",
     "d-values are (mean) decontam results. Lower mean more likely a contamint."
   )
+
+  facet_cols <- ggplot2::vars(!!!syms(facet_cols))
 
   main_plot <-
     ggplot(
