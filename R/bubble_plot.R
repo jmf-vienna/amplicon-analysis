@@ -341,6 +341,7 @@ smart_bubble_plot <- function(
       scales = "free",
       space = "free"
     ) +
+    theme +
     theme(
       strip.background.x = element_blank(),
       strip.text.x = element_blank(),
@@ -349,23 +350,6 @@ smart_bubble_plot <- function(
       axis.ticks = element_blank(),
       axis.title = element_blank()
     )
-
-  if (yield_data |> has_name("Input_read_pairs")) {
-    yield_plot <-
-      yield_plot +
-      geom_errorbar(
-        mapping = aes(
-          ymin = Input_read_pairs,
-          ymax = Input_read_pairs,
-          colour = fct_rev(name)
-        ),
-        position = position_dodge2(padding = 0.25)
-      ) +
-      scale_color_manual(
-        values = c(sample_count = "grey", n_features = "transparent"),
-        guide = "none"
-      )
-  }
 
   p <-
     main_plot /
