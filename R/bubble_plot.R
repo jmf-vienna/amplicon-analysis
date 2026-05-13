@@ -61,7 +61,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
   se
 }
 
-smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, remove_zeros = TRUE, always_ranks = 2L, always_features = c()) {
+smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, remove_zeros = TRUE, always_ranks = 2L, always_features = NULL) {
   loadNamespace("mia")
 
   data <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
@@ -73,7 +73,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, rem
   # Input assertion: exactly one value per sample and ASV/lowest rank
   stopifnot(identical(
     data |>
-      dplyr::count(.data[[all_ranks |> tail(1L)]], SampleID) |>
+      dplyr::count(.data[[tail(all_ranks, 1L)]], SampleID) |>
       dplyr::filter(n > 1L) |>
       nrow(),
     0L
@@ -119,7 +119,6 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, rem
         ) |>
         sort()
     }
-    # keep_linages |> cat(sep = "\n")
 
     # set Feature column for all lineages to keep (which will be later used to agglomerate the data)
     # if the Feature column was already set, this means a previous rank already selected it and has priority
@@ -129,7 +128,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, rem
     data <- data |> mutate("{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
 
     # remove current rank - needed for unite() to work
-    rank_names <- head(rank_names, -1)
+    rank_names <- head(rank_names, -1L)
   }
   # clean up temporary column
   data <- data |> mutate(.lineage = NULL)
@@ -143,7 +142,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, rem
   # prepare sample data (yield / total read pairs per sample)
   per_sample_data <-
     data |>
-    dplyr::filter(counts > 0) |>
+    dplyr::filter(counts > 0L) |>
     group_by(SampleID) |>
     summarise(
       Sample_count = sum(counts),
@@ -197,7 +196,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, rem
   stopifnot(identical(
     data |>
       dplyr::count(Feature, SampleID) |>
-      dplyr::filter(n > 1) |>
+      dplyr::filter(n > 1L) |>
       nrow(),
     0L
   ))
@@ -207,7 +206,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 1L, rem
     data |>
       group_by(SampleID) |>
       summarise(Fraction = sum(Fraction)) |>
-      dplyr::filter(round(Fraction, 10) != 1) |>
+      dplyr::filter(round(Fraction, 10L) != 1L) |>
       nrow(),
     0L
   ))
@@ -223,8 +222,8 @@ smart_bubble_plot <- function(
   caption = NA,
   colour = Phylum,
   facets = vars(Group),
-  facet_labeller = label_wrap_gen(width = 10),
-  max_size = 10,
+  facet_labeller = label_wrap_gen(width = 10L),
+  max_size = 10L,
   add_sequence_length = TRUE,
   trim_multi_taxa = FALSE
 ) {
@@ -249,13 +248,13 @@ smart_bubble_plot <- function(
         str_c("(", Sample_count |> format(big.mark = " ", trim = TRUE), ") ", sample = _) |>
         fct_inorder(),
       # RA (%)
-      Fraction = Fraction * 100
+      Fraction = Fraction * 100.0
     )
 
   if (add_sequence_length) {
     data <- data |>
       mutate(
-        Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1), " bp]"), ""))
+        Feature = str_c(Feature, str_replace_na(str_c(" [", sequence_length |> round(1L), " bp]"), ""))
       )
   }
 
@@ -278,7 +277,7 @@ smart_bubble_plot <- function(
     "RA (relative abundance) shown for higher taxonomic ranks are exclusive of the RA for separately shown lower taxonomic ranks.",
     "\n",
     "Taxa are NOT collapsed if RA ≥ ",
-    attr(data, "min_abundance") * 100,
+    attr(data, "min_abundance") * 100.0,
     "% in at least ",
     attr(data, "min_prevalence"),
     " sample(s).",
@@ -303,23 +302,23 @@ smart_bubble_plot <- function(
     )
   ) +
     geom_point(
-      shape = 21,
+      shape = 21L,
       colour = "black"
     ) +
     geom_text(
-      data = data |> dplyr::filter(Fraction >= 1),
+      data = data |> dplyr::filter(Fraction >= 1.0),
       mapping = aes(label = round(Fraction)),
-      size = 2,
+      size = 2.0,
       hjust = 0.35,
-      vjust = 0.6,
+      vjust = 0.6
     ) +
     scale_size_area(
       max_size = max_size,
-      breaks = 10^(-9:2),
+      breaks = 10L^(-9L:2L),
       labels = formatC
     ) +
     scale_alpha(
-      range = c(0.6, 1),
+      range = c(0.6, 1.0),
       guide = "none"
     ) +
     facet_grid(
@@ -335,14 +334,14 @@ smart_bubble_plot <- function(
       y = NULL,
       size = "RA (%)"
     ) +
-    guides(fill = guide_legend(ncol = 1)) +
+    guides(fill = guide_legend(ncol = 1L)) +
     theme(
       axis.text = ggplot2::element_text(colour = "black"),
       axis.ticks = ggplot2::element_line(colour = "black"),
       plot.title.position = "plot",
       plot.caption.position = "plot",
       plot.subtitle = element_text(colour = "blue"),
-      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, family = "monospace")
+      axis.text.x = element_text(angle = 90.0, hjust = 1.0, vjust = 0.5, family = "monospace")
     )
 
   yield_data <-
@@ -350,8 +349,8 @@ smart_bubble_plot <- function(
     distinct(Sample, .keep_all = TRUE) |>
     pivot_longer(c(Sample_count, ASVs))
 
-  scale_ASV_count_by <- max(data$Sample_count) / max(data$ASVs)
-  yield_data <- yield_data |> mutate(value = if_else(name == "ASVs", value * scale_ASV_count_by, value))
+  scale_asv_count_by <- max(data$Sample_count) / max(data$ASVs)
+  yield_data <- yield_data |> mutate(value = if_else(name == "ASVs", value * scale_asv_count_by, value))
 
   yield_plot <-
     ggplot(
@@ -372,7 +371,7 @@ smart_bubble_plot <- function(
       guide = "none"
     ) +
     expand_limits(
-      y = 0
+      y = 0.0
     ) +
     facet_grid(
       cols = facets,
@@ -409,10 +408,10 @@ smart_bubble_plot <- function(
     main_plot /
     yield_plot +
     plot_layout(
-      heights = c(42, 1)
+      heights = c(42.0, 1.0)
     ) +
     plot_annotation(
-      caption = caption,
+      caption = caption
     )
 
   p <- update_provenance(p, orig_data)
