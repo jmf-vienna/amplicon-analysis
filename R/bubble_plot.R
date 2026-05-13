@@ -118,17 +118,18 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
             dplyr::filter(.data[[rank]] %in% always_features) |>
             pull(.lineage)
         ) |>
+        unique() |>
         sort()
     }
 
     # set Feature column for all lineages to keep (which will be later used to agglomerate the data)
     # if the Feature column was already set, this means a previous rank already selected it and has priority
-    res <- res |> mutate(Feature = if_else(is.na(Feature) & .lineage %in% keep_linages, .lineage, Feature))
+    res <- mutate(res, Feature = if_else(is.na(Feature) & .lineage %in% keep_linages, .lineage, Feature))
 
     # remove values from taxonomy column when feature is not kept:
-    res <- res |> mutate("{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
+    res <- mutate(res, "{rank}" := if_else(is.na(Feature), NA_character_, .data[[rank]]))
 
-    # remove current rank - needed for unite() to work
+    # remove current rank: needed for unite() to work
     rank_names <- head(rank_names, -1L)
   }
   # clean up temporary column
@@ -138,7 +139,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   per_feature_data <-
     res |>
     group_by(Feature) |>
-    summarise(sequence_length = sequence_length |> mean())
+    summarise(sequence_length = mean(sequence_length))
 
   # prepare sample data (yield / total read pairs per sample)
   per_sample_data <-
@@ -146,8 +147,8 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
     dplyr::filter(counts > 0L) |>
     group_by(SampleID) |>
     summarise(
-      Sample_count = sum(counts),
-      ASVs = n()
+      sample_count = sum(counts),
+      n_features = n()
     )
 
   # agglomerate based on selected lineages
@@ -245,8 +246,8 @@ smart_bubble_plot <- function(
         str_pad(plot_data |> pull(Sample) |> nchar() |> max(), pad = " ") |>
         str_replace("^( +)([^ ]+)", "\\2\\1") |>
         # Unicode 2009 is https://en.wikipedia.org/wiki/Thin_space
-        # str_c("{", ASVs |> format(big.mark = "\u2009"), "} ", sample = _) |>
-        str_c("(", Sample_count |> format(big.mark = " ", trim = TRUE), ") ", sample = _) |>
+        # str_c("{", n_features |> format(big.mark = "\u2009"), "} ", sample = _) |>
+        str_c("(", sample_count |> format(big.mark = " ", trim = TRUE), ") ", sample = _) |>
         fct_inorder(),
       # RA (%)
       fraction = fraction * 100.0
@@ -287,7 +288,7 @@ smart_bubble_plot <- function(
     "\n",
     "Numbers in parentheses are total read pair counts (depth) per sample/library.",
     " ",
-    "Bar chart is depth (filled bars) and number of ASVs (open bars).",
+    "Bar chart is depth (filled bars) and number of features (open bars).",
     if_else(add_sequence_length, str_c("\n", "Basepair numbers in brackets are (mean) ASV nucleic acid sequence lengths."), ""),
     str_replace_na(str_c("\n", caption), "")
   )
@@ -348,10 +349,10 @@ smart_bubble_plot <- function(
   yield_data <-
     plot_data |>
     distinct(Sample, .keep_all = TRUE) |>
-    pivot_longer(c(Sample_count, ASVs))
+    pivot_longer(c(sample_count, n_features))
 
-  scale_asv_count_by <- max(plot_data$Sample_count) / max(plot_data$ASVs)
-  yield_data <- yield_data |> mutate(value = if_else(name == "ASVs", value * scale_asv_count_by, value))
+  scale_asv_count_by <- max(plot_data$sample_count) / max(plot_data$n_features)
+  yield_data <- yield_data |> mutate(value = if_else(name == "n_features", value * scale_asv_count_by, value))
 
   yield_plot <-
     ggplot(
@@ -368,7 +369,7 @@ smart_bubble_plot <- function(
     ) +
     scale_y_reverse() +
     scale_fill_manual(
-      values = c(Sample_count = "blue", ASVs = "white"),
+      values = c(sample_count = "blue", n_features = "white"),
       guide = "none"
     ) +
     expand_limits(
@@ -400,7 +401,7 @@ smart_bubble_plot <- function(
         position = position_dodge2(padding = 0.25)
       ) +
       scale_color_manual(
-        values = c(Sample_count = "grey", ASVs = "transparent"),
+        values = c(sample_count = "grey", n_features = "transparent"),
         guide = "none"
       )
   }
