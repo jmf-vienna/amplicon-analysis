@@ -61,7 +61,14 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
   se
 }
 
-smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, remove_zeros = TRUE, always_ranks = 2L, always_features = character()) {
+smart_agglomerate <- function(
+  se,
+  min_abundance = 0.01,
+  min_prevalence = 2L,
+  remove_zeros = TRUE,
+  always_ranks = 2L,
+  always_features = character()
+) {
   loadNamespace("mia")
 
   res <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
@@ -204,7 +211,14 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   res
 }
 
-smart_bubble_plot <- function(orig_data, sample_label_from = "SampleID", facet_cols = "Group", max_size = 10L, theme = ggplot2::theme_gray()) {
+smart_bubble_plot <- function(
+  orig_data,
+  sample_label_from = "SampleID",
+  facet_cols = "Group",
+  color_by = orig_data |> attr("always_ranks") |> dplyr::last(),
+  max_size = 10L,
+  theme = ggplot2::theme_gray()
+) {
   plot_data <-
     orig_data |>
     arrange(.data[[sample_label_from]], SampleID) |>
@@ -256,7 +270,7 @@ smart_bubble_plot <- function(orig_data, sample_label_from = "SampleID", facet_c
         x = Sample,
         y = fct_rev(Feature),
         size = fraction,
-        fill = Phylum,
+        fill = .data[[color_by]],
         alpha = as.integer(!is.na(.data[[attr(plot_data, "lowest_rank")]]))
       )
     ) +
