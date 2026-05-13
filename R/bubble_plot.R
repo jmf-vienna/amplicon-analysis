@@ -180,6 +180,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   attr(res, "remove_zeros") <- remove_zeros
   attr(res, "always_ranks") <- rank_names_show_always
   attr(res, "always_features") <- always_features
+  attr(res, "lowest_rank") <- lowest_rank
 
   # output assertion: exactly one value per sample and feature
   stopifnot(identical(
@@ -203,20 +204,14 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   res
 }
 
-smart_bubble_plot <- function(
-  orig_data,
-  sample_label_from = "SampleID",
-  facet_cols = "Group",
-  max_size = 10L,
-  theme = ggplot2::theme_gray()
-) {
+smart_bubble_plot <- function(orig_data, sample_label_from = "SampleID", facet_cols = "Group", max_size = 10L, theme = ggplot2::theme_gray()) {
   plot_data <-
     orig_data |>
     arrange(.data[[sample_label_from]], SampleID) |>
     mutate(
       Sample = str_c(
         "(",
-        sample_count |> format(big.mark = " ", trim = TRUE),
+        format(sample_count, big.mark = " ", trim = TRUE),
         ") ",
         str_pad(SampleID, width = SampleID |> as.character() |> nchar() |> max(), side = "right", pad = " "),
         " ",
@@ -229,11 +224,11 @@ smart_bubble_plot <- function(
           str_replace_na(str_c(" [", round(sequence_length, 1L), " bp]"), ""),
           if_else(!is.na(decontam_p_value), str_c(" {d=", sprintf("%.2f", decontam_p_value), "}"), "")
         ),
-      fraction = fraction * 100.0 # RA (%)
+      fraction = fraction * 100.0 # R.A. (%)
     )
 
   caption <- str_c(
-    "RA (relative abundance) shown for higher taxonomic ranks are exclusive of the RA for separately shown lower taxonomic ranks.",
+    "R.A. (relative abundance) shown for higher taxonomic ranks are exclusive of the R.A. for separately shown lower taxonomic ranks.",
     "\n",
     "Taxa are NOT collapsed if RA ≥ ",
     attr(plot_data, "min_abundance") * 100.0,
@@ -249,7 +244,7 @@ smart_bubble_plot <- function(
     "\n",
     "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths.",
     "\n",
-    "d-values are (mean) decontam results. Lower mean more likely a contamint."
+    "d-values are (mean) decontam results: low values = likely a contaminant, high values = likely NOT a contaminant."
   )
 
   facet_cols <- ggplot2::vars(!!!syms(facet_cols))
@@ -262,7 +257,7 @@ smart_bubble_plot <- function(
         y = fct_rev(Feature),
         size = fraction,
         fill = Phylum,
-        alpha = (!is.na(ASV_ID)) |> as.integer()
+        alpha = as.integer(!is.na(.data[[attr(plot_data, "lowest_rank")]]))
       )
     ) +
     geom_point(
