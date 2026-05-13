@@ -404,7 +404,7 @@ smart_bubble_plot <- function(
     dplyr::pull(Feature) |>
     nchar() |>
     max()
-  attr(p, "output") <- list(height = 6.0 + 0.17 * n_features, width = 4.0 + 0.03 * feature_names_width + 0.5 * n_samples)
+  attr(p, "output") <- list(height = 6.0 + 0.17 * n_features, width = 4.0 + 0.05 * feature_names_width + 0.4 * n_samples)
 
   p
 }
