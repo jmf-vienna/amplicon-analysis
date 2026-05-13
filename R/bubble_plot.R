@@ -189,24 +189,26 @@ smart_agglomerate <- function(
   attr(res, "always_features") <- always_features
   attr(res, "lowest_rank") <- lowest_rank
 
-  # output assertion: exactly one value per sample and feature
-  stopifnot(identical(
-    res |>
-      dplyr::count(Feature, SampleID) |>
-      dplyr::filter(n != 1L) |>
-      nrow(),
-    0L
-  ))
-
-  # output assertion: the sum of all fractions per sample should be 1
-  stopifnot(identical(
-    res |>
-      group_by(SampleID) |>
-      summarise(fraction = sum(fraction)) |>
-      dplyr::filter(round(fraction, 10L) != 1.0) |>
-      nrow(),
-    0L
-  ))
+  # output assertions
+  stopifnot(
+    # exactly one value per sample and feature
+    identical(
+      res |>
+        dplyr::count(Feature, SampleID) |>
+        dplyr::filter(n != 1L) |>
+        nrow(),
+      0L
+    ),
+    # the sum of all fractions per sample should be 1
+    identical(
+      res |>
+        group_by(SampleID) |>
+        summarise(fraction = sum(fraction)) |>
+        dplyr::filter(round(fraction, 10L) != 1.0) |>
+        nrow(),
+      0L
+    )
+  )
 
   res
 }
@@ -215,7 +217,9 @@ smart_bubble_plot <- function(
   orig_data,
   sample_label_from = "SampleID",
   facet_cols = "Group",
-  color_by = orig_data |> attr("always_ranks") |> dplyr::last(),
+  color_by = orig_data |>
+    attr("always_ranks") |>
+    dplyr::last(),
   max_size = 10L,
   theme = ggplot2::theme_gray()
 ) {
@@ -252,7 +256,7 @@ smart_bubble_plot <- function(
     " ",
     "The highest rank(s) are never collapsed.",
     "\n",
-    "Numbers in parentheses are total read pair counts (depth) per sample/library.",
+    "Numbers in parentheses are total read pair counts (depth) per sample.",
     " ",
     "Bar chart is depth (filled bars) and number of features (open bars).",
     "\n",
@@ -279,8 +283,10 @@ smart_bubble_plot <- function(
       colour = "black"
     ) +
     geom_text(
-      data = plot_data |> dplyr::filter(fraction >= 1.0),
-      mapping = aes(label = round(fraction)),
+      data = dplyr::filter(plot_data, fraction >= 1.0),
+      mapping = aes(
+        label = round(fraction)
+      ),
       size = 2.0,
       hjust = 0.5,
       vjust = 0.5
@@ -324,7 +330,7 @@ smart_bubble_plot <- function(
     pivot_longer(c(sample_count, n_features))
 
   scale_feature_count_by <- max(plot_data$sample_count) / max(plot_data$n_features)
-  yield_data <- yield_data |> mutate(value = if_else(name == "n_features", value * scale_feature_count_by, value))
+  yield_data <- mutate(yield_data, value = if_else(name == "n_features", value * scale_feature_count_by, value))
 
   yield_plot <-
     ggplot(
