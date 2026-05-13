@@ -253,16 +253,12 @@ smart_bubble_plot <- function(
     0L
   ))
 
-  caption <- str_c(
+  caption <- cli::pluralize(str_c(
     "R.A. (relative abundance) shown for higher taxonomic ranks are exclusive of the R.A. for separately shown lower taxonomic ranks.",
     "\n",
-    "Taxa are NOT collapsed if RA ≥ ",
-    attr(plot_data, "min_abundance") * 100.0,
-    "% in at least ",
-    attr(plot_data, "min_prevalence"),
-    " sample(s).",
+    "Taxa are NOT collapsed if R.A. ≥{attr(plot_data, 'min_abundance') * 100}% in at least {attr(plot_data, 'min_prevalence')} sample{?s}.",
     " ",
-    "The highest rank(s) are never collapsed.",
+    "{attr(plot_data, 'always_ranks')} will never be collapsed.",
     "\n",
     "Numbers in parentheses are total read pair counts (depth) per sample.",
     " ",
@@ -271,7 +267,7 @@ smart_bubble_plot <- function(
     "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths.",
     "\n",
     "d-values are (mean) decontam results: low values = likely a contaminant, high values = likely NOT a contaminant."
-  )
+  ))
 
   facet_cols <- ggplot2::vars(!!!syms(facet_cols))
 
@@ -317,7 +313,7 @@ smart_bubble_plot <- function(
     labs(
       x = NULL,
       y = NULL,
-      size = "RA (%)"
+      size = "R.A. (%)"
     ) +
     guides(fill = guide_legend(ncol = 1L)) +
     theme +
