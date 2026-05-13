@@ -353,11 +353,11 @@ smart_bubble_plot <- function(
     ) +
     geom_col(
       position = position_dodge2(padding = 0.25),
-      colour = "darkgrey"
+      colour = "gray27"
     ) +
     scale_y_reverse() +
     scale_fill_manual(
-      values = c(sample_count = "darkgrey", n_features = "white"),
+      values = c(sample_count = "gray27", n_features = "white"),
       guide = "none"
     ) +
     expand_limits(
@@ -404,7 +404,7 @@ smart_bubble_plot <- function(
     dplyr::pull(Feature) |>
     nchar() |>
     max()
-  attr(p, "output") <- list(height = 8.0 + 0.15 * n_features, width = 4.0 + 0.05 * feature_names_width + 0.5 * n_samples)
+  attr(p, "output") <- list(height = 6.0 + 0.17 * n_features, width = 4.0 + 0.03 * feature_names_width + 0.5 * n_samples)
 
   p
 }

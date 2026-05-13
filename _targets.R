@@ -396,17 +396,11 @@ list(
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
   # bubble plot ----
-  tar_target(bubble_plot_se, se),
-  tar_target(bubble_plot_data, bubble_plot_se |> fill_unclassified() |> smart_agglomerate(), pattern = map(bubble_plot_se)),
+  tar_target(bubble_plot_data, se |> fill_unclassified() |> smart_agglomerate(), pattern = map(se)),
   tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), pattern = map(bubble_plot_data), format = "file"),
   tar_target(
     bubble_plot,
-    bubble_plot_data |>
-      smart_bubble_plot(
-        sample_label_from = sample_label_from,
-        facet_cols = facet_categories,
-        theme = theme
-      ),
+    smart_bubble_plot(bubble_plot_data, sample_label_from, facet_categories, theme = theme),
     pattern = map(bubble_plot_data),
     packages = c("ggplot2", "patchwork")
   ),
