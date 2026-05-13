@@ -64,6 +64,7 @@ list(
   tar_target(continuous_variables_of_interest, config |> pluck("analyze", "continuous", .default = "dummy_continuous")),
   # for visualization only:
   tar_target(main_category, config |> pluck("annotation", "category", "main")),
+  tar_target(facet_categories, config |> pluck("annotation", "category", "facets", .default = main_category)),
   # always include feature ID, as targets can not run with an empty pattern
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(ranks_of_interest_trim, config |> pluck("analyze", "rank trimming", .default = c(FALSE, TRUE))),
@@ -394,6 +395,17 @@ list(
   ),
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
+  # bubble plot ----
+  tar_target(bubble_plot_data, se |> fill_unclassified() |> smart_agglomerate(), pattern = map(se)),
+  tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), pattern = map(bubble_plot_data), format = "file"),
+  tar_target(
+    bubble_plot,
+    smart_bubble_plot(bubble_plot_data, sample_label_from, facet_categories, theme = theme),
+    pattern = map(bubble_plot_data),
+    packages = c("ggplot2", "patchwork")
+  ),
+  tar_target(bubble_plot_file, save_plot(bubble_plot, plots_dir_name), pattern = map(bubble_plot), format = "file"),
+
   # alpha diversity ----
   tar_target(alpha_diversity_all, get_alpha_diversity(se), pattern = map(se)),
   tar_target(
@@ -553,6 +565,8 @@ list(
       metrics_summary_file,
       metrics_summary_plot_file,
       metrics_plot_file,
+      bubble_plot_data_file,
+      bubble_plot_file,
       alpha_diversity_file,
       summary_report_file,
       feature_tests_file,
