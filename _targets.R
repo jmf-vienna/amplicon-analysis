@@ -396,7 +396,7 @@ list(
   tar_target(metrics_plot_file, save_plot(metrics_plot, plots_dir_name), format = "file", pattern = map(metrics_plot)),
 
   # bubble plot ----
-  tar_target(bubble_plot_se, list(se_libs_raw, se_final)),
+  tar_target(bubble_plot_se, se),
   tar_target(bubble_plot_data, bubble_plot_se |> fill_unclassified() |> smart_agglomerate(), pattern = map(bubble_plot_se)),
   tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), pattern = map(bubble_plot_data), format = "file"),
   tar_target(

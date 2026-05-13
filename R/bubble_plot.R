@@ -71,16 +71,21 @@ smart_agglomerate <- function(
 ) {
   loadNamespace("mia")
 
+  if (nrow(se) == 0L) {
+    cli::cli_alert_warning("{.field {provenance_as_short_title(se)}}: skipped because there are zero features")
+    return(invisible())
+  }
+
   res <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
   all_ranks <- taxonomy_ranks(se)
 
   rank_names_show_always <- head(all_ranks, always_ranks)
   lowest_rank <- dplyr::last(all_ranks)
 
-  # input assertion: exactly one value per sample and lowest rank
+  # input assertion: exactly one value per sample and taxonomy
   stopifnot(identical(
     res |>
-      dplyr::count(.data[[lowest_rank]], SampleID) |>
+      dplyr::count(across(all_of(all_ranks)), SampleID) |>
       dplyr::filter(n != 1L) |>
       nrow(),
     0L
@@ -100,7 +105,7 @@ smart_agglomerate <- function(
   # the "smart" part:
   res <- add_column(res, Feature = NA_character_)
   rank_names <- all_ranks
-  for (rank in rev(rank_names)) {
+  for (rank in rev(all_ranks)) {
     res <- tidyr::unite(res, ".lineage", all_of(rank_names), sep = " ‣ ", remove = FALSE)
 
     # find which lineages at current rank to still keep:
@@ -193,19 +198,12 @@ smart_agglomerate <- function(
   stopifnot(
     # exactly one value per sample and feature
     identical(
-      res |>
-        dplyr::count(Feature, SampleID) |>
-        dplyr::filter(n != 1L) |>
-        nrow(),
+      res |> dplyr::count(Feature, SampleID) |> dplyr::filter(n != 1L) |> nrow(),
       0L
     ),
     # the sum of all fractions per sample should be 1
     identical(
-      res |>
-        group_by(SampleID) |>
-        summarise(fraction = sum(fraction)) |>
-        dplyr::filter(round(fraction, 10L) != 1.0) |>
-        nrow(),
+      res |> group_by(SampleID) |> summarise(fraction = sum(fraction)) |> dplyr::filter(round(fraction, 10L) != 1.0) |> nrow(),
       0L
     )
   )
@@ -223,6 +221,10 @@ smart_bubble_plot <- function(
   max_size = 10L,
   theme = ggplot2::theme_gray()
 ) {
+  if (is.null(orig_data)) {
+    return()
+  }
+
   plot_data <-
     orig_data |>
     arrange(.data[[sample_label_from]], SampleID) |>
@@ -244,6 +246,12 @@ smart_bubble_plot <- function(
         ),
       fraction = fraction * 100.0 # R.A. (%)
     )
+
+  # assertion: exactly one value per sample and feature
+  stopifnot(identical(
+    plot_data |> dplyr::count(Feature, Sample) |> dplyr::filter(n != 1L) |> nrow(),
+    0L
+  ))
 
   caption <- str_c(
     "R.A. (relative abundance) shown for higher taxonomic ranks are exclusive of the R.A. for separately shown lower taxonomic ranks.",
@@ -322,7 +330,9 @@ smart_bubble_plot <- function(
   main_plot <-
     main_plot |>
     update_provenance(orig_data) |>
-    plot_titles()
+    plot_titles(
+      analysis = zap()
+    )
 
   yield_data <-
     plot_data |>
@@ -394,7 +404,7 @@ smart_bubble_plot <- function(
     dplyr::pull(Feature) |>
     nchar() |>
     max()
-  attr(p, "output") <- list(height = 8.0 + 0.15 * n_features, width = 0.05 * feature_names_width + 0.5 * n_samples)
+  attr(p, "output") <- list(height = 8.0 + 0.15 * n_features, width = 4.0 + 0.05 * feature_names_width + 0.5 * n_samples)
 
   p
 }
