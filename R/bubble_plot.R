@@ -271,8 +271,8 @@ smart_bubble_plot <- function(
       data = plot_data |> dplyr::filter(fraction >= 1.0),
       mapping = aes(label = round(fraction)),
       size = 2.0,
-      hjust = 0.35,
-      vjust = 0.6
+      hjust = 0.5,
+      vjust = 0.5
     ) +
     scale_size_area(
       max_size = max_size,
@@ -312,8 +312,8 @@ smart_bubble_plot <- function(
     distinct(Sample, .keep_all = TRUE) |>
     pivot_longer(c(sample_count, n_features))
 
-  scale_asv_count_by <- max(plot_data$sample_count) / max(plot_data$n_features)
-  yield_data <- yield_data |> mutate(value = if_else(name == "n_features", value * scale_asv_count_by, value))
+  scale_feature_count_by <- max(plot_data$sample_count) / max(plot_data$n_features)
+  yield_data <- yield_data |> mutate(value = if_else(name == "n_features", value * scale_feature_count_by, value))
 
   yield_plot <-
     ggplot(
@@ -321,7 +321,7 @@ smart_bubble_plot <- function(
       mapping = aes(
         x = Sample,
         y = value,
-        fill = name |> fct_rev()
+        fill = fct_rev(name)
       )
     ) +
     geom_col(
@@ -364,13 +364,16 @@ smart_bubble_plot <- function(
 
   p <- update_provenance(p, orig_data)
 
-  n_samples <- plot_data |>
+  n_samples <-
+    plot_data |>
     dplyr::pull(Sample) |>
     vec_unique_count()
-  n_features <- plot_data |>
+  n_features <-
+    plot_data |>
     dplyr::pull(Feature) |>
     vec_unique_count()
-  feature_names_width <- plot_data |>
+  feature_names_width <-
+    plot_data |>
     dplyr::pull(Feature) |>
     nchar() |>
     max()
