@@ -61,7 +61,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
   se
 }
 
-smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, remove_zeros = TRUE, always_ranks = 2L, always_features = NULL) {
+smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, remove_zeros = TRUE, always_ranks = 2L, always_features = character()) {
   loadNamespace("mia")
 
   res <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
@@ -167,32 +167,37 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
     res |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
     dplyr::left_join(per_sample_data, by = "SampleID") |>
-    relocate(Feature, SampleID, Group, counts, fraction, all_of(all_ranks), sequence_length)
+    relocate(Feature, SampleID, counts, fraction, all_of(all_ranks), all_of(names(per_feature_data)), all_of(names(per_sample_data)))
 
-  # save some settings so it can be shown in plot caption
+  res <- update_provenance(res, se, list(analysis = "bubble plot"))
+
+  # save settings so it can be shown in plot caption
   attr(res, "min_abundance") <- min_abundance
   attr(res, "min_prevalence") <- min_prevalence
+  attr(res, "remove_zeros") <- remove_zeros
+  attr(res, "always_ranks") <- rank_names_show_always
+  attr(res, "always_features") <- always_features
 
-  # Output assertion: exactly one value per sample and feature
+  # output assertion: exactly one value per sample and feature
   stopifnot(identical(
     res |>
       dplyr::count(Feature, SampleID) |>
-      dplyr::filter(n > 1L) |>
+      dplyr::filter(n != 1L) |>
       nrow(),
     0L
   ))
 
-  # Output assertion: the sum of all fractions per sample should be 1
+  # output assertion: the sum of all fractions per sample should be 1
   stopifnot(identical(
     res |>
       group_by(SampleID) |>
       summarise(fraction = sum(fraction)) |>
-      dplyr::filter(round(fraction, 10L) != 1L) |>
+      dplyr::filter(round(fraction, 10L) != 1.0) |>
       nrow(),
     0L
   ))
 
-  res |> update_provenance(se, list(analysis = "bubble plot"))
+  res
 }
 
 smart_bubble_plot <- function(
@@ -268,7 +273,7 @@ smart_bubble_plot <- function(
     "Numbers in parentheses are total read pair counts (depth) per sample/library.",
     " ",
     "Bar chart is depth (filled bars) and number of features (open bars).",
-    if_else(add_sequence_length, str_c("\n", "Basepair numbers in brackets are (mean) ASV nucleic acid sequence lengths."), ""),
+    if_else(add_sequence_length, str_c("\n", "Basepair numbers in brackets are (mean) feature nucleic acid sequence lengths."), ""),
     str_replace_na(str_c("\n", caption), "")
   )
 
