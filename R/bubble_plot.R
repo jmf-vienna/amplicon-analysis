@@ -297,6 +297,8 @@ smart_bubble_plot <- function(
     guides(fill = guide_legend(ncol = 1L)) +
     theme +
     theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5),
       axis.text.x = element_text(angle = 90.0, hjust = 1.0, vjust = 0.5, family = "monospace")
     )
 
@@ -355,7 +357,7 @@ smart_bubble_plot <- function(
         mapping = aes(
           ymin = Input_read_pairs,
           ymax = Input_read_pairs,
-          colour = name |> fct_rev()
+          colour = fct_rev(name)
         ),
         position = position_dodge2(padding = 0.25)
       ) +
