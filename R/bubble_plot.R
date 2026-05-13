@@ -65,33 +65,34 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   loadNamespace("mia")
 
   res <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
+  all_ranks <- taxonomy_ranks(se)
 
-  rank_names <- all_ranks <- taxonomy_ranks(se)
+  rank_names_show_always <- head(all_ranks, always_ranks)
+  lowest_rank <- dplyr::last(all_ranks)
 
-  rank_names_show_always <- all_ranks |> head(always_ranks)
-
-  # Input assertion: exactly one value per sample and ASV/lowest rank
+  # input assertion: exactly one value per sample and lowest rank
   stopifnot(identical(
     res |>
-      dplyr::count(.data[[tail(all_ranks, 1L)]], SampleID) |>
-      dplyr::filter(n > 1L) |>
+      dplyr::count(.data[[lowest_rank]], SampleID) |>
+      dplyr::filter(n != 1L) |>
       nrow(),
     0L
   ))
 
-  # zero count measurements slow things down and are not always required
+  # zero count measurements slow things down and are often not required
   if (remove_zeros) {
-    res <- res |> dplyr::filter(counts > 0L)
+    res <- dplyr::filter(res, counts > 0L)
   }
 
   # relative abundance
   res <-
     res |>
     group_by(SampleID) |>
-    mutate(Fraction = counts / sum(counts))
+    mutate(fraction = counts / sum(counts))
 
   # the "smart" part:
   res <- res |> add_column(Feature = NA_character_)
+  rank_names <- all_ranks
   for (rank in rev(rank_names)) {
     res <- res |> tidyr::unite(".lineage", all_of(rank_names), sep = " > ", remove = FALSE)
 
@@ -108,8 +109,8 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
           res |>
             dplyr::filter(is.na(Feature)) |>
             group_by(.lineage, SampleID) |>
-            summarise(Fraction = sum(Fraction), .groups = "drop_last") |>
-            dplyr::filter(Fraction >= min_abundance) |>
+            summarise(fraction = sum(fraction), .groups = "drop_last") |>
+            dplyr::filter(fraction >= min_abundance) |>
             dplyr::count() |>
             dplyr::filter(n >= min_prevalence) |>
             pull(.lineage),
@@ -156,7 +157,7 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
       c(all_of(all_ranks), SampleID) |
         !any_of(c(
           "counts",
-          "Fraction",
+          "fraction",
           "Sequence",
           "sequence_length",
           "FeatureID",
@@ -179,14 +180,14 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
           "Strain"
         ))
     )) |>
-    summarise(counts = sum(counts), Fraction = sum(Fraction), .groups = "drop")
+    summarise(counts = sum(counts), fraction = sum(fraction), .groups = "drop")
 
   # merge all data ans relocate columns
   res <-
     res |>
     dplyr::left_join(per_feature_data, by = "Feature") |>
     dplyr::left_join(per_sample_data, by = "SampleID") |>
-    relocate(Feature, SampleID, Group, counts, Fraction, all_of(all_ranks), sequence_length)
+    relocate(Feature, SampleID, Group, counts, fraction, all_of(all_ranks), sequence_length)
 
   # save some settings so it can be shown in plot caption
   attr(res, "min_abundance") <- min_abundance
@@ -205,8 +206,8 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
   stopifnot(identical(
     res |>
       group_by(SampleID) |>
-      summarise(Fraction = sum(Fraction)) |>
-      dplyr::filter(round(Fraction, 10L) != 1L) |>
+      summarise(fraction = sum(fraction)) |>
+      dplyr::filter(round(fraction, 10L) != 1L) |>
       nrow(),
     0L
   ))
@@ -248,7 +249,7 @@ smart_bubble_plot <- function(
         str_c("(", Sample_count |> format(big.mark = " ", trim = TRUE), ") ", sample = _) |>
         fct_inorder(),
       # RA (%)
-      Fraction = Fraction * 100.0
+      fraction = fraction * 100.0
     )
 
   if (add_sequence_length) {
@@ -296,7 +297,7 @@ smart_bubble_plot <- function(
     mapping = aes(
       x = Sample,
       y = Feature |> fct_rev(),
-      size = Fraction,
+      size = fraction,
       fill = {{ colour }},
       alpha = (!is.na(ASV_ID)) |> as.integer()
     )
@@ -306,8 +307,8 @@ smart_bubble_plot <- function(
       colour = "black"
     ) +
     geom_text(
-      data = plot_data |> dplyr::filter(Fraction >= 1.0),
-      mapping = aes(label = round(Fraction)),
+      data = plot_data |> dplyr::filter(fraction >= 1.0),
+      mapping = aes(label = round(fraction)),
       size = 2.0,
       hjust = 0.35,
       vjust = 0.6
