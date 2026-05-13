@@ -324,11 +324,11 @@ smart_bubble_plot <- function(
     ) +
     geom_col(
       position = position_dodge2(padding = 0.25),
-      colour = "blue"
+      colour = "darkgrey"
     ) +
     scale_y_reverse() +
     scale_fill_manual(
-      values = c(sample_count = "blue", n_features = "white"),
+      values = c(sample_count = "darkgrey", n_features = "white"),
       guide = "none"
     ) +
     expand_limits(
