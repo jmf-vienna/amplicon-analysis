@@ -91,10 +91,10 @@ smart_agglomerate <- function(se, min_abundance = 0.01, min_prevalence = 2L, rem
     mutate(fraction = counts / sum(counts))
 
   # the "smart" part:
-  res <- res |> add_column(Feature = NA_character_)
+  res <- add_column(res, Feature = NA_character_)
   rank_names <- all_ranks
   for (rank in rev(rank_names)) {
-    res <- res |> tidyr::unite(".lineage", all_of(rank_names), sep = " > ", remove = FALSE)
+    res <- tidyr::unite(res, ".lineage", all_of(rank_names), sep = " ‣ ", remove = FALSE)
 
     # find which lineages at current rank to still keep:
     if (rank %in% rank_names_show_always) {
