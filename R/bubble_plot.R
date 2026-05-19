@@ -230,7 +230,7 @@ smart_bubble_plot <- function(
 
   plot_data <-
     orig_data |>
-    arrange(.data[[sample_label_from]], SampleID) |>
+    arrange(SampleID, .data[[sample_label_from]]) |>
     mutate(
       Sample = str_c(
         "(",
