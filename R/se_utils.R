@@ -98,6 +98,14 @@ make_metrics <- function(se) {
     as_full_tibble() |>
     dplyr::rename(sample_id = rowname, features = x)
 
+  goodscov <-
+    se |>
+    SummarizedExperiment::assay() |>
+    get_goods_coverage() |>
+    signif() |>
+    tibble::enframe(name = "sample_id", value = "Good’s Coverage") |>
+    dplyr::mutate(sample_id = as.character(sample_id)) # required for empty SE
+
   res <-
     se |>
     provenance_as_tibble() |>
@@ -109,6 +117,7 @@ make_metrics <- function(se) {
       col_sums(se)
     ) |>
     inner_join(features, by = "sample_id") |>
+    inner_join(goodscov, by = "sample_id") |>
     update_provenance(se, list(summary = "metrics"))
 
   attr(res, "col_data") <-
@@ -306,6 +315,15 @@ plot_metrics <- function(plot_data, sample_label, main_category, hline_at, theme
       size = 3L,
       family = font_family()
     ) +
+    geom_text(
+      color = "gray40",
+      mapping = aes(
+        label = str_c(" ", sprintf("%.2f", `Good’s Coverage`))
+      ),
+      hjust = 0L,
+      size = 3L,
+      family = font_family()
+    ) +
     geom_hline(
       yintercept = hline_at,
       linetype = "dotted"
@@ -317,9 +335,13 @@ plot_metrics <- function(plot_data, sample_label, main_category, hline_at, theme
     ) +
     coord_flip() +
     labs(
-      x = str_c(sample_label, " and ", id)
+      x = str_c(sample_label, " and ", id),
+      caption = "Values to the right of the bar are Good's Coverage."
     ) +
-    theme
+    theme +
+    theme(
+      plot.caption = element_text(hjust = 0),
+    )
 
   p <-
     p |>

@@ -55,3 +55,11 @@ smart_arrange <- function(x, cols = c("tool", "resolution", "state", "phase", "r
     dplyr::mutate(dplyr::across(any_of(cols), forcats::fct_inorder)) |>
     dplyr::arrange(dplyr::across(any_of(cols)))
 }
+
+scalar_or_na <- function(x) {
+  if (rlang::is_scalar_atomic(x)) {
+    x
+  } else {
+    NA
+  }
+}
