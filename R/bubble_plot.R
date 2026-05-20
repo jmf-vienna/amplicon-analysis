@@ -232,7 +232,7 @@ smart_bubble_plot <- function(
     orig_data |>
     arrange(SampleID, .data[[sample_label_from]]) |>
     mutate(
-      Sample = str_c(
+      .sample = str_c(
         "(",
         format(sample_count, big.mark = " ", trim = TRUE),
         ") ",
@@ -252,7 +252,7 @@ smart_bubble_plot <- function(
 
   # assertion: exactly one value per sample and feature
   stopifnot(identical(
-    plot_data |> dplyr::count(Feature, Sample) |> dplyr::filter(n != 1L) |> nrow(),
+    plot_data |> dplyr::count(Feature, .sample) |> dplyr::filter(n != 1L) |> nrow(),
     0L
   ))
 
@@ -278,7 +278,7 @@ smart_bubble_plot <- function(
     ggplot(
       data = plot_data,
       mapping = aes(
-        x = Sample,
+        x = .sample,
         y = fct_rev(Feature),
         size = fraction,
         fill = .data[[color_by]],
@@ -336,7 +336,7 @@ smart_bubble_plot <- function(
 
   yield_data <-
     plot_data |>
-    distinct(Sample, .keep_all = TRUE) |>
+    distinct(.sample, .keep_all = TRUE) |>
     pivot_longer(c(sample_count, n_features))
 
   scale_feature_count_by <- max(plot_data$sample_count) / max(plot_data$n_features)
@@ -346,7 +346,7 @@ smart_bubble_plot <- function(
     ggplot(
       data = yield_data,
       mapping = aes(
-        x = Sample,
+        x = .sample,
         y = value,
         fill = fct_rev(name)
       )
@@ -393,7 +393,7 @@ smart_bubble_plot <- function(
 
   n_samples <-
     plot_data |>
-    dplyr::pull(Sample) |>
+    dplyr::pull(.sample) |>
     vec_unique_count()
   n_features <-
     plot_data |>
