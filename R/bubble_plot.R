@@ -218,14 +218,19 @@ smart_bubble_plot <- function(
   orig_data,
   sample_label_from = "SampleID",
   facet_cols = "Group",
-  color_by = orig_data |>
-    attr("always_ranks") |>
-    dplyr::last(),
+  color_by = NULL,
   max_size = 10L,
   theme = ggplot2::theme_gray()
 ) {
   if (is.null(orig_data)) {
     return()
+  }
+
+  if (is.null(color_by)) {
+    color_by <-
+      orig_data |>
+      attr("always_ranks") |>
+      dplyr::last()
   }
 
   plot_data <-

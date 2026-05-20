@@ -65,6 +65,7 @@ list(
   # for visualization only:
   tar_target(main_category, config |> pluck("annotation", "category", "main")),
   tar_target(facet_categories, config |> pluck("annotation", "category", "facets", .default = main_category)),
+  tar_target(rank_to_highlight, config |> pluck("annotation", "rank")),
   # always include feature ID, as targets can not run with an empty pattern
   tar_target(ranks_of_interest, config |> pluck("analyze", "ranks") |> union(feature_id_var)),
   tar_target(ranks_of_interest_trim, config |> pluck("analyze", "rank trimming", .default = c(FALSE, TRUE))),
@@ -400,7 +401,7 @@ list(
   tar_target(bubble_plot_data_file, save_table(bubble_plot_data, results_dir_name), pattern = map(bubble_plot_data), format = "file"),
   tar_target(
     bubble_plot,
-    smart_bubble_plot(bubble_plot_data, sample_label_from, facet_categories, theme = theme),
+    smart_bubble_plot(bubble_plot_data, sample_label_from, facet_categories, rank_to_highlight, theme = theme),
     pattern = map(bubble_plot_data),
     packages = c("ggplot2", "patchwork")
   ),
