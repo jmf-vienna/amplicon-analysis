@@ -340,7 +340,7 @@ plot_metrics <- function(plot_data, sample_label, main_category, hline_at, theme
     ) +
     theme +
     theme(
-      plot.caption = element_text(hjust = 0),
+      plot.caption = element_text(hjust = 0L)
     )
 
   p <-
