@@ -161,7 +161,9 @@ get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min
     se |>
     SummarizedExperiment::colData() |>
     as_full_tibble() |>
-    dplyr::filter(.data[[biosample_id_var_name(se)]] %in% failed_samples) |>
+    dplyr::filter(
+      .data[[library_id_var_name(se)]] %in% failed_samples | .data[[biosample_id_var_name(se)]] %in% failed_samples
+    ) |>
     dplyr::pull(1L)
 
   if (!vec_is_empty(failed_libraries_via_sample)) {
