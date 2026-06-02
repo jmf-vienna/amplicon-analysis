@@ -176,7 +176,7 @@ get_failed_libraries <- function(se, negative_controls, pass_libraries_yield_min
 add_decontam <- function(se, negative_controls, failed_libraries = character()) {
   loadNamespace(class(se))
 
-  if (ncol(se) > 1L) {
+  if (nrow(se) > 1L && ncol(se) > 1L) {
     se_ready <- se[, !colnames(se) %in% failed_libraries]
 
     assay <- se_ready |> SummarizedExperiment::assay()
@@ -187,7 +187,7 @@ add_decontam <- function(se, negative_controls, failed_libraries = character()) 
 
     p <- decontam_result[["p"]]
   } else {
-    cli::cli_alert_warning("skipped decontam (less than 2 libraries)")
+    cli::cli_alert_warning("skipped decontam (less than two features or two libraries)")
     p <- rep(NA_real_, nrow(se))
   }
 
