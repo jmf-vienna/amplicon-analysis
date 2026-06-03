@@ -211,6 +211,8 @@ smart_agglomerate <- function(
     )
   )
 
+  res <- mutate(res, fraction = signif(fraction))
+
   res
 }
 
