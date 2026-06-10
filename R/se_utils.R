@@ -156,7 +156,7 @@ make_metrics_summary <- function(library_metrics, biosample_metrics, library_id_
     library_metrics
   ) |>
     dplyr::filter(count > 0L) |>
-    dplyr::group_by(dplyr::across(!JMF_sample_ID:last_col())) |>
+    dplyr::group_by(dplyr::across(!all_of(biosample_id_var):last_col())) |>
     dplyr::summarise(
       libraries = sum(libraries, na.rm = TRUE) + dplyr::n_distinct(.data[[library_id_var]], na.rm = TRUE),
       biosamples = dplyr::n_distinct(.data[[biosample_id_var]]),
