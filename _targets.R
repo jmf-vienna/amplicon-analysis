@@ -328,10 +328,10 @@ list(
       smart_bind_rows() |>
       bind_rows(prior_library_metrics, second_argument = _) |>
       inner_join(
-        select(libraries_col_data, all_of(c(library_id_var, biosample_id_var))),
+        select(libraries_col_data, all_of(c(library_id_var, biosample_id_var, sample_label_from))),
         by = library_id_var
       ) |>
-      relocate(all_of(c(library_id_var, biosample_id_var, "count", "features", "Good’s Coverage")), .after = last_col()) |>
+      relocate(all_of(c(library_id_var, biosample_id_var, sample_label_from, "count", "features", "Good’s Coverage")), .after = last_col()) |>
       smart_arrange() |>
       arrange(across(all_of(library_id_var)))
   ),
@@ -348,6 +348,10 @@ list(
     se_biosample_metrics |>
       smart_bind_rows() |>
       add_column(phase = NA_character_, .after = "state") |>
+      inner_join(
+        select(samples_col_data, all_of(c(biosample_id_var, sample_label_from))),
+        by = biosample_id_var
+      ) |>
       list(
         library_metrics |>
           group_by(across(!c(all_of(library_id_var), count, features, `Good’s Coverage`))) |>
@@ -361,7 +365,7 @@ list(
         second_argument = _
       ) |>
       smart_bind_rows() |>
-      relocate(count, features, `Good’s Coverage`, .after = last_col()) |>
+      relocate(libraries, count, features, `Good’s Coverage`, .after = last_col()) |>
       smart_arrange() |>
       arrange(across(all_of(biosample_id_var)))
   ),
