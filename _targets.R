@@ -379,7 +379,11 @@ list(
   tar_target(
     biosample_metrics_last,
     biosample_metrics |>
-      filter(is.na(rank) | rank == feature_id_var, if_all(any_of("subset"), is.na)) |>
+      filter(
+        is.na(rank) | rank == feature_id_var,
+        if_all(any_of("subset"), is.na),
+        !(resolution == "samples" & state == "raw")
+      ) |>
       group_by(across(all_of(biosample_id_var))) |>
       slice_tail(n = 1L) |>
       arrange(count)
