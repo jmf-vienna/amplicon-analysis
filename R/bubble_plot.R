@@ -1,6 +1,10 @@
 fill_unclassified <- function(se, value = "unclassified", species_value = "sp.", parentheses = TRUE) {
   loadNamespace(class(se))
 
+  if (nrow(se) == 0L) {
+    return(se)
+  }
+
   if (isTRUE(parentheses)) {
     prefix <- "("
     suffix <- ")"
