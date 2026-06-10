@@ -371,6 +371,21 @@ list(
     format = "file"
   ),
 
+  ## sample last seen ----
+  tar_target(
+    biosample_metrics_last,
+    biosample_metrics |>
+      filter(is.na(`sample filter ≥`)) |>
+      group_by(across(all_of(biosample_id_var))) |>
+      slice_tail(n = 1L) |>
+      arrange(count)
+  ),
+  tar_target(
+    biosample_metrics_last_file,
+    write_tsv(biosample_metrics_last, path(results_dir_name, str_c(file_prefix, "biosample_last_seen", sep = "_"), ext = "tsv")),
+    format = "file"
+  ),
+
   # summary rows ----
   tar_target(se_summary_rows, summary_as_row(se), pattern = map(se)),
   tar_target(se_summary, se_summary_rows |> bind_rows()),
@@ -570,6 +585,7 @@ list(
       ps_file,
       library_metrics_file,
       biosample_metrics_file,
+      biosample_metrics_last_file,
       metrics_summary_file,
       metrics_summary_plot_file,
       metrics_plot_file,
