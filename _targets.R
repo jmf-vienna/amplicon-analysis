@@ -73,6 +73,7 @@ list(
   tar_target(p_adjust_method, config |> pluck("analyze", "p-value correction", .default = "fdr")),
   tar_target(log2fc_threshold, config |> pluck("analyze", "log2FC threshold", .default = 0.0)),
   tar_target(deseq_pseudocount, config |> pluck("analyze", "DESeq2 pseudocount", .default = 0L)),
+  tar_target(deseq_min_per_group_prevalence, config |> pluck("analyze", "group prevalence threshold", .default = 0.0)),
 
   ## analysis ----
   tar_target(
@@ -509,14 +510,18 @@ list(
   # DESeq2 ----
   tar_target(
     deseq_raw_results,
-    deseq(se, log2fc_threshold = log2fc_threshold, pseudocount = deseq_pseudocount),
+    deseq(
+      se,
+      log2fc_threshold = log2fc_threshold,
+      pseudocount = deseq_pseudocount
+    ),
     pattern = map(se)
   ),
   tar_target(deseq_combined_results, collect_deseq_results(deseq_raw_results)),
   tar_target(
     deseq_results,
     deseq_combined_results |>
-      filter_deseq_results() |>
+      filter_deseq_results(min_per_group_prevalence = deseq_min_per_group_prevalence) |>
       finalize_tests_table()
   ),
   tar_target(
@@ -536,13 +541,23 @@ list(
           "|log₂FC| >",
           log2fc_threshold,
           ", p-value ≤",
-          attr(deseq_results, "p_value_filter")
+          attr(deseq_results, "p_value_filter"),
+          ifelse(
+            attr(deseq_results, "min_per_group_prevalence") > 0.0,
+            str_c(", per-group-prevalence ≥", attr(deseq_results, "min_per_group_prevalence") * 100.0, "%"),
+            ""
+          )
         )
       )
     ),
     pattern = map(se_ranks)
   ),
-  tar_target(deseq_plot, plot_deseq(deseq_plot_data, se_ranks, main_category, theme), pattern = map(deseq_plot_data, se_ranks), packages = "ggplot2"),
+  tar_target(
+    deseq_plot,
+    plot_deseq(deseq_plot_data, se_ranks, main_category, theme),
+    pattern = map(deseq_plot_data, se_ranks),
+    packages = c("ggplot2", "patchwork")
+  ),
   tar_target(deseq_plot_file, save_plot(deseq_plot, plots_dir_name), pattern = map(deseq_plot), format = "file"),
 
   # summary report ----

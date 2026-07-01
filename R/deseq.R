@@ -32,6 +32,13 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_fea
 
   cli::cli_alert("{.field {provenance_as_short_title(se)}}: running DESeq2 with {.var {var}}")
 
+  prevalence <-
+    se |>
+    mia::meltSE(add.col = TRUE) |>
+    summarise(total = n(), non_zero = sum(counts > 0L), .by = c(FeatureID, all_of(var))) |>
+    mutate(prevalence = non_zero / total) |>
+    summarise(max_prevalence = prevalence |> max() |> signif(), .by = FeatureID)
+
   deseq <- DESeq2::DESeqDataSetFromMatrix(
     countData = SummarizedExperiment::assay(se) + pseudocount,
     colData = SummarizedExperiment::colData(se),
@@ -56,6 +63,7 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_fea
     dplyr::select(Feature_ID, `log2 fold change` = log2FoldChange, `p-value` = padj, `uncorrected p-value` = pvalue) |>
     tibble::add_column(`variable of interest` = var, group1 = groups[[1L]], group2 = groups[[2L]], .before = "Feature_ID") |>
     bind_cols(x = provenance_as_tibble(se), y = _) |>
+    dplyr::left_join(prevalence, by = join_by(Feature_ID == FeatureID)) |>
     dplyr::left_join(row_data, by = "Feature_ID")
 
   attr(res, "pseudocount") <- pseudocount
@@ -82,14 +90,15 @@ collect_deseq_results <- function(deseq_raw_results) {
   res
 }
 
-filter_deseq_results <- function(deseq_combined_results, p_value = 0.05) {
+filter_deseq_results <- function(deseq_combined_results, p_value = 0.05, min_per_group_prevalence = 0.0) {
   res <-
     deseq_combined_results |>
-    dplyr::filter(`p-value` <= p_value) |>
+    dplyr::filter(`p-value` <= p_value, max_prevalence >= min_per_group_prevalence) |>
     # `signif` for reproducibility. Keeping six digits is already overkill.
     dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 
   attr(res, "p_value_filter") <- p_value
+  attr(res, "min_per_group_prevalence") <- min_per_group_prevalence
 
   res
 }
@@ -211,7 +220,7 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
 
     height_per_feature <- 0.5
     p <-
-      (p + p2 + patchwork::plot_layout(widths = c(1L, 1L))) |>
+      (p + p2 + plot_layout(widths = c(1L, 1L))) |>
       update_provenance(p)
   }
 
