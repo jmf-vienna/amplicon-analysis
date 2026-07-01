@@ -4,7 +4,7 @@ deseq <- function(se, ...) {
     purrr::map(\(x) run_deseq(se, x, ...))
 }
 
-run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per_group_prevalence = 0.0, min_features = 3L, alpha = 0.05) {
+run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per_group_prevalence = 0.0, min_features = 3L, p_value = 0.05) {
   loadNamespace(class(se))
 
   if (nrow(se) < min_features) {
@@ -37,6 +37,7 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per
     mia::meltSE(add.col = TRUE) |>
     summarise(total = n(), non_zero = sum(counts > 0L), .by = c(FeatureID, all_of(var))) |>
     mutate(FeatureID = as.character(FeatureID), prevalence = non_zero / total) |>
+    # `signif` for reproducibility. Keeping six digits is already overkill.
     summarise(max_prevalence = prevalence |> max() |> signif(), .by = FeatureID)
   stopifnot(identical(pull(prevalence, FeatureID), rownames(se)))
   prevalence |>
@@ -64,14 +65,17 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, Lineage)
 
-  results <- DESeq2::results(deseq, lfcThreshold = log2fc_threshold, alpha = alpha)
+  results <- DESeq2::results(deseq, lfcThreshold = log2fc_threshold, alpha = p_value)
   results[non_prevalent_features, "pvalue"] <- NA
-  results <- DESeq2:::pvalueAdjustment(results, independentFiltering = TRUE, alpha = alpha, pAdjustMethod = "BH") # nolint: undesirable_operator_linter.
+  results <- DESeq2:::pvalueAdjustment(results, independentFiltering = TRUE, alpha = p_value, pAdjustMethod = "BH") # nolint: undesirable_operator_linter.
 
   res <-
     results |>
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, `log2 fold change` = log2FoldChange, `p-value` = padj, `uncorrected p-value` = pvalue) |>
+    dplyr::filter(`p-value` <= p_value) |>
+    # `signif` for reproducibility. Keeping six digits is already overkill.
+    dplyr::mutate(`log2 fold change` = signif(`log2 fold change`)) |>
     tibble::add_column(`variable of interest` = var, group1 = groups[[1L]], group2 = groups[[2L]], .before = "Feature_ID") |>
     bind_cols(x = provenance_as_tibble(se), y = _) |>
     dplyr::left_join(prevalence, by = join_by(Feature_ID == FeatureID)) |>
@@ -79,6 +83,7 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per
 
   attr(res, "pseudocount") <- pseudocount
   attr(res, "min_per_group_prevalence") <- min_per_group_prevalence
+  attr(res, "p_value_filter") <- p_value
   attr(res, "deseq") <- deseq
   attr(res, "results") <- results
 
@@ -98,18 +103,6 @@ collect_deseq_results <- function(deseq_raw_results) {
         `uncorrected p-value` = NA_real_
       )
   }
-
-  res
-}
-
-filter_deseq_results <- function(deseq_combined_results, p_value = 0.05, min_per_group_prevalence = 0.0) {
-  res <-
-    deseq_combined_results |>
-    dplyr::filter(`p-value` <= p_value, max_prevalence >= min_per_group_prevalence) |>
-    # `signif` for reproducibility. Keeping six digits is already overkill.
-    dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
-
-  attr(res, "p_value_filter") <- p_value
 
   res
 }
