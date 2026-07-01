@@ -513,7 +513,8 @@ list(
     deseq(
       se,
       log2fc_threshold = log2fc_threshold,
-      pseudocount = deseq_pseudocount
+      pseudocount = deseq_pseudocount,
+      min_per_group_prevalence = deseq_min_per_group_prevalence
     ),
     pattern = map(se)
   ),

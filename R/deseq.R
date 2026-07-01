@@ -4,7 +4,7 @@ deseq <- function(se, ...) {
     purrr::map(\(x) run_deseq(se, x, ...))
 }
 
-run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_features = 3L, alpha = 0.05) {
+run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per_group_prevalence = 0.0, min_features = 3L, alpha = 0.05) {
   loadNamespace(class(se))
 
   if (nrow(se) < min_features) {
@@ -36,8 +36,17 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_fea
     se |>
     mia::meltSE(add.col = TRUE) |>
     summarise(total = n(), non_zero = sum(counts > 0L), .by = c(FeatureID, all_of(var))) |>
-    mutate(prevalence = non_zero / total) |>
+    mutate(FeatureID = as.character(FeatureID), prevalence = non_zero / total) |>
     summarise(max_prevalence = prevalence |> max() |> signif(), .by = FeatureID)
+  stopifnot(identical(pull(prevalence, FeatureID), rownames(se)))
+  prevalence |>
+    pull(max_prevalence) |>
+    is_double(finite = TRUE) |>
+    stopifnot()
+  non_prevalent_features <-
+    prevalence |>
+    dplyr::filter(max_prevalence < min_per_group_prevalence) |>
+    pull(FeatureID)
 
   deseq <- DESeq2::DESeqDataSetFromMatrix(
     countData = SummarizedExperiment::assay(se) + pseudocount,
@@ -56,6 +65,8 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_fea
     dplyr::select(Feature_ID, Lineage)
 
   results <- DESeq2::results(deseq, lfcThreshold = log2fc_threshold, alpha = alpha)
+  results[non_prevalent_features, "pvalue"] <- NA
+  results <- DESeq2:::pvalueAdjustment(results, independentFiltering = TRUE, alpha = alpha, pAdjustMethod = "BH") # nolint: undesirable_operator_linter.
 
   res <-
     results |>
@@ -67,6 +78,7 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_fea
     dplyr::left_join(row_data, by = "Feature_ID")
 
   attr(res, "pseudocount") <- pseudocount
+  attr(res, "min_per_group_prevalence") <- min_per_group_prevalence
   attr(res, "deseq") <- deseq
   attr(res, "results") <- results
 
@@ -98,7 +110,6 @@ filter_deseq_results <- function(deseq_combined_results, p_value = 0.05, min_per
     dplyr::mutate(`log2 fold change` = signif(`log2 fold change`))
 
   attr(res, "p_value_filter") <- p_value
-  attr(res, "min_per_group_prevalence") <- min_per_group_prevalence
 
   res
 }
