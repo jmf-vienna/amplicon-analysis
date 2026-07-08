@@ -27,7 +27,7 @@ list(
 
   # config ----
   tar_target(config_file, Sys.getenv("R_CONFIG_FILE", "config.yaml"), format = "file"),
-  tar_target(config, config::get(config = Sys.getenv("TAR_PROJECT", "default"), file = config_file)),
+  tar_target(config, config::get(config = Sys.getenv("DATASET", Sys.getenv("TAR_PROJECT", "default")), file = config_file)),
   tar_target(project_name, config |> pluck("project", "name", .default = "SOME PROJECT")),
   tar_target(gene_name, config |> pluck("gene", "name", .default = "SOME GENE")),
   tar_target(base_provenance, list(project = project_name, gene = gene_name)),
