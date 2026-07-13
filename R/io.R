@@ -65,6 +65,10 @@ write_qs2 <- function(x, file) {
 }
 
 write_tsv <- function(x, file, na = "invisible") {
+  if (is.null(x)) {
+    return()
+  }
+
   prepare_export(file)
 
   rlang::arg_match0(na, c("invisible", "explicit"))
