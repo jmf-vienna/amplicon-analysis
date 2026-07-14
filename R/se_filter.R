@@ -65,6 +65,9 @@ filter_undesirable_features <- function(se, config) {
     config,
     \(se, rank, values) {
       se_new <- se[!SummarizedExperiment::rowData(se)[[rank]] %in% values]
+      if ("__unclassified__" %in% values) {
+        se_new <- se_new[!is.na(SummarizedExperiment::rowData(se_new)[[rank]])]
+      }
       se_new <- filtered_features_helper(se, se_new, rank)
       se_new
     },
