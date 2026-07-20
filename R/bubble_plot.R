@@ -33,7 +33,7 @@ fill_unclassified <- function(se, value = "unclassified", species_value = "sp.",
           "{rank}" := dplyr::coalesce(
             .data[[rank]],
             if_else(
-              stringr::str_detect(.data[[prev_rank]], value),
+              stringr::str_detect(.data[[prev_rank]], rex::rex(start, prefix, value, one_of(" ", suffix))),
               .data[[prev_rank]],
               stringr::str_c(prefix, value, " ", .data[[prev_rank]], suffix)
             )
