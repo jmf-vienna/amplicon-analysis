@@ -119,13 +119,19 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
     row_data |>
     dplyr::filter(.data[[feature_id_var]] %in% rownames(counts))
 
+  missing_samples <- setdiff(colnames(counts), dplyr::pull(col_data, sample_id_var))
+  if (!vec_is_empty(missing_samples)) {
+    cli_alert_danger("Sample metadata is missing for {.val {missing_samples}}.")
+    # stop() is called by assertion below
+  }
+
   stopifnot(
     identical(
-      col_data |> dplyr::pull(sample_id_var),
+      dplyr::pull(col_data, sample_id_var),
       if (ncol(counts) > 0L) colnames(counts) else character()
     ),
     identical(
-      row_data |> dplyr::pull(feature_id_var),
+      dplyr::pull(row_data, feature_id_var),
       if (nrow(counts) > 0L) rownames(counts) else character()
     )
   )
