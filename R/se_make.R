@@ -1,7 +1,7 @@
 make_col_data <- function(tables) {
-  tables <- keep(tables, \(x) !vec_is_empty(x))
+  tables <- purrr::keep(tables, \(x) !vctrs::vec_is_empty(x))
   suppressMessages(
-    reduce(tables, dplyr::inner_join)
+    purrr::reduce(tables, dplyr::inner_join)
   )
 }
 

@@ -105,16 +105,16 @@ list(
 
   # column data > samples ----
   tar_target(samples_file, "Samples.tsv", format = "file"),
-  tar_target(samples, smart_read_tsv(samples_file) |> tidy_samples()),
+  tar_target(samples, samples_file |> smart_read_tsv() |> tidy_samples()),
   tar_target(samples_col_data, make_col_data(list(samples))),
 
   # column data > sublibraries ----
   tar_target(sublibraries_file, "Sublibraries.tsv", format = "file"),
-  tar_target(sublibraries, smart_read_tsv(sublibraries_file) |> tidy_sublibraries()),
+  tar_target(sublibraries, sublibraries_file |> smart_read_tsv() |> tidy_sublibraries()),
 
   # column data > libraries ----
   tar_target(libraries_file, "Libraries.tsv", format = "file"),
-  tar_target(libraries, smart_read_tsv(libraries_file) |> tidy_libraries()),
+  tar_target(libraries, libraries_file |> smart_read_tsv() |> tidy_libraries()),
   tar_target(libraries_col_data, make_col_data(list(sublibraries, libraries, samples))),
 
   # assay data (counts) ----
