@@ -171,13 +171,14 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
     return(invisible())
   }
 
-  plot <- ggplot(
-    data = alpha_diversity,
-    mapping = aes(
-      x = .data[[variable_of_interest]],
-      y = Diversity
-    )
-  ) +
+  plot <-
+    ggplot(
+      data = alpha_diversity,
+      mapping = aes(
+        x = .data[[variable_of_interest]],
+        y = Diversity
+      )
+    ) +
     geom_boxplot() +
     facet_grid(
       rows = vars(Index),
@@ -187,10 +188,15 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
     labs(
       y = NULL
     ) +
-    theme +
-    theme(
-      axis.text.x = element_text(angle = -90L, hjust = 0L, vjust = 0.5)
-    )
+    theme
+
+  if (alpha_diversity |> pull(!!sym(variable_of_interest)) |> str_length() |> max() > 3L) {
+    plot <-
+      plot +
+      theme(
+        axis.text.x = element_text(angle = -90L, hjust = 0L, vjust = 0.5)
+      )
+  }
 
   # assertion that plot and test belong together
   stopifnot(identical(
