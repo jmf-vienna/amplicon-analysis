@@ -30,6 +30,18 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
         suppressWarnings()
     }
 
+    if ("absabundance" %in% SummarizedExperiment::assayNames(se)) {
+      SummarizedExperiment::assay(se, "round_absabundance") <- round(SummarizedExperiment::assay(se, "absabundance"))
+      se <-
+        se |>
+        mia::addAlpha(
+          assay.type = "round_absabundance",
+          index = alpha_diversity_indexes,
+          name = str_c(".alpha_diversity_with_absolute_abundances_", alpha_diversity_indexes)
+        )
+      SummarizedExperiment::assay(se, "round_absabundance") <- NULL
+    }
+
     # `signif` for reproducibility. Keeping six digits is already overkill for alpha diversity values.
     SummarizedExperiment::colData(se) <-
       se |>
@@ -68,11 +80,11 @@ get_alpha_diversity <- function(se) {
         dplyr::filter(!str_ends(Index, "_se")) |>
         mutate(
           Rarefaction = Index |>
-            str_extract("at_[0-9]+") |>
-            str_replace("at_", "rarefaction depth ") |>
-            str_replace_na("no rarefaction"),
+            str_replace("^[.]alpha_diversity_at_([0-9]+)_.+", "rarefaction depth \\1") |>
+            str_replace("^[.]alpha_diversity_with_absolute_abundances_.+", "rounded absolute abundances") |>
+            str_replace("^[.]alpha_diversity_.+", "no rarefaction"),
           Index = Index |>
-            str_remove("^[.]alpha_diversity_(at_[0-9]+_)?") |>
+            str_remove("^[.]alpha_diversity_(at_[0-9]+_|with_absolute_abundances_)?") |>
             str_replace("_", " ") |>
             str_replace("goods", "good’s") |>
             str_to_title()
