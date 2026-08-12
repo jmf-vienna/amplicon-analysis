@@ -62,6 +62,7 @@ list(
   tar_target(sample_label_from, config |> pluck("annotation", "sample", "variable name")),
   tar_target(discrete_variables_of_interest, config |> pluck("analyze", "category", .default = "Group")),
   tar_target(continuous_variables_of_interest, config |> pluck("analyze", "continuous", .default = "dummy_continuous")),
+  tar_target(absolute_abundance_factor, config |> pluck("analyze", "absolute abundance factor")),
   # for visualization only:
   tar_target(main_category, config |> pluck("annotation", "category", "main")),
   tar_target(facet_categories, config |> pluck("annotation", "category", "facets", .default = main_category)),
@@ -155,7 +156,17 @@ list(
   ## library SEs ----
   ### raw ----
   tar_target(se_libs_raw_provenance, modifyList(base_provenance, list(resolution = "libraries", state = "raw"))),
-  tar_target(se_libs_rawer, make_se(assay_data, libraries_col_data, row_data, ranks, se_libs_raw_provenance)),
+  tar_target(
+    se_libs_rawer,
+    make_se(
+      assay_data,
+      libraries_col_data,
+      row_data,
+      ranks,
+      se_libs_raw_provenance,
+      absolute_abundance_factor
+    )
+  ),
   tar_target(failed_libraries, get_failed_libraries(se_libs_rawer, negative_controls, pass_libraries_yield_min, failed_samples)),
   tar_target(se_libs_raw, se_libs_rawer |> add_decontam(negative_controls, failed_libraries)),
 
@@ -573,7 +584,8 @@ list(
         vars = list(
           `library ID` = library_id_var,
           `biosample ID` = biosample_id_var,
-          `feature ID` = feature_id_var
+          `feature ID` = feature_id_var,
+          `absolute abundance factor` = absolute_abundance_factor
         ),
         desirables = desirables,
         undesirables = undesirables,

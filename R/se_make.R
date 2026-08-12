@@ -100,7 +100,7 @@ multi_taxa_trim <- function(x) {
   str_replace(x, "( ‣ [a-zA-Z0-9.-]+/)([a-zA-Z0-9.-]+/){2,}([a-zA-Z0-9.-]+ ‣ )", "\\1…/\\3")
 }
 
-make_se <- function(counts, col_data, row_data, ranks, provenance) {
+make_se <- function(counts, col_data, row_data, ranks, provenance, absolute_abundance_factor = NULL) {
   sample_id_var <- col_data |> first_id_name()
   feature_id_var <- ranks |> dplyr::last()
   provenance <-
@@ -145,7 +145,8 @@ make_se <- function(counts, col_data, row_data, ranks, provenance) {
       taxonomy_ranks = list(
         initial = ranks,
         current = ranks
-      )
+      ),
+      absolute_abundance_factor = absolute_abundance_factor
     )
   ) |>
     set_provenance(provenance) |>
@@ -251,6 +252,26 @@ get_pseudocount <- function(se, assay = "clr") {
     purrr::pluck(purrr::attr_getter("parameters"), "pseudocount", .default = 0L)
 }
 
+add_absolute_abundance <- function(se) {
+  abs_factor_var <- S4Vectors::metadata(se)[["absolute_abundance_factor"]]
+
+  if (is.null(abs_factor_var)) {
+    return(se)
+  }
+
+  abs_factor <- SummarizedExperiment::colData(se)[[abs_factor_var]]
+
+  if (anyNA(abs_factor)) {
+    return(se)
+  }
+
+  SummarizedExperiment::assay(se, "absabundance") <-
+    SummarizedExperiment::assay(se, "relabundance") |>
+    sweep(2L, abs_factor, "*")
+
+  se
+}
+
 add_assays <- function(se, clr_pseudocount = TRUE) {
   se_orig <- se
 
@@ -258,7 +279,8 @@ add_assays <- function(se, clr_pseudocount = TRUE) {
     se <-
       se |>
       mia::transformAssay(method = "relabundance") |>
-      mia::transformAssay(method = "clr", pseudocount = clr_pseudocount)
+      mia::transformAssay(method = "clr", pseudocount = clr_pseudocount) |>
+      add_absolute_abundance()
   } else {
     SummarizedExperiment::assay(se, "relabundance") <- SummarizedExperiment::assay(se, "counts")
     SummarizedExperiment::assay(se, "clr") <- SummarizedExperiment::assay(se, "counts")

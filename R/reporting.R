@@ -80,7 +80,7 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
     "Variable names:",
     "",
     "```yaml",
-    "{yaml::as.yaml(settings$vars)}```",
+    "{yaml::as.yaml(list_drop_empty(settings$vars))}```",
     "",
     "## Complete config",
     "",
