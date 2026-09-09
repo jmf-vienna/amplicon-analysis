@@ -1,4 +1,4 @@
-as_phyloseq <- function(se) {
+as_phyloseq <- function(se, ...) {
   if (is_too_large(se)) {
     return()
   }
@@ -11,7 +11,7 @@ as_phyloseq <- function(se) {
   }
 
   se |>
-    mia::convertToPhyloseq() |>
+    mia::convertToPhyloseq(...) |>
     microViz::tax_fix(anon_unique = FALSE, verbose = FALSE) |>
     microViz::phyloseq_validate() |>
     update_provenance(se)
