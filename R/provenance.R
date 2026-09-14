@@ -32,7 +32,9 @@ provenance_as_tibble <- function(x) {
 get_trimmed_provenance <- function(x) {
   x |>
     get_provenance() |>
-    purrr::discard(\(x) rlang::is_scalar_character(x) && stringr::str_ends(x, "_ID"))
+    purrr::discard(\(x) rlang::is_scalar_character(x) && stringr::str_ends(x, "_ID")) |>
+    purrr::imap(\(x, n) if (n == "assay_type" && x == "counts") NULL else x) |>
+    purrr::compact()
 }
 
 provenance_as_file_name <- function(x) {
@@ -57,6 +59,7 @@ as_file_name <- function(x) {
     stringr::str_replace_all("Good’s Coverage ≥", "min GC") |>
     stringr::str_replace_all("≤", "lte") |>
     stringr::str_replace_all("≥", "gte") |>
+    stringr::str_replace_all("\\+", " plus ") |>
     force_valid_file_name()
 }
 

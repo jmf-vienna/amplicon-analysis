@@ -1,5 +1,9 @@
-as_phyloseq <- function(se, ...) {
+as_phyloseq <- function(se, assay_type = "counts") {
   if (is_too_large(se)) {
+    return()
+  }
+
+  if (!assay_type %in% SummarizedExperiment::assayNames(se)) {
     return()
   }
 
@@ -11,10 +15,10 @@ as_phyloseq <- function(se, ...) {
   }
 
   se |>
-    mia::convertToPhyloseq(...) |>
+    mia::convertToPhyloseq(assay.type = assay_type) |>
     microViz::tax_fix(anon_unique = FALSE, verbose = FALSE) |>
     microViz::phyloseq_validate() |>
-    update_provenance(se)
+    update_provenance(se, list(assay_type = assay_type))
 }
 
 export_ps <- function(ps, dir_name) {

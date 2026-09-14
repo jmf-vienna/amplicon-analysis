@@ -1,6 +1,18 @@
-calulcate_distance <- function(ps, distance = "aitchison") {
+calulcate_distance <- function(ps, distance = "auto") {
   if (is.null(ps)) {
     return(invisible())
+  }
+
+  if (identical(distance, "auto")) {
+    assay_type <-
+      ps |>
+      get_provenance() |>
+      chuck("assay_type")
+    if (identical(assay_type, "counts")) {
+      distance <- "aitchison"
+    } else if (identical(assay_type, "log10(absabundance+1)")) {
+      distance <- "euclidean"
+    }
   }
 
   ps |>

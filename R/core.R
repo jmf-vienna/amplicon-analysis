@@ -1,5 +1,5 @@
 get_se_version <- function() {
-  3L
+  4L
 }
 
 get_pipeline_version <- function() {

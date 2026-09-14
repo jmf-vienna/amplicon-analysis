@@ -269,6 +269,8 @@ add_absolute_abundance <- function(se) {
     SummarizedExperiment::assay(se, "relabundance") |>
     sweep(2L, abs_factor, "*")
 
+  SummarizedExperiment::assay(se, "log10(absabundance+1)") <- log10(SummarizedExperiment::assay(se, "absabundance") + 1L)
+
   se
 }
 
