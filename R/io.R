@@ -1,5 +1,7 @@
 force_valid_file_name <- function(x) {
-  x |> stringr::str_replace_all("[^a-zA-Z0-9.-]+", "_")
+  x |>
+    stringr::str_replace_all("[^a-zA-Z0-9.-]+", "_") |>
+    stringr::str_remove("_$")
 }
 
 find_one_file <- function(path, glob = NULL, regexp = NULL, verbose = TRUE) {

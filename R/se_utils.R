@@ -385,12 +385,12 @@ is_too_large <- function(se) {
   res
 }
 
-write_flattened <- function(se, file, assay_name = "counts") {
+write_flattened <- function(se, file, assay_type = "counts") {
   loadNamespace(class(se))
 
   assay_matrix <-
     se |>
-    SummarizedExperiment::assay(assay_name) |>
+    SummarizedExperiment::assay(assay_type) |>
     as.matrix()
 
   if (any(rowSums(assay_matrix != 0L) == 0L)) {
@@ -486,25 +486,22 @@ write_flattened <- function(se, file, assay_name = "counts") {
   invisible(file)
 }
 
-export_flattened <- function(se, dir_name, assay_name = "counts") {
+export_flattened <- function(se, dir_name, assay_type = "counts") {
   if (is_too_large(se)) {
     return()
   }
 
+  se <- update_provenance(se, new = list(file_format = "flattened", assay_type = assay_type))
+
   file <- fs::path(
     dir_name,
-    stringr::str_c(
-      provenance_as_file_name(se),
-      "flattened",
-      if (!identical(assay_name, "counts")) assay_name,
-      sep = "_"
-    ),
+    provenance_as_file_name(se),
     ext = "tsv"
   )
   prepare_export(file)
 
   cli::cli_alert("flattened data saved to {.file {file}}")
-  write_flattened(se, file, assay_name)
+  write_flattened(se, file, assay_type)
 }
 
 export_se <- function(se, dir_name) {
