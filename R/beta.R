@@ -7,7 +7,7 @@ calulcate_distance <- function(ps, distance = "auto") {
     assay_type <-
       ps |>
       get_provenance() |>
-      chuck("assay_type")
+      chuck("assay type")
     if (identical(assay_type, "counts")) {
       distance <- "aitchison"
     } else if (identical(assay_type, "log10(absabundance+1)")) {

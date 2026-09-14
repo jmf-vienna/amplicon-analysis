@@ -331,7 +331,7 @@ list(
   # phyloseq objects ----
   tar_target(ps_assay_type, c("counts", if (!is.null(absolute_abundance_factor)) "log10(absabundance+1)")),
   tar_target(ps, as_phyloseq(se, ps_assay_type), pattern = cross(se, ps_assay_type)),
-  tar_target(ps_counts, keep(ps, \(x) identical(x |> get_provenance() |> pluck("assay_type"), "counts"))),
+  tar_target(ps_counts, keep(ps, \(x) identical(x |> get_provenance() |> pluck("assay type"), "counts"))),
   tar_target(ps_file, export_ps(ps_counts, rd_dir_name), format = "file", pattern = map(ps_counts)),
 
   # library metrics ----
@@ -513,7 +513,7 @@ list(
       list_c() |>
       smart_bind_rows() |>
       finalize_tests_table() |>
-      dplyr::relocate(assay_type, .before = metric)
+      dplyr::relocate(`assay type`, .before = metric)
   ),
   tar_target(
     tests_file,

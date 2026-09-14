@@ -33,7 +33,7 @@ get_trimmed_provenance <- function(x) {
   x |>
     get_provenance() |>
     purrr::discard(\(x) rlang::is_scalar_character(x) && stringr::str_ends(x, "_ID")) |>
-    purrr::imap(\(x, n) if (n == "assay_type" && x == "counts") NULL else x) |>
+    purrr::imap(\(x, n) if (n == "assay type" && x == "counts") NULL else x) |>
     purrr::compact()
 }
 

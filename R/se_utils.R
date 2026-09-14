@@ -491,7 +491,7 @@ export_flattened <- function(se, dir_name, assay_type = "counts") {
     return()
   }
 
-  se <- update_provenance(se, new = list(file_format = "flattened", assay_type = assay_type))
+  se <- update_provenance(se, new = list(`file format` = "flattened", `assay type` = assay_type))
 
   file <- fs::path(
     dir_name,
