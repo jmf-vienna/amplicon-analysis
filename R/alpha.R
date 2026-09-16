@@ -8,13 +8,6 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
 
   min <- min_col_sum(se)
   if (min >= threshold) {
-    se <-
-      se |>
-      mia::addAlpha(
-        index = alpha_diversity_indexes,
-        name = str_c(".alpha_diversity_", alpha_diversity_indexes)
-      )
-
     # rarefaction makes no sense if there is only one sample
     if (ncol(se) > 1L) {
       se <-
@@ -28,6 +21,13 @@ add_alpha_diversity <- function(se, alpha_diversity_indexes = "observed", thresh
         ) |>
         # suppress vegan::rrarefy warning message "function should be used for observed counts, but smallest count is %d"
         suppressWarnings()
+    } else {
+      se <-
+        se |>
+        mia::addAlpha(
+          index = alpha_diversity_indexes,
+          name = str_c(".alpha_diversity_", alpha_diversity_indexes)
+        )
     }
 
     if ("absabundance" %in% SummarizedExperiment::assayNames(se)) {
@@ -256,7 +256,8 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       )
   }
 
-  plot |>
+  plot <-
+    plot |>
     update_provenance(
       alpha_diversity,
       list(
@@ -267,4 +268,14 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       title = "alpha diversity analysis",
       analysis = zap()
     )
+
+  width <- alpha_diversity |> dplyr::distinct(across(all_of(c(variable_of_interest, "Rarefaction")))) |> nrow()
+  attr(plot, "output") <- list(
+    width = max(
+      (width + 2.0) * 0.5,
+      7.0
+    )
+  )
+
+  plot
 }
