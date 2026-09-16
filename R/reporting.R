@@ -20,7 +20,8 @@ make_summary_report <- function(provenance, pipeline_version, input_files, setti
     "decontam",
     "phyloseq",
     "microbiome",
-    "microViz"
+    "microViz",
+    "DESeq2"
   )
 
   citations <- stringr::str_c(
