@@ -97,5 +97,5 @@ citation_text <- function(x) {
     list(width = 10000L),
     capture.output(print(citation(x), style = "text"))
   ) |>
-    stringr::str_replace("\\*([0-9]+)\\*", "__\\1__") # nolint: nonportable_path_linter.
+    stringr::str_replace("\\*([0-9]+)\\*", "__\\1__")
 }

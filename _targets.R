@@ -547,7 +547,16 @@ list(
       provenance = list(
         test = "DESeq2",
         .DESeq2_filter = str_c(
-          ifelse(deseq_pseudocount > 0L, str_c("pseudocount=+", deseq_pseudocount, ", "), ""),
+          ifelse(
+            deseq_pseudocount > 0L,
+            str_c("pseudocount=+", deseq_pseudocount, ", "),
+            ""
+          ),
+          ifelse(
+            attr(deseq_results, "size_factors") != "default",
+            str_c("size_factors = ", attr(deseq_results, "size_factors"), ", "),
+            ""
+          ),
           "|log₂FC| >",
           log2fc_threshold,
           ", p-value ≤",

@@ -49,13 +49,26 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per
     dplyr::filter(max_prevalence < min_per_group_prevalence) |>
     pull(FeatureID)
 
-  deseq <- DESeq2::DESeqDataSetFromMatrix(
+  dds <- DESeq2::DESeqDataSetFromMatrix(
     countData = SummarizedExperiment::assay(se) + pseudocount,
     colData = SummarizedExperiment::colData(se),
     design = as.formula(stringr::str_c("~ ", var))
   )
 
-  deseq <- DESeq2::DESeq(deseq, quiet = !interactive())
+  size_factors <- "default"
+  if ("absabundance" %in% SummarizedExperiment::assayNames(se)) {
+    abs_factor_var <- S4Vectors::metadata(se)[["absolute_abundance_factor"]]
+    abs_factor <- SummarizedExperiment::colData(se)[[abs_factor_var]]
+    # "stabilize size factors to have geometric mean of 1" (https://github.com/thelovelab/DESeq2/blob/devel/R/core.R#L575)
+    DESeq2::sizeFactors(dds) <- abs_factor / exp(mean(log(abs_factor)))
+    stopifnot(isTRUE(all.equal(
+      exp(mean(log(DESeq2::sizeFactors(dds)))),
+      1.0
+    )))
+    size_factors <- glue::glue("{abs_factor_var} / geometric_mean({abs_factor_var})")
+  }
+
+  dds <- DESeq2::DESeq(dds, quiet = !interactive())
 
   groups <- levels(SummarizedExperiment::colData(se)[[var]])
 
@@ -65,7 +78,7 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per
     as_full_tibble("Feature_ID") |>
     dplyr::select(Feature_ID, Lineage)
 
-  results <- DESeq2::results(deseq, lfcThreshold = log2fc_threshold, alpha = p_value)
+  results <- DESeq2::results(dds, lfcThreshold = log2fc_threshold, alpha = p_value)
   results[non_prevalent_features, "pvalue"] <- NA
   results <- DESeq2:::pvalueAdjustment(results, independentFiltering = TRUE, alpha = p_value, pAdjustMethod = "BH") # nolint: undesirable_operator_linter.
 
@@ -84,7 +97,8 @@ run_deseq <- function(se, var, log2fc_threshold = 0.0, pseudocount = 0L, min_per
   attr(res, "pseudocount") <- pseudocount
   attr(res, "min_per_group_prevalence") <- min_per_group_prevalence
   attr(res, "p_value_filter") <- p_value
-  attr(res, "deseq") <- deseq
+  attr(res, "size_factors") <- size_factors
+  attr(res, "deseq") <- dds
   attr(res, "results") <- results
 
   res
@@ -182,7 +196,8 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
       legend.position = "bottom"
     )
 
-  p <- p |>
+  p <-
+    p |>
     update_provenance(plot_data) |>
     plot_titles(title = "DESeq2 differential abundance test", test = zap())
 
@@ -191,16 +206,19 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
   if (is_string(main_category)) {
     loadNamespace("mia")
 
+    assay_type <- ifelse("absabundance" %in% SummarizedExperiment::assayNames(se), "absabundance", "relabundance")
+
     se_data <-
       se[features] |>
-      mia::meltSE(assay.type = "relabundance", add.row = TRUE, add.col = TRUE) |>
-      dplyr::mutate(across(all_of(main_category), fct_rev))
+      mia::meltSE(assay.type = assay_type, add.row = TRUE, add.col = TRUE) |>
+      dplyr::mutate(across(all_of(main_category), fct_rev)) |>
+      dplyr::mutate(across(any_of("relabundance"), \(x) x * 100L)) # nolint: consecutive_mutate_linter.
 
     p2 <-
       ggplot(
         data = se_data,
         mapping = aes(
-          x = relabundance * 100L,
+          x = .data[[assay_type]],
           y = Lineage |> fct_rev(),
           colour = .data[[main_category]]
         )
@@ -221,6 +239,10 @@ plot_deseq <- function(plot_data, se, main_category, theme) {
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()
       )
+
+    if (assay_type == "absabundance") {
+      p2 <- p2 + labs(x = "Absolute abundance")
+    }
 
     height_per_feature <- 0.5
     p <-

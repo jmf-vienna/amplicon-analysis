@@ -50,7 +50,7 @@ as_file_name <- function(x) {
     purrr::map(\(x) {
       stringr::str_c(
         names(x),
-        x |> stringr::str_remove(" \\(.+\\)$"), # nolint: nonportable_path_linter.
+        x |> stringr::str_remove(" \\(.+\\)$"),
         sep = "_",
         collapse = "_"
       )
