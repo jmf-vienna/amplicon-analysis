@@ -269,7 +269,9 @@ plot_alpha_diversity <- function(alpha_diversity, alpha_diversity_test_raw, vari
       analysis = zap()
     )
 
-  width <- alpha_diversity |> dplyr::distinct(across(all_of(c(variable_of_interest, "Rarefaction")))) |> nrow()
+  width <- alpha_diversity |>
+    dplyr::distinct(across(all_of(c(variable_of_interest, "Rarefaction")))) |>
+    nrow()
   attr(plot, "output") <- list(
     width = max(
       (width + 2.0) * 0.5,

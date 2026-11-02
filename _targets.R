@@ -400,7 +400,9 @@ list(
       ) |>
       group_by(across(all_of(biosample_id_var))) |>
       slice_tail(n = 1L) |>
-      arrange(count)
+      arrange(count) |>
+      arrange(across(c(1:rank))) |>
+      arrange(across(c(rank:JMF_sample_ID & !JMF_sample_ID), \(x) !is.na(x)))
   ),
   tar_target(
     biosample_metrics_last_file,
