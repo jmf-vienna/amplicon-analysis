@@ -70,7 +70,7 @@ smart_agglomerate <- function(
   min_abundance = 0.01,
   min_prevalence = 2L,
   remove_zeros = TRUE,
-  always_ranks = 2L,
+  always_ranks = c("Domain", "Kingdom", "Phylum"),
   always_features = character()
 ) {
   loadNamespace("mia")
@@ -83,7 +83,11 @@ smart_agglomerate <- function(
   res <- mia::meltSE(se, add.row = TRUE, add.col = TRUE)
   all_ranks <- taxonomy_ranks(se)
 
-  rank_names_show_always <- head(all_ranks, always_ranks)
+  pos <-
+    always_ranks |>
+    match(all_ranks, nomatch = 2L) |>
+    max()
+  rank_names_show_always <- head(all_ranks, pos)
 
   # input assertion: exactly one value per sample and taxonomy
   stopifnot(identical(
