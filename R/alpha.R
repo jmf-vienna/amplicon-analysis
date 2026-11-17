@@ -66,14 +66,14 @@ get_alpha_diversity <- function(se) {
   res <-
     se |>
     SummarizedExperiment::colData() |>
-    as_full_tibble("ID")
+    as_full_tibble(".id")
 
   res <-
     if (res |> select(starts_with(".alpha_diversity_")) |> ncol() |> identical(0L)) {
       # return empty tibble if no alpha diversity indexes are present
       res |>
         add_column(Index = NA, Rarefaction = NA, Diversity = NA) |>
-        dplyr::filter(is.na(ID))
+        dplyr::filter(is.na(.id))
     } else {
       res |>
         pivot_longer(starts_with(".alpha_diversity_"), names_to = "Index", values_to = "Diversity") |>
@@ -92,7 +92,7 @@ get_alpha_diversity <- function(se) {
     }
 
   res |>
-    relocate(ID, Index, Rarefaction, Diversity) |>
+    relocate(.id, Index, Rarefaction, Diversity) |>
     update_provenance(se, list(analysis = "alpha diversity"))
 }
 
